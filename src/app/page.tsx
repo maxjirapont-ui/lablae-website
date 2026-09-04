@@ -111,17 +111,17 @@ export default async function Home() {
   const showSeasonal = (await getSetting("home_section_seasonal_show")) !== "0";
   const showSocial = (await getSetting("home_section_social_show")) !== "0";
   const showContact = (await getSetting("home_section_contact_show")) !== "0";
-  const rawOrder = (await getSetting("homepage_sections_order")) || "intro,gallery,featured,book,seasonal,social,contact";
+  const rawOrder = (await getSetting("homepage_sections_order")) || "featured,seasonal,intro,gallery,book,social,contact";
   let sections = rawOrder.split(",").map(s => s.trim()).filter(Boolean);
   if (!sections.includes("book")) {
-    sections.splice(2, 0, "book");
+    sections.push("book");
   }
   if (!sections.includes("gallery")) {
     const introIdx = sections.indexOf("intro");
     if (introIdx !== -1) {
       sections.splice(introIdx + 1, 0, "gallery");
     } else {
-      sections.unshift("gallery");
+      sections.push("gallery");
     }
   }
 
@@ -148,22 +148,22 @@ export default async function Home() {
             </span>
           </h1>
           
-          <p className="font-thai text-sm sm:text-lg text-[#f7eee3]/90 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
-            “นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด” — อาหารเหนือพื้นเมืองลับแล พริกแกงตำเอง แวะมากินข้าวบ้านญาตินะครับ
+          <p className="font-thai text-sm sm:text-base text-[#f7eee3]/90 max-w-xl mx-auto leading-relaxed drop-shadow-md">
+            อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ ๔ รุ่น แวะมากินข้าวบ้านญาตินะครับ
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full max-w-md mx-auto">
             <Link
               href={heroBtn1Link}
-              className="px-8 py-3.5 bg-gradient-to-r from-accent to-[#e6b87d] hover:brightness-110 text-[#1a100a] font-thai font-bold rounded-full shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-sm"
+              className="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-accent to-[#e6b87d] hover:brightness-110 text-[#1a100a] font-thai font-bold rounded-full shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-sm text-center"
             >
               {heroBtn1Text}
             </Link>
             <Link
               href={heroBtn2Link}
-              className="px-8 py-3.5 border-2 border-accent/60 hover:bg-accent hover:border-accent hover:text-[#1a100a] text-[#f7eee3] font-thai font-semibold rounded-full transition-all duration-300 text-sm backdrop-blur-xs"
+              className="w-full sm:w-auto px-8 py-3.5 border-2 border-accent/60 hover:bg-accent hover:border-accent hover:text-[#1a100a] text-[#f7eee3] font-thai font-semibold rounded-full transition-all duration-300 text-sm backdrop-blur-xs text-center"
             >
-              เรื่องเล่าบ้าน ๑๐๐ ปี
+              {heroBtn2Text}
             </Link>
           </div>
         </div>
@@ -184,6 +184,37 @@ export default async function Home() {
                       บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา
                     </h2>
                   </div>
+
+                  {/* Ancestor Quote Callout */}
+                  <blockquote className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-accent/15 via-[#261810] to-accent/10 border-l-4 border-accent text-xs sm:text-sm font-thai italic text-[#f7eee3]/95 leading-relaxed shadow-xs">
+                    “นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”
+                    <span className="block not-italic font-semibold text-accent text-xs mt-1.5 text-right">— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี</span>
+                  </blockquote>
+
+                  {/* 4 Quick Facts of the 100-Year House */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
+                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
+                      <span className="text-xl">🏛️</span>
+                      <p className="font-thai font-bold text-base text-accent">๑๐๐+ ปี</p>
+                      <p className="text-[10px] font-thai text-[#f7eee3]/70">อายุเรือนไม้สัก</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
+                      <span className="text-xl">🔨</span>
+                      <p className="font-thai font-bold text-base text-accent">๐ ตัว</p>
+                      <p className="text-[10px] font-thai text-[#f7eee3]/70">ไร้ตะปู เข้าเดือย</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
+                      <span className="text-xl">👨‍👩‍👧‍👦</span>
+                      <p className="font-thai font-bold text-base text-accent">๔ รุ่นคน</p>
+                      <p className="text-[10px] font-thai text-[#f7eee3]/70">สืบทอดรสมือ</p>
+                    </div>
+                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
+                      <span className="text-xl">🌶️</span>
+                      <p className="font-thai font-bold text-base text-accent">ตำมือ ๑๐๐%</p>
+                      <p className="text-[10px] font-thai text-[#f7eee3]/70">พริกแกงสดไม่สำเร็จ</p>
+                    </div>
+                  </div>
+
                   <div className="font-thai text-sm sm:text-base text-[#f5ece1]/85 leading-relaxed space-y-3">
                     <p>
                       อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน

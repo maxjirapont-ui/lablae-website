@@ -3,6 +3,7 @@ import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import MobileQuickBar from "@/components/MobileQuickBar";
 import { getSetting } from "@/lib/data";
 
 const inter = Inter({
@@ -197,8 +198,9 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1]">
         <Navbar logoUrl={brandLogo} btnText={navbarBtnText} btnLink={navbarBtnLink} />
-        <main className="flex-grow pt-24">{children}</main>
+        <main className="flex-grow pt-24 pb-16 md:pb-0">{children}</main>
         <Footer />
+        <MobileQuickBar phone={phone} googleMapsUrl={googleMapsUrl} />
       </body>
     </html>
   );

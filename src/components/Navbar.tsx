@@ -104,7 +104,8 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-primary hover:text-accent focus:outline-none cursor-pointer"
+              className="inline-flex items-center justify-center p-2 rounded-xl text-accent hover:text-[#fff7ed] bg-[#241710]/80 border border-accent/30 focus:outline-none cursor-pointer shadow-xs active:scale-95 transition-all"
+              aria-label="เปิดเมนู"
             >
               {isOpen ? <X className="h-6 h-6" /> : <Menu className="h-6 h-6" />}
             </button>

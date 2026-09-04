@@ -124,48 +124,55 @@ export default function MenuList({
   const renderClassicItem = (item: MenuItem) => {
     const isOutOfStock = item.available === 0;
     return (
-      <div key={item.id} className="flex gap-4 items-start py-4 first:pt-0 last:pb-0 font-thai">
-        {item.image_url && item.image_url.trim() !== "" && (
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-primary/5 shadow-sm bg-cream">
+      <div
+        key={item.id}
+        className="flex gap-3.5 sm:gap-4 items-start p-4 rounded-2xl bg-[#241710] border border-accent/20 hover:border-accent/45 shadow-xs hover:shadow-md transition-all font-thai group"
+      >
+        {item.image_url && item.image_url.trim() !== "" ? (
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-accent/20 shadow-xs bg-[#1a100a]">
             <img
               src={item.image_url}
               alt={item.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {isOutOfStock && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="text-[9px] sm:text-[10px] text-white font-bold bg-primary px-1.5 py-0.5 rounded">หมด</span>
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <span className="text-[9px] sm:text-[10px] text-white font-bold bg-rose-900 px-1.5 py-0.5 rounded">หมด</span>
               </div>
             )}
+          </div>
+        ) : (
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-accent/15 bg-[#1f140e] flex items-center justify-center text-accent/40">
+            <UtensilsCrossed className="w-6 h-6" />
           </div>
         )}
         <div className="flex-grow min-w-0">
           <div className="flex items-baseline gap-2">
-            <h4 className={`font-bold text-sm sm:text-base text-primary flex flex-wrap items-center gap-1.5 ${isOutOfStock ? 'opacity-50' : ''}`}>
+            <h4 className={`font-bold text-sm sm:text-base text-[#f7eee3] flex flex-wrap items-center gap-1.5 ${isOutOfStock ? 'opacity-50' : ''}`}>
               <span>{item.name}</span>
               {item.is_recommended === 1 && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full font-normal">
+                <span className="inline-flex items-center gap-0.5 text-[9px] text-amber-300 bg-amber-950/70 border border-amber-600/40 px-1.5 py-0.5 rounded-full font-normal">
                   <Sparkles className="w-2.5 h-2.5" /> แนะนำ
                 </span>
               )}
               {item.is_seasonal === 1 && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-full font-normal">
+                <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-300 bg-emerald-950/70 border border-emerald-600/40 px-1.5 py-0.5 rounded-full font-normal">
                   ตามฤดูกาล
                 </span>
               )}
               {isOutOfStock && (
-                <span className="text-[9px] text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded font-normal">
+                <span className="text-[9px] text-rose-300 bg-rose-950/70 border border-rose-600/40 px-1.5 py-0.5 rounded font-normal">
                   หมดชั่วคราว
                 </span>
               )}
             </h4>
-            <div className="flex-grow border-b border-dotted border-primary/20 min-w-[12px] h-1 self-center" style={{ transform: 'translateY(4px)' }} />
-            <span className="font-bold text-sm sm:text-base text-accent-dark shrink-0">
+            <div className="flex-grow border-b border-dotted border-accent/25 min-w-[12px] h-1 self-center" style={{ transform: 'translateY(4px)' }} />
+            <span className="font-bold text-sm sm:text-base text-accent shrink-0">
               {item.price > 0 ? `฿${item.price}` : "ราคาตามน้ำหนัก"}
             </span>
           </div>
           {item.description && (
-            <p className="text-xs text-primary/70 mt-1 leading-relaxed line-clamp-2">
+            <p className="text-xs text-[#f7eee3]/70 mt-1 leading-relaxed line-clamp-2">
               {item.description}
             </p>
           )}
@@ -201,6 +208,22 @@ export default function MenuList({
         </div>
       )}
 
+      {/* First-Timer Recommendation Banner */}
+      <div 
+        onClick={() => setSelectedCategory("เมนูแนะนำ")}
+        className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-accent/15 via-[#261810] to-accent/15 border border-accent/30 flex items-center justify-between gap-3 cursor-pointer hover:border-accent transition-all group"
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <span className="text-lg shrink-0">⭐</span>
+          <p className="text-xs sm:text-sm text-[#f7eee3] truncate font-medium">
+            <strong className="text-accent">มาครั้งแรกสั่งอะไรดี?</strong> แนะนำ: ชุดขันโตกบ้าน ๑๐๐ ปี, หมูทอดลับแลพริกข่า, ข้าวพันผัก, อ่องมันปู
+          </p>
+        </div>
+        <span className="text-[11px] font-bold text-accent shrink-0 group-hover:underline flex items-center gap-1">
+          ดูเมนูแนะนำ →
+        </span>
+      </div>
+
       {/* Category Tabs (Horizontal Scrollable) */}
       <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-thin scrollbar-thumb-accent/20">
         {categoryGroups.map((group) => (
@@ -230,19 +253,19 @@ export default function MenuList({
                 return (
                   <div key={group} className="space-y-4">
                     <div className="flex items-center gap-4">
-                      <h3 className="font-bold text-sm sm:text-base text-primary px-3.5 py-1.5 bg-accent/15 rounded-xl shrink-0">
-                        {group}
+                      <h3 className="font-bold text-sm sm:text-base text-accent px-4 py-1.5 bg-[#261810] border border-accent/25 rounded-xl shrink-0">
+                        {group} ({items.length})
                       </h3>
-                      <div className="flex-grow h-px bg-primary/10" />
+                      <div className="flex-grow h-px bg-accent/20" />
                     </div>
-                    <div className="divide-y divide-primary/5 bg-cream/35 p-5 sm:p-7 rounded-3xl border border-primary/5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
                       {items.map((item) => renderClassicItem(item))}
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="divide-y divide-primary/5 bg-cream/35 p-5 sm:p-7 rounded-3xl border border-primary/5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
                 {filteredItems.map((item) => renderClassicItem(item))}
               </div>
             )}
