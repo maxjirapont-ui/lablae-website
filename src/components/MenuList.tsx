@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import { MenuItem } from "@/lib/data";
-import { Search, Info, Sparkles, Utensils } from "lucide-react";
+import { Search, Info, Sparkles, Utensils, UtensilsCrossed } from "lucide-react";
 
 interface MenuListProps {
   initialItems: MenuItem[];
