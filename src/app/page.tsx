@@ -1,65 +1,679 @@
-import Image from "next/image";
+import React from "react";
+import Link from "next/link";
+import { getDb } from "@/lib/db";
+import { getSetting, MenuItem } from "@/lib/data";
+import BookingForm from "@/components/BookingForm";
+import AtmosphereGallery from "@/components/AtmosphereGallery";
+import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight } from "lucide-react";
 
-export default function Home() {
+export const revalidate = 0; // Dynamic on request
+
+// Server component fetching featured dishes
+async function getFeaturedDishes(): Promise<MenuItem[]> {
+  try {
+    const db = await getDb();
+    // First, try to fetch user-defined recommended dishes
+    let dishes = await db.all<MenuItem[]>(
+      `SELECT * FROM menus 
+       WHERE is_recommended = 1 AND is_visible = 1
+       LIMIT 4`
+    );
+    // If none are flagged, fallback to default recommended ones
+    if (dishes.length === 0) {
+      dishes = await db.all<MenuItem[]>(
+        `SELECT * FROM menus 
+         WHERE name IN ('ข้าวพันผัก', 'ขันโตกบ้าน 100 ปี โตกหมูฮังเล', 'ไข่ป่าม', 'ไส้อั่วลับแล')
+         AND is_visible = 1
+         LIMIT 4`
+      );
+    }
+    return dishes;
+  } catch (err) {
+    console.error("Error fetching featured dishes:", err);
+    return [];
+  }
+}
+
+// Server component fetching seasonal dishes
+async function getSeasonalDishes(): Promise<MenuItem[]> {
+  try {
+    const db = await getDb();
+    // Try to fetch user-defined seasonal dishes
+    let dishes = await db.all<MenuItem[]>(
+      `SELECT * FROM menus 
+       WHERE is_seasonal = 1 AND is_visible = 1
+       LIMIT 4`
+    );
+    // If none are flagged, fallback to other common items
+    if (dishes.length === 0) {
+      dishes = await db.all<MenuItem[]>(
+        `SELECT * FROM menus 
+         WHERE category IN ('อาหารพื้นบ้าน', 'เซทขันโตก')
+         AND is_visible = 1
+         LIMIT 4`
+      );
+    }
+    return dishes;
+  } catch (err) {
+    console.error("Error fetching seasonal dishes:", err);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const featured = await getFeaturedDishes();
+  const seasonal = await getSeasonalDishes();
+
+  // Dynamic Settings
+  const restaurantName = await getSetting("restaurant_name") || "ร้านลำลำลับแลบ้าน 100 ปี";
+  const restaurantDesc = await getSetting("restaurant_desc") || "อาหารที่บ้านเราคือการผสมผสานวัฒนธรรม สุโขทัยและล้านนา มรดกตกทอดจากสูตรของทวดกว่า 100 ปี";
+  const heroImage = await getSetting("home_hero_image") || "https://lh3.googleusercontent.com/sitesv/AA5AbUBtBaZCAX-9g_MZWwNQqvEX6s88oX2eQ8flnpJYsoyFpI7B3ZTMEW3UBdmpNW6VQNI88JEjwbdriszJXS-2j-NhH0Zl5rSbZyXB4F-3sz5S6Ib3EYTV2fZGGKFpMU1x0QdtSqabAmjzbpljKB1IneR9V9gGou-HuVQy9GTJlOti6Yt0Jb1g1U9QCwo=w16383";
+  const aboutImage = await getSetting("home_about_image") || "https://lh3.googleusercontent.com/sitesv/AA5AbUBv9WREClQayfZ7COMLiB91ilUHfEaJefV-DkYOhJLfhpHlbdpnWtZ-s4YnEidqkx8kEnBAQldI3t5Tokl-EMA6k6iY9pNIXI5_-QNGPMUbxcrtWZYB439lqAW0Qt-Hh2Xly7sB2KP7vlppjntbXUXmYriHo_ir0XvRKtNC9UAZtwLkkc4nEflbQ7MdVyCIuxdM213VLqZr1KPB";
+  const phone = await getSetting("phone") || "095-628-3125";
+  const hours = await getSetting("hours") || "เปิดทุกวัน 10.00 - 20.00 น.";
+  const address = await getSetting("address") || "ถนนสายของกินเมืองลับแล, ต.ศรีพนมมาศ, อ.ลับแล, จ.อุตรดิตถ์";
+  const googleMapsUrl = await getSetting("google_maps_url") || "https://maps.app.goo.gl/8xsKvMFqaAMfE3K87";
+  const facebookUrl = await getSetting("facebook_url") || "https://www.facebook.com/lumlumlablae/";
+  const tiktokUrl = await getSetting("tiktok_url") || "https://www.tiktok.com/@lumlumlablae1";
+  const googleReviewsUrl = await getSetting("google_reviews_url") || "https://maps.app.goo.gl/HQpRWVM8qFobGHxL6?g_st=ic";
+  const youtubeUrl = await getSetting("youtube_url") || "https://www.youtube.com/@ร้านอาหารเมืองลับแล";
+
+  // Dynamic Button Configurations
+  const heroBtn1Text = await getSetting("hero_btn1_text") || "ดูเมนูอาหารทั้งหมด";
+  const heroBtn1Link = await getSetting("hero_btn1_link") || "/menu";
+  const heroBtn2Text = await getSetting("hero_btn2_text") || "รู้จักกับเรา & ตำนานลับแล";
+  const heroBtn2Link = await getSetting("hero_btn2_link") || "/about";
+  const featuredBtnText = await getSetting("featured_btn_text") || "ดูเมนูอร่อยทั้งหมดเพิ่มเติม →";
+  const featuredBtnLink = await getSetting("featured_btn_link") || "/menu?category=เมนูแนะนำ";
+  const seasonalBtnText = await getSetting("seasonal_btn_text") || "ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →";
+  const seasonalBtnLink = await getSetting("seasonal_btn_link") || "/menu?category=อาหารตามฤดูกาล";
+  const contactBtnText = await getSetting("contact_btn_text") || "เปิด Google Maps นำทางมาร้าน";
+
+  // Gallery photos
+  const rawGallery = await getSetting("restaurant_gallery");
+  let galleryImages: string[] = [];
+  try {
+    if (rawGallery) {
+      galleryImages = JSON.parse(rawGallery);
+    }
+  } catch {
+    galleryImages = [];
+  }
+  if (!Array.isArray(galleryImages)) galleryImages = [];
+  if (galleryImages.length === 0) {
+    if (aboutImage) galleryImages.push(aboutImage);
+    if (heroImage) galleryImages.push(heroImage);
+  }
+
+  // Web Layout & Sections customizability
+  const showIntro = (await getSetting("home_section_intro_show")) !== "0";
+  const showFeatured = (await getSetting("home_section_featured_show")) !== "0";
+  const showSeasonal = (await getSetting("home_section_seasonal_show")) !== "0";
+  const showSocial = (await getSetting("home_section_social_show")) !== "0";
+  const showContact = (await getSetting("home_section_contact_show")) !== "0";
+  const rawOrder = (await getSetting("homepage_sections_order")) || "intro,gallery,featured,book,seasonal,social,contact";
+  let sections = rawOrder.split(",").map(s => s.trim()).filter(Boolean);
+  if (!sections.includes("book")) {
+    sections.splice(2, 0, "book");
+  }
+  if (!sections.includes("gallery")) {
+    const introIdx = sections.indexOf("intro");
+    if (introIdx !== -1) {
+      sections.splice(introIdx + 1, 0, "gallery");
+    } else {
+      sections.unshift("gallery");
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-col space-y-20 pb-20">
+      {/* 1. Hero Section (Always on Top) */}
+      <section 
+        className="relative min-h-[85vh] flex items-center justify-center text-cream overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url('${heroImage}')` }}
+      >
+        {/* Soft atmospheric overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(70,38,15,0.2),transparent_75%)]" />
+        <div className="absolute inset-0 bg-black/50" />
+
+        <div className="relative max-w-4xl mx-auto px-4 text-center space-y-6 z-10">
+          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent border border-accent/30 text-xs sm:text-sm font-thai font-medium tracking-wide">
+            <Sparkles className="w-4 h-4" />
+            เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์
+          </span>
+          
+          <h1 className="font-thai font-bold text-3xl sm:text-5xl lg:text-6xl text-cream tracking-wide leading-tight">
+            ร้านลำลำลับแลบ้าน ๑๐๐ ปี
+            <span className="block text-xl sm:text-2xl lg:text-3xl text-accent font-normal mt-2">
+              กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู
+            </span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          
+          <p className="font-thai text-sm sm:text-lg text-cream/90 max-w-2xl mx-auto leading-relaxed">
+            “นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด” — อาหารเหนือพื้นเมืองลับแล พริกแกงตำเอง แวะมากินข้าวบ้านญาตินะครับ
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+            <Link
+              href={heroBtn1Link}
+              className="px-8 py-3.5 bg-accent hover:bg-accent-dark text-primary-dark font-thai font-semibold rounded-full shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-sm"
+            >
+              {heroBtn1Text}
+            </Link>
+            <Link
+              href={heroBtn2Link}
+              className="px-8 py-3.5 border-2 border-cream hover:bg-cream hover:text-primary-dark text-cream font-thai font-semibold rounded-full transition-all duration-300 text-sm"
+            >
+              เรื่องเล่าบ้าน ๑๐๐ ปี
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+      </section>
+
+      {/* Render Dynamic Reorderable Sections */}
+      {sections.map((sectionKey) => {
+        if (sectionKey === "intro" && showIntro) {
+          return (
+            <section key="intro" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
+                      เรื่องเล่าจากบ้าน ๑๐๐ ปี
+                    </span>
+                    <h2 className="text-3xl sm:text-4xl font-bold font-thai text-primary leading-tight">
+                      บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา
+                    </h2>
+                  </div>
+                  <div className="font-thai text-sm sm:text-base text-primary-dark/85 leading-relaxed space-y-3">
+                    <p>
+                      อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน
+                    </p>
+                    <p>
+                      ลับแลเป็นเมืองที่ซ่อนตัวอยู่ในหุบเขา ทางเหนือหัวดงพูดคำเมืองแบบล้านนา ทางใต้แถบทุ่งยั้งสืบสำเนียงสุโขทัย สองสายวัฒนธรรมอยู่ร่วมกันมาหลายร้อยปี จนเกิดเป็นรสชาติที่ไม่ใช่เหนือแท้ ไม่ใช่กลางแท้ แต่เป็นของที่นี่ ของลับแลเท่านั้น
+                    </p>
+                    <p>
+                      จานที่คุณสั่ง ล้วนสืบมาจากครัวของตากับยาย พริกแกงป้าชุมกับป้าชิดยังทำเองทุกวัน ไม่ใช้ของสำเร็จเลยสักอย่าง สมุนไพรเราก็ช่วยกันปลูกหลังบ้านและในชุมชน แวะมากินข้าวที่นี่ เหมือนมากินข้าวบ้านญาติครับ
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-6 pt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-accent/10 rounded-xl text-primary">
+                        <Clock className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-primary/60 font-thai">เปิดให้บริการ</p>
+                        <p className="text-sm font-semibold font-thai">{hours}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="p-3 bg-accent/10 rounded-xl text-primary">
+                        <Phone className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-primary/60 font-thai">เบอร์ติดต่อจองโต๊ะ</p>
+                        <p className="text-sm font-semibold font-thai">{phone}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* About Image Section */}
+                <div className="relative group rounded-3xl overflow-hidden shadow-lg aspect-video md:aspect-auto md:h-80 border border-primary/5">
+                  <img 
+                    src={aboutImage} 
+                    alt="บรรยากาศร้านลำลำลับแล" 
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
+                  />
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        if (sectionKey === "gallery" && galleryImages.length > 0) {
+          return (
+            <AtmosphereGallery
+              key="gallery"
+              images={galleryImages}
+              title="ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี"
+              subtitle="ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+          );
+        }
+
+        if (sectionKey === "featured" && showFeatured && featured.length > 0) {
+          return (
+            <section key="featured" className="bg-cream/40 py-16 border-y border-primary/5">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+                <div className="text-center space-y-2">
+                  <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
+                    ของกิ๋นลำเมืองลับแล
+                  </span>
+                  <h2 className="text-3xl font-bold font-thai text-primary">
+                    จานเด็ดประจำบ้าน ที่อยากให้ลองชิม
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {featured.map((dish) => (
+                    <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-cream">
+                      {dish.image_url && dish.image_url.trim() !== "" && (
+                        <div className="relative h-40 w-full overflow-hidden border-b border-primary/5">
+                          <img
+                            src={dish.image_url}
+                            alt={dish.name}
+                            className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
+                        <div>
+                          <span className="px-2.5 py-0.5 rounded-full bg-accent/15 text-accent-dark text-[10px] font-thai font-semibold">
+                            {dish.category}
+                          </span>
+                          <h3 className="font-thai font-bold text-base text-primary mt-2 line-clamp-1">
+                            {dish.name}
+                          </h3>
+                          {dish.description && (
+                            <p className="font-thai text-xs text-primary/70 line-clamp-3 mt-1 leading-relaxed">
+                              {dish.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-primary/5">
+                          <span className="font-thai text-xs text-primary/60">ราคาเริ่มต้น</span>
+                          <span className="font-thai font-bold text-base text-accent-dark">
+                            ฿{dish.price}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center pt-4">
+                  <Link
+                    href={featuredBtnLink}
+                    className="inline-flex items-center font-thai text-sm font-semibold text-accent hover:text-accent-dark transition-colors"
+                  >
+                    {featuredBtnText}
+                  </Link>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        if (sectionKey === "book") {
+          return (
+            <section key="book" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="rounded-3xl bg-gradient-to-r from-primary via-primary-dark to-[#2b1809] text-cream p-8 sm:p-12 shadow-xl border border-accent/20 relative overflow-hidden flex flex-col md:flex-row gap-8 items-center justify-between">
+                <div className="space-y-4 max-w-xl text-center md:text-left">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-thai font-medium border border-accent/30 tracking-wide">
+                    <BookOpen className="w-3.5 h-3.5" />
+                    บันทึกเรื่องเล่าเมืองลับแล
+                  </span>
+                  <h2 className="text-2xl sm:text-4xl font-bold font-thai text-cream leading-tight">
+                    ตำราลับแลง (๓๒ ตอน)
+                  </h2>
+                  <p className="font-thai text-xs sm:text-sm text-cream/80 leading-relaxed">
+                    เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ
+                  </p>
+                  <div className="pt-2">
+                    <Link
+                      href="/blog"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-dark text-primary-dark rounded-full font-thai text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
+                    >
+                      <span>เปิดอ่านตำราลับแลง (๓๒ ตอน)</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </Link>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0 max-w-xs text-xs font-thai">
+                  <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๑</span>
+                    <p className="font-bold text-white text-xs">แผ่นดินที่ซ่อนตัว</p>
+                    <p className="text-[10px] text-cream/70">ภูเขา ตำนาน และคำสัตย์</p>
+                  </div>
+                  <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๒</span>
+                    <p className="font-bold text-white text-xs">เมืองที่ทัพต้องยั้ง</p>
+                    <p className="text-[10px] text-cream/70">คำตอบของยายจัน</p>
+                  </div>
+                  <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๓</span>
+                    <p className="font-bold text-white text-xs">จากดินสู่ครก</p>
+                    <p className="text-[10px] text-cream/70">มะแขว่น & ผักริมรั้ว</p>
+                  </div>
+                  <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๔ & ๕</span>
+                    <p className="font-bold text-white text-xs">สำรับ & เรือนไม้</p>
+                    <p className="text-[10px] text-cream/70">ข้าวพันผัก & คน ๔ รุ่น</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        if (sectionKey === "seasonal" && showSeasonal && seasonal.length > 0) {
+          return (
+            <section key="seasonal" className="py-16 border-y border-primary/5 bg-cream/25">
+              <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+                <div className="text-center space-y-2">
+                  <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
+                    ของอร่อยตามฤดูกาล
+                  </span>
+                  <h2 className="text-3xl font-bold font-thai text-primary">
+                    วัตถุดิบสดใหม่ รสชาติตามฤดู
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {seasonal.map((dish) => (
+                    <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-cream">
+                      {dish.image_url && dish.image_url.trim() !== "" && (
+                        <div className="relative h-40 w-full overflow-hidden border-b border-primary/5">
+                          <img
+                            src={dish.image_url}
+                            alt={dish.name}
+                            className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                          />
+                        </div>
+                      )}
+                      <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
+                        <div>
+                          <div className="flex items-center justify-between gap-1 flex-wrap">
+                            <span className="px-2.5 py-0.5 rounded-full bg-accent/15 text-accent-dark text-[10px] font-thai font-semibold">
+                              {dish.category}
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-thai font-semibold">
+                              ตามฤดูกาล
+                            </span>
+                          </div>
+                          <h3 className="font-thai font-bold text-base text-primary mt-2 line-clamp-1">
+                            {dish.name}
+                          </h3>
+                          {dish.description && (
+                            <p className="font-thai text-xs text-primary/70 line-clamp-3 mt-1 leading-relaxed">
+                              {dish.description}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-primary/5">
+                          <span className="font-thai text-xs text-primary/60">ราคาเริ่มต้น</span>
+                          <span className="font-thai font-bold text-base text-accent-dark">
+                            ฿{dish.price}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="text-center pt-4">
+                  <Link
+                    href={seasonalBtnLink}
+                    className="inline-flex items-center font-thai text-sm font-semibold text-accent hover:text-accent-dark transition-colors"
+                  >
+                    {seasonalBtnText}
+                  </Link>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        if (sectionKey === "social" && showSocial) {
+          return (
+            <section key="social" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="bg-white border border-primary/10 rounded-3xl p-6 sm:p-8 md:p-10 shadow-md space-y-8">
+                <div className="text-center space-y-2 border-b border-primary/5 pb-6">
+                  <span className="text-accent font-bold text-xs tracking-wider uppercase font-thai">
+                    โซเชียลมีเดีย
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-bold font-thai text-primary">
+                    ติดตามบรรยากาศและเรื่องราวของบ้านเรา
+                  </h2>
+                  <p className="font-thai text-xs sm:text-sm text-primary/70 max-w-xl mx-auto">
+                    อัปเดตเมนูประจำวัน กิจกรรม และภาพบรรยากาศน่ารักๆ จากเรือนไม้ ๑๐๐ ปี
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                  {/* Left side: Live Facebook feed */}
+                  <div className="lg:col-span-5 w-full flex flex-col">
+                    <h3 className="font-thai font-bold text-base text-primary mb-4 flex items-center gap-2 shrink-0 border-b border-primary/5 pb-2">
+                      <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                      ความเคลื่อนไหวทาง Facebook
+                    </h3>
+                    <div className="flex-grow w-full overflow-hidden flex items-center justify-center h-[360px] min-h-[360px] max-w-full bg-cream/10 rounded-2xl border border-primary/5 p-2">
+                      {facebookUrl ? (
+                        <iframe 
+                          src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(facebookUrl)}&tabs=timeline&width=340&height=360&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`} 
+                          width="100%" 
+                          height="360" 
+                          style={{ border: "none", overflow: "hidden", height: "360px", minHeight: "360px", maxWidth: "100%", width: "100%" }}
+                          scrolling="no" 
+                          frameBorder="0" 
+                          allowFullScreen={true} 
+                          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                        ></iframe>
+                      ) : (
+                        <div className="text-primary/50 text-sm font-thai p-6 text-center">
+                          ยังไม่มีลิงก์เพจ Facebook ในระบบ
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right side: Social gallery cards with vertical divider on large screens */}
+                  <div className="lg:col-span-7 flex flex-col justify-between lg:border-l lg:border-primary/10 lg:pl-8">
+                    <h3 className="font-thai font-bold text-base text-primary mb-4 flex items-center gap-2 shrink-0 border-b border-primary/5 pb-2">
+                      <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
+                      ช่องทางติดตามและรีวิวร้าน
+                    </h3>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-grow">
+                      {/* Highlight Card 1: TikTok menu */}
+                      <a 
+                        href={tiktokUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="px-2.5 py-0.5 rounded-full bg-black text-white text-[10px] font-semibold flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.01 1.63 4.14 1.13 1.2 2.68 1.9 4.31 2.01v3.9c-1.85-.02-3.61-.75-4.96-2.02-.13-.13-.26-.27-.38-.41v6.98c.01 4.14-2.88 7.82-6.94 8.79-4.73 1.23-9.56-1.57-10.74-6.3-1.18-4.73 1.59-9.56 6.32-10.74 1.5-.38 3.08-.29 4.52.27v4.19c-1.13-.7-2.58-.75-3.76-.13-1.46.77-2.14 2.53-1.54 4.1.6 1.56 2.33 2.35 3.92 1.83 1.45-.48 2.39-1.88 2.39-3.41V.02Z"/></svg>
+                              TikTok
+                            </span>
+                            <span className="text-[10px] text-primary/50">@lumlumlablae1</span>
+                          </div>
+                          <div className="aspect-video relative rounded-lg overflow-hidden border border-primary/5">
+                            <img src={aboutImage} alt="TikTok Highlight" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                              <div className="w-10 h-10 bg-white/95 rounded-full flex items-center justify-center text-primary shadow-lg">
+                                <svg className="w-4 h-4 fill-primary ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs font-semibold text-primary line-clamp-2">
+                            ชมคลิปบรรยากาศใต้ถุนเรือนไม้ ๑๐๐ ปี และวิธีทำข้าวพันผักเมืองลับแล
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-accent font-semibold mt-4 block">กดไปดูคลิป TikTok →</span>
+                      </a>
+
+                      {/* Highlight Card 2: Facebook Review */}
+                      <a 
+                        href={facebookUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-semibold flex items-center gap-1">
+                              <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
+                              Facebook
+                            </span>
+                            <span className="text-[10px] text-primary/50">เพจทางการ</span>
+                          </div>
+                          <div className="aspect-video relative rounded-lg overflow-hidden border border-primary/5">
+                            <img src={heroImage} alt="Facebook Highlight" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
+                          </div>
+                          <p className="text-xs font-semibold text-primary line-clamp-2">
+                            ติดตามข่าวสาร เมนูพิเศษประจำวัน และภาพบรรยากาศร้าน
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-accent font-semibold mt-4 block">เปิดดูเพจ Facebook →</span>
+                      </a>
+
+                      {/* Highlight Card 3: Google reviews */}
+                      <a 
+                        href={googleReviewsUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200 text-[10px] font-semibold flex items-center gap-1">
+                              ★ Google Maps
+                            </span>
+                            <span className="text-[10px] text-primary/50">รีวิวจากลูกค้า</span>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="text-xs italic text-primary/80 line-clamp-3 leading-relaxed">
+                              "อาหารรสชาติดีมาก บรรยากาศร่มรื่น นั่งกินข้าวในบ้านไม้โบราณแล้วรู้สึกอบอุ่น ข้าวพันผักเหนียวนุ่มอร่อยมาก แนะนำเลยค่ะ!"
+                            </p>
+                            <p className="text-[10px] text-primary/60 font-semibold">- รีวิวจากลูกค้าบน Google Maps</p>
+                          </div>
+                        </div>
+                        <span className="text-[10px] text-accent font-semibold mt-4 block">อ่านรีวิวบน Google Maps →</span>
+                      </a>
+
+                      {/* Highlight Card 4: YouTube channel */}
+                      <a 
+                        href={youtubeUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                      >
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center">
+                            <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-semibold flex items-center gap-1">
+                              YouTube
+                            </span>
+                            <span className="text-[10px] text-primary/50">คลิปวิดีโอ</span>
+                          </div>
+                          <div className="aspect-video relative rounded-lg overflow-hidden border border-primary/5">
+                            <img src={heroImage} alt="YouTube Highlight" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
+                            <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                              <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                                <svg className="w-4 h-4 fill-white ml-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                              </div>
+                            </div>
+                          </div>
+                          <p className="text-xs font-semibold text-primary line-clamp-2">
+                            ชมคลิปพาเที่ยวเมืองลับแลและเรื่องเล่าอาหารพื้นบ้าน
+                          </p>
+                        </div>
+                        <span className="text-[10px] text-accent font-semibold mt-4 block">เปิดดูคลิป YouTube →</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        if (sectionKey === "contact" && showContact) {
+          return (
+            <section key="contact" id="contact" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                {/* Info Column */}
+                <div className="space-y-6 flex flex-col justify-center">
+                  <div className="space-y-2">
+                    <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
+                      ที่ตั้งและการติดต่อ
+                    </span>
+                    <h2 className="text-3xl sm:text-4xl font-bold font-thai text-primary">
+                      แวะมากินข้าวบ้านเรานะครับ
+                    </h2>
+                  </div>
+                  <p className="font-thai text-sm sm:text-base text-primary-dark/80 leading-relaxed">
+                    มากินข้าวใต้ถุนเรือนไม้โบราณ ๑๐๐ ปี สัมผัสรสมือของครอบครัวเราที่ปรุงสดใหม่ทุกจาน จะแวะมาเที่ยวหรือพาครอบครัวมาทานข้าว ยินดีต้อนรับทุกท่านครับ
+                  </p>
+
+                  <div className="space-y-4 font-thai text-sm text-primary/80 pt-2">
+                    <div className="flex items-start">
+                      <Clock className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-primary">เวลาเปิดให้บริการ</p>
+                        <p>{hours}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <Phone className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-primary">เบอร์โทรศัพท์ติดต่อ / โทรจองโต๊ะ</p>
+                        <p>{phone}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start">
+                      <MapPin className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-semibold text-primary">ที่ตั้งร้าน</p>
+                        <p>{address}</p>
+                        <a
+                          href={googleMapsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-accent hover:underline inline-block mt-1 font-semibold"
+                        >
+                          เปิด Google Maps เพื่อดูเส้นทางนำทาง →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Interactive Image & Direction Overlay Column */}
+                <div className="relative group rounded-3xl overflow-hidden shadow-lg aspect-video md:aspect-auto md:h-[350px] border border-primary/5">
+                  <img 
+                    src={aboutImage} 
+                    alt="บรรยากาศร้านลำลำลับแล" 
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
+                  />
+                  {/* Elegant directions overlay */}
+                  <div className="absolute inset-0 bg-black/45 flex flex-col justify-end p-6 sm:p-8 space-y-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <h4 className="font-thai font-bold text-cream text-lg">ยินดีต้อนรับสู่บ้าน ๑๐๐ ปี</h4>
+                    <p className="font-thai text-xs text-cream/90">ตั้งอยู่ในอำเภอลับแล จังหวัดอุตรดิตถ์ มีที่จอดรถสะดวกสบาย</p>
+                    <div>
+                      <a
+                        href={googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-accent hover:bg-accent-dark text-primary-dark font-thai font-bold rounded-xl text-xs transition-all shadow-md"
+                      >
+                        <MapPin className="w-4 h-4" />
+                        {contactBtnText}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          );
+        }
+
+        return null;
+      })}
     </div>
   );
 }

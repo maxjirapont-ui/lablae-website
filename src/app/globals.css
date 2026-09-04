@@ -1,26 +1,57 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary-dark: #2c1608;
+  --color-primary: #46260f;
+  --color-primary-light: #6d3d1a;
+  --color-accent: #d4a373;
+  --color-accent-dark: #c58f55;
+  --color-warm-bg: #faf5f0;
+  --color-cream: #fefdf9;
+  
+  --font-sans: var(--font-inter), var(--font-sarabun), system-ui, sans-serif;
+  --font-thai: var(--font-sarabun), sans-serif;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #faf5f0;
+  --foreground: #2c1608;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom styles for animations and premium look */
+.hover-gold {
+  transition: all 0.3s ease;
+}
+.hover-gold:hover {
+  color: var(--color-accent);
+  text-shadow: 0 0 1px rgba(212, 163, 115, 0.2);
+}
+
+.wood-card {
+  background: rgba(254, 253, 249, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(70, 38, 15, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(70, 38, 15, 0.05);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+
+.wood-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px -4px rgba(70, 38, 15, 0.12);
+  border-color: rgba(212, 163, 115, 0.3);
+}
+
+.gradient-title {
+  background: linear-gradient(135deg, #46260f 30%, #6d3d1a 70%, #d4a373 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
