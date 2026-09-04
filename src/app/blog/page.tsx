@@ -70,14 +70,14 @@ export default async function BlogListingPage() {
                 <Link
                   key={chapter.id}
                   href={`/blog/${chapter.slug}`}
-                  className="group wood-card bg-cream hover:bg-white p-5 rounded-2xl border border-primary/10 hover:border-accent/40 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
+                  className="group wood-card bg-[#241710] hover:bg-[#2d1d14] p-5 rounded-2xl border border-accent/20 hover:border-accent/50 shadow-xs hover:shadow-md transition-all flex flex-col justify-between"
                 >
                   <div className="space-y-2">
                     <div className="flex justify-between items-start gap-2">
-                      <h3 className="font-thai font-bold text-sm sm:text-base text-primary group-hover:text-accent-dark transition-colors leading-snug">
+                      <h3 className="font-thai font-bold text-sm sm:text-base text-primary group-hover:text-accent transition-colors leading-snug">
                         {chapter.title}
                       </h3>
-                      <ArrowUpRight className="w-4 h-4 text-primary/30 group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
+                      <ArrowUpRight className="w-4 h-4 text-accent/60 group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                     </div>
 
                     <p className="font-thai text-xs text-primary/70 line-clamp-2 leading-relaxed">
@@ -85,7 +85,7 @@ export default async function BlogListingPage() {
                     </p>
                   </div>
 
-                  <div className="pt-3 mt-3 border-t border-primary/5 flex items-center justify-between text-[11px] font-thai text-primary/50">
+                  <div className="pt-3 mt-3 border-t border-accent/15 flex items-center justify-between text-[11px] font-thai text-primary/50">
                     <span className="group-hover:text-accent font-semibold transition-colors flex items-center gap-1">
                       เปิดอ่านบทนี้
                       <ChevronRight className="w-3 h-3" />

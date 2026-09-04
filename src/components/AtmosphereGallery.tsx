@@ -54,7 +54,7 @@ export default function AtmosphereGallery({
         {/* Main Photo (Left) */}
         <div
           onClick={() => openLightbox(0)}
-          className="md:col-span-7 relative group rounded-3xl overflow-hidden shadow-md aspect-video md:aspect-[4/3] border border-primary/10 cursor-pointer bg-primary/5"
+          className="md:col-span-7 relative group rounded-3xl overflow-hidden shadow-md aspect-video md:aspect-[4/3] border border-accent/25 cursor-pointer bg-[#261810]"
         >
           <img
             src={images[0]}
@@ -80,7 +80,7 @@ export default function AtmosphereGallery({
               <div
                 key={idx}
                 onClick={() => openLightbox(actualIdx)}
-                className="relative group rounded-2xl overflow-hidden shadow-xs aspect-square border border-primary/10 cursor-pointer bg-primary/5"
+                className="relative group rounded-2xl overflow-hidden shadow-xs aspect-square border border-accent/25 cursor-pointer bg-[#261810]"
               >
                 <img
                   src={img}

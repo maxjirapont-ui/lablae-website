@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-dark: #2c1608;
-  --color-primary: #46260f;
-  --color-primary-light: #6d3d1a;
+  --color-primary-dark: #120904;
+  --color-primary: #f7eee3;
+  --color-primary-light: #fff6ed;
   --color-accent: #d4a373;
-  --color-accent-dark: #c58f55;
-  --color-warm-bg: #faf5f0;
-  --color-cream: #fefdf9;
+  --color-accent-dark: #dfa86c;
+  --color-warm-bg: #1a100a;
+  --color-cream: #261810;
   
   --font-sans: var(--font-inter), var(--font-sarabun), system-ui, sans-serif;
   --font-thai: var(--font-sarabun), sans-serif;
 }
 
 :root {
-  --background: #faf5f0;
-  --foreground: #2c1608;
+  --background: #1a100a;
+  --foreground: #f5ece1;
 }
 
 body {
@@ -33,25 +33,38 @@ body {
 }
 .hover-gold:hover {
   color: var(--color-accent);
-  text-shadow: 0 0 1px rgba(212, 163, 115, 0.2);
+  text-shadow: 0 0 8px rgba(212, 163, 115, 0.4);
 }
 
 .wood-card {
-  background: rgba(254, 253, 249, 0.85);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(70, 38, 15, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(70, 38, 15, 0.05);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+  background: rgba(38, 24, 16, 0.9);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 163, 115, 0.2);
+  box-shadow: 0 8px 30px -4px rgba(0, 0, 0, 0.6);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .wood-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px -4px rgba(70, 38, 15, 0.12);
-  border-color: rgba(212, 163, 115, 0.3);
+  box-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.7);
+  border-color: rgba(212, 163, 115, 0.5);
 }
 
 .gradient-title {
-  background: linear-gradient(135deg, #46260f 30%, #6d3d1a 70%, #d4a373 100%);
+  background: linear-gradient(135deg, #fff7ed 30%, #dfa86c 70%, #d4a373 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.admin-scope {
+  --color-primary: #46260f;
+  --color-primary-dark: #2c1608;
+  --color-primary-light: #6d3d1a;
+  --color-accent: #d4a373;
+  --color-accent-dark: #c58f55;
+  --color-warm-bg: #faf5f0;
+  --color-cream: #fefdf9;
+  --background: #faf5f0;
+  --foreground: #2c1608;
+  color: #2c1608;
 }

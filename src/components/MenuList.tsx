@@ -178,10 +178,10 @@ export default function MenuList({
     <div className="space-y-8 font-thai">
       {/* Search & Category Filter Controls */}
       {showSearch && (
-        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-cream/70 p-4 border border-primary/5 rounded-2xl">
+        <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#261810] p-4 border border-accent/20 rounded-2xl">
           {/* Search Input */}
           <div className="relative w-full md:max-w-xs">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/45">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
               <Search className="h-4 w-4" />
             </div>
             <input
@@ -189,28 +189,28 @@ export default function MenuList({
               placeholder="ค้นหาเมนูอาหาร..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-primary/10 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-accent/20 rounded-xl bg-[#1a100a] text-[#f5ece1] placeholder-[#c8b39b]/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
             />
           </div>
 
           {/* Info */}
-          <div className="flex items-center text-xs text-primary/60 gap-1.5 self-end md:self-auto">
-            <Info className="w-3.5 h-3.5" />
+          <div className="flex items-center text-xs text-[#f5ece1]/70 gap-1.5 self-end md:self-auto">
+            <Info className="w-3.5 h-3.5 text-accent" />
             <span>แสดงทั้งหมด {filteredItems.length} รายการ</span>
           </div>
         </div>
       )}
 
       {/* Category Tabs (Horizontal Scrollable) */}
-      <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-thin scrollbar-thumb-primary/10">
+      <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-thin scrollbar-thumb-accent/20">
         {categoryGroups.map((group) => (
           <button
             key={group}
             onClick={() => setSelectedCategory(group)}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
               selectedCategory === group
-                ? "bg-primary text-white shadow-sm"
-                : "bg-cream border border-primary/5 text-primary/80 hover:bg-primary/5 hover:text-accent"
+                ? "bg-accent text-[#1c120c] font-bold shadow-md"
+                : "bg-[#261810] border border-accent/20 text-[#f5ece1]/80 hover:bg-accent/15 hover:text-accent"
             }`}
           >
             {group}
@@ -254,14 +254,14 @@ export default function MenuList({
               return (
                 <div
                   key={item.id}
-                  className={`wood-card rounded-2xl overflow-hidden flex flex-col justify-between h-full bg-cream relative ${
-                    isOutOfStock ? "opacity-60 border-gray-300" : ""
+                  className={`wood-card rounded-2xl overflow-hidden flex flex-col justify-between h-full bg-[#261810] border border-accent/20 relative ${
+                    isOutOfStock ? "opacity-60 border-stone-700" : ""
                   }`}
                 >
                   {/* Out of Stock Label */}
                   {isOutOfStock && (
-                    <div className="absolute inset-0 bg-primary-dark/10 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
-                      <span className="bg-primary/95 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-full shadow-lg font-thai border border-accent/25">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-2xl">
+                      <span className="bg-[#1c120c]/95 text-white font-bold text-xs sm:text-sm px-4 py-2 rounded-full shadow-lg font-thai border border-accent/40">
                         ของหมดชั่วคราว
                       </span>
                     </div>
@@ -269,7 +269,7 @@ export default function MenuList({
 
                   {/* Menu Item Image or Decorative Accent Header */}
                   {item.image_url && item.image_url.trim() !== "" ? (
-                    <div className="relative h-44 w-full overflow-hidden border-b border-primary/5">
+                    <div className="relative h-44 w-full overflow-hidden border-b border-accent/15">
                       <img
                         src={item.image_url}
                         alt={item.name}
@@ -277,11 +277,11 @@ export default function MenuList({
                       />
                     </div>
                   ) : (
-                    <div className="h-12 w-full bg-gradient-to-r from-primary/5 via-accent/10 to-primary/5 border-b border-primary/5 flex items-center justify-between px-4">
-                      <span className="text-[10px] font-bold text-accent-dark tracking-wide font-thai">
+                    <div className="h-12 w-full bg-gradient-to-r from-accent/10 via-accent/5 to-accent/10 border-b border-accent/15 flex items-center justify-between px-4">
+                      <span className="text-[10px] font-bold text-accent tracking-wide font-thai">
                         สำรับลับแล
                       </span>
-                      <Utensils className="w-3.5 h-3.5 text-primary/30" />
+                      <Utensils className="w-3.5 h-3.5 text-accent/40" />
                     </div>
                   )}
 
@@ -289,17 +289,17 @@ export default function MenuList({
                     <div>
                       {/* Category pill */}
                       <div className="flex items-center justify-between gap-1 flex-wrap">
-                        <span className="px-2.5 py-0.5 rounded-full bg-accent/15 text-accent-dark text-[10px] font-semibold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-semibold border border-accent/25">
                           {getGroupForCategory(item.category)}
                         </span>
                         <div className="flex items-center gap-1">
                           {item.is_recommended === 1 && (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200 text-[9px] font-bold">
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/50 text-[9px] font-bold">
                               ★ แนะนำ
                             </span>
                           )}
                           {item.is_seasonal === 1 && (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[9px] font-bold">
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 text-[9px] font-bold">
                               ตามฤดูกาล
                             </span>
                           )}
@@ -313,16 +313,16 @@ export default function MenuList({
 
                       {/* Description */}
                       {item.description && (
-                        <p className="text-xs text-primary/70 line-clamp-3 mt-1 leading-relaxed">
+                        <p className="text-xs text-[#f5ece1]/70 line-clamp-3 mt-1 leading-relaxed">
                           {item.description}
                         </p>
                       )}
                     </div>
 
                     {/* Price */}
-                    <div className="flex items-center justify-between pt-3 border-t border-primary/5">
-                      <span className="text-xs text-primary/60">ราคา</span>
-                      <span className="font-bold text-base sm:text-lg text-accent-dark">
+                    <div className="flex items-center justify-between pt-3 border-t border-accent/15">
+                      <span className="text-xs text-[#f5ece1]/60">ราคา</span>
+                      <span className="font-bold text-base sm:text-lg text-accent">
                         {item.price > 0 ? `฿${item.price}` : "ราคาตามน้ำหนัก"}
                       </span>
                     </div>
@@ -333,8 +333,8 @@ export default function MenuList({
           </div>
         )
       ) : (
-        <div className="text-center py-16 bg-cream/40 rounded-2xl border border-dashed border-primary/10">
-          <p className="text-primary/70 font-semibold text-sm">ไม่พบรายการอาหารที่ตรงกับการค้นหา</p>
+        <div className="text-center py-16 bg-[#261810]/60 rounded-2xl border border-dashed border-accent/20">
+          <p className="text-accent/80 font-semibold text-sm">ไม่พบรายการอาหารที่ตรงกับการค้นหา</p>
         </div>
       )}
     </div>

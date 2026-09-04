@@ -55,7 +55,7 @@ export default function BookingForm() {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto bg-cream border border-primary/10 rounded-2xl shadow-xl p-6 sm:p-8">
+    <div className="w-full max-w-lg mx-auto wood-card bg-[#241710] border border-accent/20 rounded-2xl shadow-xl p-6 sm:p-8">
       <div className="text-center mb-6">
         <h3 className="font-thai text-xl sm:text-2xl font-bold text-primary">จองโต๊ะอาหารล่วงหน้า</h3>
         <p className="font-thai text-xs sm:text-sm text-primary/70 mt-1">
@@ -67,14 +67,14 @@ export default function BookingForm() {
         <div
           className={`flex items-start p-4 rounded-xl mb-6 font-thai text-sm leading-relaxed ${
             status.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+              ? "bg-emerald-950/70 text-emerald-300 border border-emerald-500/30"
+              : "bg-rose-950/70 text-rose-300 border border-rose-500/30"
           }`}
         >
           {status.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 mr-3 text-green-600 flex-shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 mr-3 text-emerald-400 flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 mr-3 text-red-600 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 mr-3 text-rose-400 flex-shrink-0 mt-0.5" />
           )}
           <span>{status.message}</span>
         </div>
@@ -87,7 +87,7 @@ export default function BookingForm() {
             ชื่อผู้จอง
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/45">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
               <User className="h-4 w-4" />
             </div>
             <input
@@ -98,7 +98,7 @@ export default function BookingForm() {
               value={formData.name}
               onChange={handleChange}
               placeholder="คุณรักดี เรียนเก่ง"
-              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-primary/20 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
             />
           </div>
         </div>
@@ -109,7 +109,7 @@ export default function BookingForm() {
             เบอร์โทรศัพท์
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/45">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
               <Phone className="h-4 w-4" />
             </div>
             <input
@@ -120,7 +120,7 @@ export default function BookingForm() {
               value={formData.phone}
               onChange={handleChange}
               placeholder="095-628-3125"
-              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-primary/20 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
             />
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function BookingForm() {
               วันที่จอง
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/45">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
                 <Calendar className="h-4 w-4" />
               </div>
               <input
@@ -142,7 +142,7 @@ export default function BookingForm() {
                 required
                 value={formData.date}
                 onChange={handleChange}
-                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-primary/20 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
               />
             </div>
           </div>
@@ -153,7 +153,7 @@ export default function BookingForm() {
               เวลาที่จอง
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/45">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
                 <Clock className="h-4 w-4" />
               </div>
               <input
@@ -163,7 +163,7 @@ export default function BookingForm() {
                 required
                 value={formData.time}
                 onChange={handleChange}
-                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-primary/20 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ export default function BookingForm() {
             จำนวนคน
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary/45">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
               <Users className="h-4 w-4" />
             </div>
             <select
@@ -183,10 +183,10 @@ export default function BookingForm() {
               id="guests"
               value={formData.guests}
               onChange={handleChange}
-              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-primary/20 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((num) => (
-                <option key={num} value={num}>
+                <option key={num} value={num} className="bg-[#1a100a] text-[#f5ece1]">
                   {num} คน
                 </option>
               ))}
@@ -198,10 +198,10 @@ export default function BookingForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 transition-all duration-300 font-thai cursor-pointer mt-4"
+          className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl shadow-md text-sm font-bold text-[#1a100a] bg-gradient-to-r from-accent to-[#e6b87d] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 transition-all duration-300 font-thai cursor-pointer mt-4"
         >
           {loading ? (
-            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-5 h-5 border-2 border-[#1a100a] border-t-transparent rounded-full animate-spin"></div>
           ) : (
             <>
               <Send className="w-4 h-4 mr-2" />

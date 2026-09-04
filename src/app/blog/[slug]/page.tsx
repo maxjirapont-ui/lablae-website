@@ -64,7 +64,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
       if (trimmed.startsWith("• ") || trimmed.startsWith("- ")) {
         return (
-          <li key={idx} className="font-thai text-sm sm:text-base text-primary-dark/85 ml-6 list-disc mb-2 leading-relaxed">
+          <li key={idx} className="font-thai text-sm sm:text-base text-[#f5ece1]/90 ml-6 list-disc mb-2 leading-relaxed">
             {trimmed.substring(2)}
           </li>
         );
@@ -72,14 +72,14 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
       if (trimmed.startsWith("“") || trimmed.startsWith("\"")) {
         return (
-          <blockquote key={idx} className="font-thai text-base sm:text-lg font-bold text-primary my-4 pl-4 border-l-4 border-accent italic bg-accent/5 p-3 rounded-r-xl">
+          <blockquote key={idx} className="font-thai text-base sm:text-lg font-bold text-primary my-4 pl-4 border-l-4 border-accent italic bg-[#1a100a]/60 p-4 rounded-r-xl">
             {trimmed}
           </blockquote>
         );
       }
 
       return (
-        <p key={idx} className="font-thai text-sm sm:text-base text-primary-dark/85 mb-4 leading-relaxed indent-4">
+        <p key={idx} className="font-thai text-sm sm:text-base text-[#f5ece1]/90 mb-4 leading-relaxed indent-4">
           {trimmed}
         </p>
       );
@@ -92,7 +92,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
       <div className="flex justify-between items-center">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:text-accent-dark transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:brightness-110 transition-colors"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           กลับสู่สารบัญตำราลับแลง
@@ -103,11 +103,11 @@ export default async function BlogDetailPage({ params }: PageProps) {
       </div>
 
       {/* Book Reader Card */}
-      <article className="bg-[#fcf8f2] rounded-3xl p-6 sm:p-12 border border-primary/10 shadow-sm space-y-8">
+      <article className="wood-card bg-[#241710] rounded-3xl p-6 sm:p-12 border border-accent/20 shadow-md space-y-8">
         {/* Chapter Header */}
-        <div className="space-y-3 border-b border-primary/10 pb-6 text-center">
+        <div className="space-y-3 border-b border-accent/15 pb-6 text-center">
           {article.part_title && (
-            <span className="inline-flex items-center gap-1 text-xs font-bold text-accent-dark uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-accent uppercase tracking-wider">
               <Bookmark className="w-3.5 h-3.5" />
               {article.part_title}
             </span>
@@ -117,7 +117,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
             {article.title}
           </h1>
 
-          <div className="text-xs text-primary/50 pt-1">
+          <div className="text-xs text-[#f5ece1]/50 pt-1">
             หนังสือ “ลับแลง — ตำราเล่าเรื่องแห่งเมืองที่อดีตยังกินได้” · ลำลำลับแล
           </div>
         </div>
@@ -138,13 +138,13 @@ export default async function BlogDetailPage({ params }: PageProps) {
         {prevChapter ? (
           <Link
             href={`/blog/${prevChapter.slug}`}
-            className="p-4 rounded-2xl bg-cream border border-primary/10 hover:border-accent/40 text-left space-y-1 transition-all group"
+            className="p-4 rounded-2xl wood-card bg-[#241710] hover:bg-[#2d1d14] border border-accent/20 hover:border-accent/50 text-left space-y-1 transition-all group"
           >
-            <span className="text-[11px] text-primary/50 flex items-center gap-1 group-hover:text-accent transition-colors">
+            <span className="text-[11px] text-[#f5ece1]/50 flex items-center gap-1 group-hover:text-accent transition-colors">
               <ChevronLeft className="w-3 h-3" />
               บทก่อนหน้า
             </span>
-            <p className="font-bold text-xs sm:text-sm text-primary group-hover:text-accent-dark line-clamp-1">
+            <p className="font-bold text-xs sm:text-sm text-primary group-hover:text-accent line-clamp-1">
               {prevChapter.title}
             </p>
           </Link>
@@ -155,13 +155,13 @@ export default async function BlogDetailPage({ params }: PageProps) {
         {nextChapter && (
           <Link
             href={`/blog/${nextChapter.slug}`}
-            className="p-4 rounded-2xl bg-cream border border-primary/10 hover:border-accent/40 text-right space-y-1 transition-all group sm:col-start-2"
+            className="p-4 rounded-2xl wood-card bg-[#241710] hover:bg-[#2d1d14] border border-accent/20 hover:border-accent/50 text-right space-y-1 transition-all group sm:col-start-2"
           >
-            <span className="text-[11px] text-primary/50 flex items-center justify-end gap-1 group-hover:text-accent transition-colors">
+            <span className="text-[11px] text-[#f5ece1]/50 flex items-center justify-end gap-1 group-hover:text-accent transition-colors">
               บทถัดไป
               <ChevronRight className="w-3 h-3" />
             </span>
-            <p className="font-bold text-xs sm:text-sm text-primary group-hover:text-accent-dark line-clamp-1">
+            <p className="font-bold text-xs sm:text-sm text-primary group-hover:text-accent line-clamp-1">
               {nextChapter.title}
             </p>
           </Link>

@@ -107,10 +107,10 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // Fetch Theme Customizations from SQLite
-  const primaryColor = (await getSetting("theme_primary_color")) || "#46260f";
+  const primaryColor = (await getSetting("theme_primary_color")) || "#f7eee3";
   const accentColor = (await getSetting("theme_accent")) || "#d4a373";
-  const warmBg = (await getSetting("theme_warm_bg")) || "#faf5f0";
-  const creamColor = (await getSetting("theme_cream")) || "#fefdf9";
+  const warmBg = (await getSetting("theme_warm_bg")) || "#1a100a";
+  const creamColor = (await getSetting("theme_cream")) || "#261810";
 
   // Fetch Business Data for AI Search optimization (JSON-LD Schema)
   const restaurantName = (await getSetting("restaurant_name")) || "ร้านลำลำลับแลบ้าน 100 ปี";
@@ -182,20 +182,20 @@ export default async function RootLayout({
             __html: `
             :root {
               --color-primary: ${primaryColor} !important;
-              --color-primary-dark: ${primaryDark} !important;
-              --color-primary-light: ${primaryLight} !important;
+              --color-primary-dark: #120904 !important;
+              --color-primary-light: #fff6ed !important;
               --color-accent: ${accentColor} !important;
-              --color-accent-dark: ${accentDark} !important;
+              --color-accent-dark: #dfa86c !important;
               --color-warm-bg: ${warmBg} !important;
               --color-cream: ${creamColor} !important;
               --background: ${warmBg} !important;
-              --foreground: ${primaryDark} !important;
+              --foreground: #f5ece1 !important;
             }
           `,
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-warm-bg text-primary-dark">
+      <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1]">
         <Navbar logoUrl={brandLogo} btnText={navbarBtnText} btnLink={navbarBtnLink} />
         <main className="flex-grow pt-24">{children}</main>
         <Footer />

@@ -46,7 +46,7 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-cream/90 backdrop-blur-md shadow-md py-3 border-b border-primary/5"
+          ? "bg-[#1a100a]/90 backdrop-blur-md shadow-lg py-3 border-b border-accent/20"
           : "bg-transparent py-5"
       }`}
     >
@@ -67,7 +67,7 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
                 <span className="font-thai font-bold text-lg sm:text-xl text-primary tracking-wide leading-none">
                   ลำลำลับแล
                 </span>
-                <span className="font-thai text-[10px] text-accent-dark tracking-widest font-medium mt-0.5">
+                <span className="font-thai text-[10px] text-accent tracking-widest font-medium mt-0.5">
                   บ้าน 100 ปี
                 </span>
               </div>
@@ -82,8 +82,8 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
                 href={link.href}
                 className={`font-thai font-medium text-sm transition-colors duration-200 ${
                   isActive(link.href)
-                    ? "text-accent border-b-2 border-accent pb-1"
-                    : "text-primary/80 hover:text-accent"
+                    ? "text-accent border-b-2 border-accent pb-1 font-semibold"
+                    : "text-[#f5ece1]/80 hover:text-accent"
                 }`}
               >
                 {link.name}
@@ -93,7 +93,7 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
             {/* Navbar Custom Button */}
             <Link
               href={btnLink}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-full text-white bg-primary hover:bg-primary-light transition-all duration-300 shadow-sm hover:shadow hover:scale-102"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-full text-[#1c120c] bg-accent hover:bg-accent-dark transition-all duration-300 shadow-md hover:scale-102"
             >
               <Utensils className="w-4 h-4 mr-2" />
               {btnText}
@@ -104,7 +104,7 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-primary hover:text-accent focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-md text-primary hover:text-accent focus:outline-none cursor-pointer"
             >
               {isOpen ? <X className="h-6 h-6" /> : <Menu className="h-6 h-6" />}
             </button>
@@ -116,7 +116,7 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
       <div
         className={`md:hidden transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-screen opacity-100 py-4" : "max-h-0 opacity-0 overflow-hidden"
-        } bg-cream border-b border-primary/5`}
+        } bg-[#261810] border-b border-accent/20`}
       >
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           {navLinks.map((link) => (
@@ -126,8 +126,8 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
               onClick={() => setIsOpen(false)}
               className={`block px-3 py-2 rounded-md text-base font-medium font-thai ${
                 isActive(link.href)
-                  ? "bg-primary/5 text-accent"
-                  : "text-primary/80 hover:bg-primary/5 hover:text-accent"
+                  ? "bg-accent/15 text-accent font-semibold"
+                  : "text-[#f5ece1]/80 hover:bg-accent/10 hover:text-accent"
               }`}
             >
               {link.name}
@@ -136,7 +136,7 @@ export default function Navbar({ logoUrl, btnText = "ดูเมนูอาห
           <Link
             href={btnLink}
             onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center w-full px-4 py-3 mt-4 text-center text-white bg-primary hover:bg-primary-light rounded-full font-thai font-medium animate-all"
+            className="flex items-center justify-center w-full px-4 py-3 mt-4 text-center text-[#1c120c] bg-accent hover:bg-accent-dark rounded-full font-thai font-bold transition-all shadow-md"
           >
             <Utensils className="w-4 h-4 mr-2" />
             {btnText}

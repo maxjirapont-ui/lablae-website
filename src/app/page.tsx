@@ -185,7 +185,7 @@ export default async function Home() {
                       บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา
                     </h2>
                   </div>
-                  <div className="font-thai text-sm sm:text-base text-primary-dark/85 leading-relaxed space-y-3">
+                  <div className="font-thai text-sm sm:text-base text-[#f5ece1]/85 leading-relaxed space-y-3">
                     <p>
                       อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน
                     </p>
@@ -198,21 +198,21 @@ export default async function Home() {
                   </div>
                   <div className="flex flex-wrap gap-6 pt-2">
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-accent/10 rounded-xl text-primary">
+                      <div className="p-3 bg-accent/15 rounded-xl text-accent">
                         <Clock className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-xs text-primary/60 font-thai">เปิดให้บริการ</p>
-                        <p className="text-sm font-semibold font-thai">{hours}</p>
+                        <p className="text-xs text-accent/80 font-thai">เปิดให้บริการ</p>
+                        <p className="text-sm font-semibold font-thai text-[#f5ece1]">{hours}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="p-3 bg-accent/10 rounded-xl text-primary">
+                      <div className="p-3 bg-accent/15 rounded-xl text-accent">
                         <Phone className="w-5 h-5" />
                       </div>
                       <div>
-                        <p className="text-xs text-primary/60 font-thai">เบอร์ติดต่อจองโต๊ะ</p>
-                        <p className="text-sm font-semibold font-thai">{phone}</p>
+                        <p className="text-xs text-accent/80 font-thai">เบอร์ติดต่อจองโต๊ะ</p>
+                        <p className="text-sm font-semibold font-thai text-[#f5ece1]">{phone}</p>
                       </div>
                     </div>
                   </div>
@@ -244,7 +244,7 @@ export default async function Home() {
 
         if (sectionKey === "featured" && showFeatured && featured.length > 0) {
           return (
-            <section key="featured" className="bg-cream/40 py-16 border-y border-primary/5">
+            <section key="featured" className="bg-[#20140c] py-16 border-y border-accent/15">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
                 <div className="text-center space-y-2">
                   <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
@@ -257,9 +257,9 @@ export default async function Home() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {featured.map((dish) => (
-                    <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-cream">
+                    <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-[#261810]">
                       {dish.image_url && dish.image_url.trim() !== "" && (
-                        <div className="relative h-40 w-full overflow-hidden border-b border-primary/5">
+                        <div className="relative h-40 w-full overflow-hidden border-b border-accent/15">
                           <img
                             src={dish.image_url}
                             alt={dish.name}
@@ -269,21 +269,21 @@ export default async function Home() {
                       )}
                       <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                         <div>
-                          <span className="px-2.5 py-0.5 rounded-full bg-accent/15 text-accent-dark text-[10px] font-thai font-semibold">
+                          <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-thai font-semibold border border-accent/25">
                             {dish.category}
                           </span>
                           <h3 className="font-thai font-bold text-base text-primary mt-2 line-clamp-1">
                             {dish.name}
                           </h3>
                           {dish.description && (
-                            <p className="font-thai text-xs text-primary/70 line-clamp-3 mt-1 leading-relaxed">
+                            <p className="font-thai text-xs text-[#f5ece1]/70 line-clamp-3 mt-1 leading-relaxed">
                               {dish.description}
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-primary/5">
-                          <span className="font-thai text-xs text-primary/60">ราคาเริ่มต้น</span>
-                          <span className="font-thai font-bold text-base text-accent-dark">
+                        <div className="flex items-center justify-between pt-2 border-t border-accent/15">
+                          <span className="font-thai text-xs text-[#f5ece1]/60">ราคาเริ่มต้น</span>
+                          <span className="font-thai font-bold text-base text-accent">
                             ฿{dish.price}
                           </span>
                         </div>
@@ -360,7 +360,7 @@ export default async function Home() {
 
         if (sectionKey === "seasonal" && showSeasonal && seasonal.length > 0) {
           return (
-            <section key="seasonal" className="py-16 border-y border-primary/5 bg-cream/25">
+            <section key="seasonal" className="py-16 border-y border-accent/15 bg-[#20140c]">
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
                 <div className="text-center space-y-2">
                   <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
@@ -373,9 +373,9 @@ export default async function Home() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {seasonal.map((dish) => (
-                    <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-cream">
+                    <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-[#261810]">
                       {dish.image_url && dish.image_url.trim() !== "" && (
-                        <div className="relative h-40 w-full overflow-hidden border-b border-primary/5">
+                        <div className="relative h-40 w-full overflow-hidden border-b border-accent/15">
                           <img
                             src={dish.image_url}
                             alt={dish.name}
@@ -386,10 +386,10 @@ export default async function Home() {
                       <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                         <div>
                           <div className="flex items-center justify-between gap-1 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-full bg-accent/15 text-accent-dark text-[10px] font-thai font-semibold">
+                            <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-thai font-semibold border border-accent/25">
                               {dish.category}
                             </span>
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-thai font-semibold">
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/60 text-[9px] font-thai font-semibold">
                               ตามฤดูกาล
                             </span>
                           </div>
@@ -397,14 +397,14 @@ export default async function Home() {
                             {dish.name}
                           </h3>
                           {dish.description && (
-                            <p className="font-thai text-xs text-primary/70 line-clamp-3 mt-1 leading-relaxed">
+                            <p className="font-thai text-xs text-[#f5ece1]/70 line-clamp-3 mt-1 leading-relaxed">
                               {dish.description}
                             </p>
                           )}
                         </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-primary/5">
-                          <span className="font-thai text-xs text-primary/60">ราคาเริ่มต้น</span>
-                          <span className="font-thai font-bold text-base text-accent-dark">
+                        <div className="flex items-center justify-between pt-2 border-t border-accent/15">
+                          <span className="font-thai text-xs text-[#f5ece1]/60">ราคาเริ่มต้น</span>
+                          <span className="font-thai font-bold text-base text-accent">
                             ฿{dish.price}
                           </span>
                         </div>
@@ -429,15 +429,15 @@ export default async function Home() {
         if (sectionKey === "social" && showSocial) {
           return (
             <section key="social" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="bg-white border border-primary/10 rounded-3xl p-6 sm:p-8 md:p-10 shadow-md space-y-8">
-                <div className="text-center space-y-2 border-b border-primary/5 pb-6">
+              <div className="wood-card bg-[#241710] border border-accent/20 rounded-3xl p-6 sm:p-8 md:p-10 shadow-xl space-y-8">
+                <div className="text-center space-y-2 border-b border-accent/15 pb-6">
                   <span className="text-accent font-bold text-xs tracking-wider uppercase font-thai">
                     โซเชียลมีเดีย
                   </span>
                   <h2 className="text-2xl sm:text-3xl font-bold font-thai text-primary">
                     ติดตามบรรยากาศและเรื่องราวของบ้านเรา
                   </h2>
-                  <p className="font-thai text-xs sm:text-sm text-primary/70 max-w-xl mx-auto">
+                  <p className="font-thai text-xs sm:text-sm text-[#f5ece1]/70 max-w-xl mx-auto">
                     อัปเดตเมนูประจำวัน กิจกรรม และภาพบรรยากาศน่ารักๆ จากเรือนไม้ ๑๐๐ ปี
                   </p>
                 </div>
@@ -445,11 +445,11 @@ export default async function Home() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                   {/* Left side: Live Facebook feed */}
                   <div className="lg:col-span-5 w-full flex flex-col">
-                    <h3 className="font-thai font-bold text-base text-primary mb-4 flex items-center gap-2 shrink-0 border-b border-primary/5 pb-2">
-                      <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                    <h3 className="font-thai font-bold text-base text-primary mb-4 flex items-center gap-2 shrink-0 border-b border-accent/15 pb-2">
+                      <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                       ความเคลื่อนไหวทาง Facebook
                     </h3>
-                    <div className="flex-grow w-full overflow-hidden flex items-center justify-center h-[360px] min-h-[360px] max-w-full bg-cream/10 rounded-2xl border border-primary/5 p-2">
+                    <div className="flex-grow w-full overflow-hidden flex items-center justify-center h-[360px] min-h-[360px] max-w-full bg-[#1a100a] rounded-2xl border border-accent/20 p-2">
                       {facebookUrl ? (
                         <iframe 
                           src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(facebookUrl)}&tabs=timeline&width=340&height=360&small_header=false&adapt_container_width=true&hide_cover=false&show_facepile=true`} 
@@ -462,7 +462,7 @@ export default async function Home() {
                           allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                         ></iframe>
                       ) : (
-                        <div className="text-primary/50 text-sm font-thai p-6 text-center">
+                        <div className="text-accent/60 text-sm font-thai p-6 text-center">
                           ยังไม่มีลิงก์เพจ Facebook ในระบบ
                         </div>
                       )}
@@ -470,8 +470,8 @@ export default async function Home() {
                   </div>
 
                   {/* Right side: Social gallery cards with vertical divider on large screens */}
-                  <div className="lg:col-span-7 flex flex-col justify-between lg:border-l lg:border-primary/10 lg:pl-8">
-                    <h3 className="font-thai font-bold text-base text-primary mb-4 flex items-center gap-2 shrink-0 border-b border-primary/5 pb-2">
+                  <div className="lg:col-span-7 flex flex-col justify-between lg:border-l lg:border-accent/15 lg:pl-8">
+                    <h3 className="font-thai font-bold text-base text-primary mb-4 flex items-center gap-2 shrink-0 border-b border-accent/15 pb-2">
                       <span className="w-2 h-2 bg-accent rounded-full animate-pulse"></span>
                       ช่องทางติดตามและรีวิวร้าน
                     </h3>
@@ -482,17 +482,17 @@ export default async function Home() {
                         href={tiktokUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                        className="flex flex-col justify-between p-4 rounded-2xl bg-[#1a100a]/70 border border-accent/15 hover:border-accent/40 hover:bg-[#1a100a] transition-all duration-300 group"
                       >
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
-                            <span className="px-2.5 py-0.5 rounded-full bg-black text-white text-[10px] font-semibold flex items-center gap-1">
+                            <span className="px-2.5 py-0.5 rounded-full bg-black text-white text-[10px] font-semibold flex items-center gap-1 border border-white/20">
                               <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.01 1.63 4.14 1.13 1.2 2.68 1.9 4.31 2.01v3.9c-1.85-.02-3.61-.75-4.96-2.02-.13-.13-.26-.27-.38-.41v6.98c.01 4.14-2.88 7.82-6.94 8.79-4.73 1.23-9.56-1.57-10.74-6.3-1.18-4.73 1.59-9.56 6.32-10.74 1.5-.38 3.08-.29 4.52.27v4.19c-1.13-.7-2.58-.75-3.76-.13-1.46.77-2.14 2.53-1.54 4.1.6 1.56 2.33 2.35 3.92 1.83 1.45-.48 2.39-1.88 2.39-3.41V.02Z"/></svg>
                               TikTok
                             </span>
-                            <span className="text-[10px] text-primary/50">@lumlumlablae1</span>
+                            <span className="text-[10px] text-[#f5ece1]/50">@lumlumlablae1</span>
                           </div>
-                          <div className="aspect-video relative rounded-lg overflow-hidden border border-primary/5">
+                          <div className="aspect-video relative rounded-lg overflow-hidden border border-accent/15">
                             <img src={aboutImage} alt="TikTok Highlight" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
                             <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
                               <div className="w-10 h-10 bg-white/95 rounded-full flex items-center justify-center text-primary shadow-lg">
@@ -500,7 +500,7 @@ export default async function Home() {
                               </div>
                             </div>
                           </div>
-                          <p className="text-xs font-semibold text-primary line-clamp-2">
+                          <p className="text-xs font-semibold text-[#f5ece1] line-clamp-2">
                             ชมคลิปบรรยากาศใต้ถุนเรือนไม้ ๑๐๐ ปี และวิธีทำข้าวพันผักเมืองลับแล
                           </p>
                         </div>
@@ -512,7 +512,7 @@ export default async function Home() {
                         href={facebookUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                        className="flex flex-col justify-between p-4 rounded-2xl bg-[#1a100a]/70 border border-accent/15 hover:border-accent/40 hover:bg-[#1a100a] transition-all duration-300 group"
                       >
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
@@ -520,12 +520,12 @@ export default async function Home() {
                               <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24"><path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/></svg>
                               Facebook
                             </span>
-                            <span className="text-[10px] text-primary/50">เพจทางการ</span>
+                            <span className="text-[10px] text-[#f5ece1]/50">เพจทางการ</span>
                           </div>
-                          <div className="aspect-video relative rounded-lg overflow-hidden border border-primary/5">
+                          <div className="aspect-video relative rounded-lg overflow-hidden border border-accent/15">
                             <img src={heroImage} alt="Facebook Highlight" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
                           </div>
-                          <p className="text-xs font-semibold text-primary line-clamp-2">
+                          <p className="text-xs font-semibold text-[#f5ece1] line-clamp-2">
                             ติดตามข่าวสาร เมนูพิเศษประจำวัน และภาพบรรยากาศร้าน
                           </p>
                         </div>
@@ -537,20 +537,20 @@ export default async function Home() {
                         href={googleReviewsUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                        className="flex flex-col justify-between p-4 rounded-2xl bg-[#1a100a]/70 border border-accent/15 hover:border-accent/40 hover:bg-[#1a100a] transition-all duration-300 group"
                       >
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
-                            <span className="px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200 text-[10px] font-semibold flex items-center gap-1">
+                            <span className="px-2.5 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/50 text-[10px] font-semibold flex items-center gap-1">
                               ★ Google Maps
                             </span>
-                            <span className="text-[10px] text-primary/50">รีวิวจากลูกค้า</span>
+                            <span className="text-[10px] text-[#f5ece1]/50">รีวิวจากลูกค้า</span>
                           </div>
                           <div className="space-y-2">
-                            <p className="text-xs italic text-primary/80 line-clamp-3 leading-relaxed">
+                            <p className="text-xs italic text-[#f5ece1]/80 line-clamp-3 leading-relaxed">
                               "อาหารรสชาติดีมาก บรรยากาศร่มรื่น นั่งกินข้าวในบ้านไม้โบราณแล้วรู้สึกอบอุ่น ข้าวพันผักเหนียวนุ่มอร่อยมาก แนะนำเลยค่ะ!"
                             </p>
-                            <p className="text-[10px] text-primary/60 font-semibold">- รีวิวจากลูกค้าบน Google Maps</p>
+                            <p className="text-[10px] text-accent font-semibold">- รีวิวจากลูกค้าบน Google Maps</p>
                           </div>
                         </div>
                         <span className="text-[10px] text-accent font-semibold mt-4 block">อ่านรีวิวบน Google Maps →</span>
@@ -561,16 +561,16 @@ export default async function Home() {
                         href={youtubeUrl} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="flex flex-col justify-between p-4 rounded-2xl hover:bg-primary/5 border border-transparent hover:border-primary/5 transition-all duration-300 group"
+                        className="flex flex-col justify-between p-4 rounded-2xl bg-[#1a100a]/70 border border-accent/15 hover:border-accent/40 hover:bg-[#1a100a] transition-all duration-300 group"
                       >
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <span className="px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-semibold flex items-center gap-1">
                               YouTube
                             </span>
-                            <span className="text-[10px] text-primary/50">คลิปวิดีโอ</span>
+                            <span className="text-[10px] text-[#f5ece1]/50">คลิปวิดีโอ</span>
                           </div>
-                          <div className="aspect-video relative rounded-lg overflow-hidden border border-primary/5">
+                          <div className="aspect-video relative rounded-lg overflow-hidden border border-accent/15">
                             <img src={heroImage} alt="YouTube Highlight" className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300" />
                             <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
                               <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center text-white shadow-lg">
@@ -578,7 +578,7 @@ export default async function Home() {
                               </div>
                             </div>
                           </div>
-                          <p className="text-xs font-semibold text-primary line-clamp-2">
+                          <p className="text-xs font-semibold text-[#f5ece1] line-clamp-2">
                             ชมคลิปพาเที่ยวเมืองลับแลและเรื่องเล่าอาหารพื้นบ้าน
                           </p>
                         </div>
@@ -606,30 +606,30 @@ export default async function Home() {
                       แวะมากินข้าวบ้านเรานะครับ
                     </h2>
                   </div>
-                  <p className="font-thai text-sm sm:text-base text-primary-dark/80 leading-relaxed">
+                  <p className="font-thai text-sm sm:text-base text-[#f5ece1]/85 leading-relaxed">
                     มากินข้าวใต้ถุนเรือนไม้โบราณ ๑๐๐ ปี สัมผัสรสมือของครอบครัวเราที่ปรุงสดใหม่ทุกจาน จะแวะมาเที่ยวหรือพาครอบครัวมาทานข้าว ยินดีต้อนรับทุกท่านครับ
                   </p>
 
-                  <div className="space-y-4 font-thai text-sm text-primary/80 pt-2">
+                  <div className="space-y-4 font-thai text-sm text-[#f5ece1]/85 pt-2">
                     <div className="flex items-start">
                       <Clock className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-semibold text-primary">เวลาเปิดให้บริการ</p>
-                        <p>{hours}</p>
+                        <p className="text-[#f5ece1]/80">{hours}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <Phone className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-semibold text-primary">เบอร์โทรศัพท์ติดต่อ / โทรจองโต๊ะ</p>
-                        <p>{phone}</p>
+                        <p className="text-[#f5ece1]/80">{phone}</p>
                       </div>
                     </div>
                     <div className="flex items-start">
                       <MapPin className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
                       <div>
                         <p className="font-semibold text-primary">ที่ตั้งร้าน</p>
-                        <p>{address}</p>
+                        <p className="text-[#f5ece1]/80">{address}</p>
                         <a
                           href={googleMapsUrl}
                           target="_blank"
