@@ -1,9 +1,14 @@
 import React from "react";
 import { getMenuItems, getSetting } from "@/lib/data";
 import MenuList from "@/components/MenuList";
-import { Sparkles, FileText } from "lucide-react";
+import { Sparkles, FileText, AlertCircle } from "lucide-react";
 
 export const revalidate = 0; // Disable static cache for menu, so dashboard updates show instantly
+
+export const metadata = {
+  title: "กับข้าวและสำรับอาหาร | ร้านลำลำลับแลบ้าน ๑๐๐ ปี",
+  description: "เมนูอาหารเหนือแบบลับแล ขันโตก น้ำพริกหนุ่ม น้ำพริกอ่อง ข้าวพันผัก และอาหารพื้นบ้านสูตรโบราณ ๔ รุ่น",
+};
 
 export default async function MenuPage() {
   const menuItems = await getMenuItems();
@@ -13,6 +18,15 @@ export default async function MenuPage() {
   const layoutStyle = (await getSetting("menu_page_layout")) || "grid"; // default grid
   const categoriesOrder = (await getSetting("menu_categories_order")) || "เซทขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มดับแซ่บ & น้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม";
 
+  // Dynamic texts and PDF URL
+  const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน ๑๐๐ ปี";
+  const title = (await getSetting("menu_page_title")) || "กับข้าวและสำรับอาหาร";
+  const subtitle = (await getSetting("menu_page_subtitle")) || "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล";
+  const notice = (await getSetting("menu_page_notice")) || "";
+  const pdfUrl = (await getSetting("menu_pdf_url")) || "/menu-2026.pdf";
+  const pdfBtnText = (await getSetting("menu_pdf_btn_text")) || "เปิดดูเล่มเมนูฉบับเต็ม (PDF)";
+  const showPdf = (await getSetting("menu_pdf_show")) !== "0";
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-12">
       {/* Header */}
@@ -20,25 +34,35 @@ export default async function MenuPage() {
         <div className="text-center space-y-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-xs font-thai font-medium border border-accent/20">
             <Sparkles className="w-3.5 h-3.5" />
-            ร้านลำลำลับแลบ้าน ๑๐๐ ปี
+            {badge}
           </span>
           <h1 className="text-3xl sm:text-4xl font-bold font-thai text-primary">
-            กับข้าวและสำรับอาหาร
+            {title}
           </h1>
           <p className="font-thai text-sm sm:text-base text-primary/70 max-w-xl mx-auto">
-            ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล
+            {subtitle}
           </p>
-          <div className="pt-2 flex justify-center">
-            <a
-              href="/menu-2026.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 text-xs font-thai font-semibold transition-all hover:scale-[1.02] shadow-sm"
-            >
-              <FileText className="w-3.5 h-3.5 text-accent-dark" />
-              <span>เปิดดูเล่มเมนูฉบับเต็ม (PDF)</span>
-            </a>
-          </div>
+
+          {notice && (
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-accent/10 border border-accent/25 text-xs text-accent-dark font-thai font-medium max-w-lg mx-auto">
+              <AlertCircle className="w-4 h-4 shrink-0 text-accent" />
+              <span>{notice}</span>
+            </div>
+          )}
+
+          {showPdf && pdfUrl && (
+            <div className="pt-2 flex justify-center">
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/5 hover:bg-primary/10 text-primary border border-primary/15 text-xs font-thai font-semibold transition-all hover:scale-[1.02] shadow-sm"
+              >
+                <FileText className="w-3.5 h-3.5 text-accent-dark" />
+                <span>{pdfBtnText}</span>
+              </a>
+            </div>
+          )}
         </div>
       )}
 

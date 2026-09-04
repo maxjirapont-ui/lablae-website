@@ -26,8 +26,14 @@ export async function POST(request: NextRequest) {
 
     const rawBuffer = Buffer.from(await file.arrayBuffer());
 
+    const originalName = (file as any).name || "";
+    const ext = path.extname(originalName).toLowerCase();
+    const isPdf = ext === ".pdf" || file.type === "application/pdf";
+
     // Generate unique name to prevent collisions
-    const uniqueFilename = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
+    const uniqueFilename = isPdf
+      ? `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.pdf`
+      : `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
 
     // Ensure uploads directory exists in public/
     const uploadDir = path.join(process.cwd(), "public", "uploads");
@@ -37,20 +43,24 @@ export async function POST(request: NextRequest) {
       await fs.mkdir(uploadDir, { recursive: true });
     }
 
-    // Process and optimize image with sharp:
-    // 1. rotate() automatically based on EXIF orientation from smartphones
-    // 2. resize() to max 1600px without upscaling
-    // 3. jpeg(quality 85) for fast web performance
     let finalBuffer: Buffer;
-    try {
-      finalBuffer = await sharp(rawBuffer)
-        .rotate()
-        .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
-        .jpeg({ quality: 85, mozjpeg: true })
-        .toBuffer();
-    } catch {
-      // Fallback to raw buffer if format is not supported by sharp
+    if (isPdf) {
       finalBuffer = rawBuffer;
+    } else {
+      // Process and optimize image with sharp:
+      // 1. rotate() automatically based on EXIF orientation from smartphones
+      // 2. resize() to max 1600px without upscaling
+      // 3. jpeg(quality 85) for fast web performance
+      try {
+        finalBuffer = await sharp(rawBuffer)
+          .rotate()
+          .resize({ width: 1600, height: 1600, fit: "inside", withoutEnlargement: true })
+          .jpeg({ quality: 85, mozjpeg: true })
+          .toBuffer();
+      } catch {
+        // Fallback to raw buffer if format is not supported by sharp
+        finalBuffer = rawBuffer;
+      }
     }
 
     // Write file

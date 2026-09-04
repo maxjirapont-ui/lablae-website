@@ -90,6 +90,25 @@ export default async function Home() {
   const seasonalBtnLink = await getSetting("seasonal_btn_link") || "/menu?category=อาหารตามฤดูกาล";
   const contactBtnText = await getSetting("contact_btn_text") || "เปิด Google Maps นำทางมาร้าน";
 
+  // Section Headers & Teasers
+  const featuredBadge = (await getSetting("home_featured_badge")) || "ของกิ๋นลำเมืองลับแล";
+  const featuredTitle = (await getSetting("home_featured_title")) || "จานเด็ดประจำบ้าน ที่อยากให้ลองชิม";
+
+  const seasonalBadge = (await getSetting("home_seasonal_badge")) || "ของอร่อยตามฤดูกาล";
+  const seasonalTitle = (await getSetting("home_seasonal_title")) || "วัตถุดิบสดใหม่ รสชาติตามฤดู";
+
+  const bookBadge = (await getSetting("home_book_badge")) || "บันทึกเรื่องเล่าเมืองลับแล";
+  const bookTitle = (await getSetting("home_book_title")) || "ตำราลับแลง (๓๒ ตอน)";
+  const bookDescription = (await getSetting("home_book_description")) || "เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ";
+  const bookBtnText = (await getSetting("home_book_btn_text")) || "เปิดอ่านตำราลับแลง (๓๒ ตอน)";
+
+  // Testimonial Card
+  const testimonialBadge = (await getSetting("home_testimonial_badge")) || "★ Google Maps";
+  const testimonialSubBadge = (await getSetting("home_testimonial_subbadge")) || "รีวิวจากลูกค้า";
+  const testimonialText = (await getSetting("home_testimonial_text")) || "อาหารรสชาติดีมาก บรรยากาศร่มรื่น นั่งกินข้าวในบ้านไม้โบราณแล้วรู้สึกอบอุ่น ข้าวพันผักเหนียวนุ่มอร่อยมาก แนะนำเลยค่ะ!";
+  const testimonialAuthor = (await getSetting("home_testimonial_author")) || "- รีวิวจากลูกค้าบน Google Maps";
+  const testimonialBtnText = (await getSetting("home_testimonial_btn_text")) || "อ่านรีวิวบน Google Maps →";
+
   // Hero Section Customizable Texts & Descriptions
   const heroBadge = (await getSetting("hero_badge")) || "เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์";
   const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน ๑๐๐ ปี";
@@ -309,10 +328,10 @@ export default async function Home() {
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
                 <div className="text-center space-y-2">
                   <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
-                    ของกิ๋นลำเมืองลับแล
+                    {featuredBadge}
                   </span>
                   <h2 className="text-3xl font-bold font-thai text-primary">
-                    จานเด็ดประจำบ้าน ที่อยากให้ลองชิม
+                    {featuredTitle}
                   </h2>
                 </div>
 
@@ -373,20 +392,20 @@ export default async function Home() {
                 <div className="space-y-4 max-w-xl text-center md:text-left">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-thai font-medium border border-accent/30 tracking-wide">
                     <BookOpen className="w-3.5 h-3.5" />
-                    บันทึกเรื่องเล่าเมืองลับแล
+                    {bookBadge}
                   </span>
                   <h2 className="text-2xl sm:text-4xl font-bold font-thai text-[#f7eee3] leading-tight">
-                    ตำราลับแลง (๓๒ ตอน)
+                    {bookTitle}
                   </h2>
                   <p className="font-thai text-xs sm:text-sm text-[#f7eee3]/80 leading-relaxed">
-                    เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ
+                    {bookDescription}
                   </p>
                   <div className="pt-2">
                     <Link
                       href="/blog"
                       className="inline-flex items-center gap-2 px-6 py-3.5 bg-accent hover:brightness-110 text-[#1a100a] rounded-full font-thai text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
                     >
-                      <span>เปิดอ่านตำราลับแลง (๓๒ ตอน)</span>
+                      <span>{bookBtnText}</span>
                       <ChevronRight className="w-4 h-4" />
                     </Link>
                   </div>
@@ -425,10 +444,10 @@ export default async function Home() {
               <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
                 <div className="text-center space-y-2">
                   <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
-                    ของอร่อยตามฤดูกาล
+                    {seasonalBadge}
                   </span>
                   <h2 className="text-3xl font-bold font-thai text-primary">
-                    วัตถุดิบสดใหม่ รสชาติตามฤดู
+                    {seasonalTitle}
                   </h2>
                 </div>
 
@@ -603,18 +622,18 @@ export default async function Home() {
                         <div className="space-y-3">
                           <div className="flex justify-between items-center">
                             <span className="px-2.5 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/50 text-[10px] font-semibold flex items-center gap-1">
-                              ★ Google Maps
+                              {testimonialBadge}
                             </span>
-                            <span className="text-[10px] text-[#f5ece1]/50">รีวิวจากลูกค้า</span>
+                            <span className="text-[10px] text-[#f5ece1]/50">{testimonialSubBadge}</span>
                           </div>
                           <div className="space-y-2">
                             <p className="text-xs italic text-[#f5ece1]/80 line-clamp-3 leading-relaxed">
-                              "อาหารรสชาติดีมาก บรรยากาศร่มรื่น นั่งกินข้าวในบ้านไม้โบราณแล้วรู้สึกอบอุ่น ข้าวพันผักเหนียวนุ่มอร่อยมาก แนะนำเลยค่ะ!"
+                              "{testimonialText}"
                             </p>
-                            <p className="text-[10px] text-accent font-semibold">- รีวิวจากลูกค้าบน Google Maps</p>
+                            <p className="text-[10px] text-accent font-semibold">{testimonialAuthor}</p>
                           </div>
                         </div>
-                        <span className="text-[10px] text-accent font-semibold mt-4 block">อ่านรีวิวบน Google Maps →</span>
+                        <span className="text-[10px] text-accent font-semibold mt-4 block">{testimonialBtnText}</span>
                       </a>
 
                       {/* Highlight Card 4: YouTube channel */}

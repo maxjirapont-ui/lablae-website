@@ -7,10 +7,13 @@ import StoryTextEditor, { StoryTextFields } from "./StoryTextEditor";
 import HeroSectionEditor from "./HeroSectionEditor";
 import AmbienceStoryEditor from "./AmbienceStoryEditor";
 import AmbienceGalleryEditor from "./AmbienceGalleryEditor";
+import AboutPageEditor from "./AboutPageEditor";
 import { GalleryImageItem } from "./AtmosphereGallery";
 import {
   Calendar,
   Utensils,
+  Megaphone,
+  FileText,
   BookOpen,
   Settings,
   LogOut,
@@ -50,7 +53,8 @@ import {
   List,
   ExternalLink,
   RefreshCw,
-  Palette
+  Palette,
+  Quote
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -103,6 +107,8 @@ export default function AdminDashboard({
   const [editingMenu, setEditingMenu] = useState<Partial<MenuItem> | null>(null);
   const [menuFormError, setMenuFormError] = useState("");
   const [menuFormLoading, setMenuFormLoading] = useState(false);
+  const [showMenuHeaderEditor, setShowMenuHeaderEditor] = useState(false);
+  const [menuPdfUploading, setMenuPdfUploading] = useState(false);
 
   // Edit/Add Article modal state
   const [showArticleForm, setShowArticleForm] = useState(false);
@@ -788,6 +794,65 @@ export default function AdminDashboard({
     setDraggedCatIndex(null);
   };
 
+  // Menu Header & PDF Handlers
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setMenuPdfUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/admin/upload", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSettings(prev => ({ ...prev, menu_pdf_url: data.url }));
+        setSettingsMsg("✅ อัปโหลดไฟล์ PDF สำเร็จแล้ว อย่าลืมกดบันทึกการตั้งค่าหน้าเมนูนะครับ!");
+      } else {
+        alert(data.error || "อัปโหลดไฟล์ไม่สำเร็จ");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("เกิดข้อผิดพลาดในการอัปโหลดไฟล์ PDF");
+    } finally {
+      setMenuPdfUploading(false);
+    }
+  };
+
+  const handleSaveMenuHeader = async () => {
+    setSettingsLoading(true);
+    setSettingsMsg("กำลังบันทึกข้อมูลหน้าเมนูและเล่ม PDF...");
+    try {
+      const payload = {
+        menu_page_badge: settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน ๑๐๐ ปี",
+        menu_page_title: settings.menu_page_title ?? "กับข้าวและสำรับอาหาร",
+        menu_page_subtitle: settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล",
+        menu_page_notice: settings.menu_page_notice ?? "",
+        menu_pdf_url: settings.menu_pdf_url ?? "/menu-2026.pdf",
+        menu_pdf_btn_text: settings.menu_pdf_btn_text ?? "เปิดดูเล่มเมนูฉบับเต็ม (PDF)",
+        menu_pdf_show: settings.menu_pdf_show ?? "1",
+      };
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        setSettingsMsg("✅ บันทึกข้อมูลส่วนหัวหน้าเมนูและเล่ม PDF เรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
+        router.refresh();
+      } else {
+        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลหน้าเมนู");
+      }
+    } catch (err) {
+      console.error(err);
+      setSettingsMsg("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   // Filter lists based on searches and category select
   const filteredMenus = menus.filter(m => {
     const matchesSearch = m.name.toLowerCase().includes(menuSearch.toLowerCase()) ||
@@ -980,8 +1045,9 @@ export default function AdminDashboard({
             <p className="text-[10px] text-accent-dark">เข้าสู่ระบบ: แอดมิน</p>
           </div>
 
-          <nav className="flex lg:flex-col gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+          <nav id="admin-sidebar-nav" className="flex lg:flex-col gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
             <button
+              id="admin-tab-overview"
               onClick={() => setActiveTab("overview")}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
                 activeTab === "overview"
@@ -994,6 +1060,7 @@ export default function AdminDashboard({
             </button>
 
             <button
+              id="admin-tab-photos"
               onClick={() => setActiveTab("photos")}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
                 activeTab === "photos"
@@ -1006,6 +1073,7 @@ export default function AdminDashboard({
             </button>
 
             <button
+              id="admin-tab-menus"
               onClick={() => setActiveTab("menus")}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
                 activeTab === "menus"
@@ -1018,6 +1086,7 @@ export default function AdminDashboard({
             </button>
 
             <button
+              id="admin-tab-articles"
               onClick={() => setActiveTab("articles")}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
                 activeTab === "articles"
@@ -1030,6 +1099,7 @@ export default function AdminDashboard({
             </button>
 
              <button
+              id="admin-tab-settings"
               onClick={() => setActiveTab("settings")}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
                 activeTab === "settings"
@@ -1877,6 +1947,34 @@ export default function AdminDashboard({
                 );
               })()}
             </div>
+
+            {/* 7. About Page Stories & 4 Generations Manager */}
+            <AboutPageEditor
+              currentJson={settings.about_page_custom_data || ""}
+              onSave={async (jsonStr) => {
+                setSettingsLoading(true);
+                setSettingsMsg("กำลังบันทึกเนื้อหาหน้ารู้จักเรา...");
+                setSettings(prev => ({ ...prev, about_page_custom_data: jsonStr }));
+                try {
+                  const res = await fetch("/api/admin/settings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ about_page_custom_data: jsonStr }),
+                  });
+                  if (res.ok) {
+                    setSettingsMsg("✅ บันทึกเนื้อหาหน้ารู้จักเราเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
+                    router.refresh();
+                  } else {
+                    setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกเนื้อหา");
+                  }
+                } catch {
+                  setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+                } finally {
+                  setSettingsLoading(false);
+                }
+              }}
+              isLoading={settingsLoading}
+            />
           </div>
         )}
 
@@ -1926,6 +2024,18 @@ export default function AdminDashboard({
                   />
                 </div>
                 <button
+                  type="button"
+                  onClick={() => setShowMenuHeaderEditor(!showMenuHeaderEditor)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0 border ${
+                    showMenuHeaderEditor
+                      ? "bg-accent text-white border-accent shadow-xs"
+                      : "bg-white hover:bg-accent/10 text-accent-dark border-accent/25"
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>{showMenuHeaderEditor ? "ซ่อนตั้งค่าหัวข้อ & PDF" : "ตั้งค่าหัวข้อหน้าเมนู & PDF"}</span>
+                </button>
+                <button
                   onClick={handleOpenAddMenu}
                   className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-light text-white rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shrink-0"
                 >
@@ -1934,6 +2044,196 @@ export default function AdminDashboard({
                 </button>
               </div>
             </div>
+
+            {/* Menu Page Header & PDF Upload Editor */}
+            {showMenuHeaderEditor && (
+              <div className="p-5 bg-primary-dark/5 border-2 border-accent/30 rounded-2xl space-y-5 font-thai transition-all shadow-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-primary/10 pb-3">
+                  <div>
+                    <h3 className="font-bold text-primary text-sm sm:text-base flex items-center gap-2">
+                      <FileText className="w-4.5 h-4.5 text-accent" />
+                      <span>ปรับแต่งข้อความส่วนหัวหน้าเมนูอาหาร & เล่มเมนู PDF</span>
+                    </h3>
+                    <p className="text-xs text-primary/70">
+                      แก้ไขหัวเรื่อง คำบรรยาย ข้อความแจ้งเตือน และอัปโหลดไฟล์ PDF เมนูฉบับเต็มได้ทันที
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleSaveMenuHeader}
+                    disabled={settingsLoading}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-primary hover:bg-primary-light text-white rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow shrink-0"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{settingsLoading ? "กำลังบันทึก..." : "บันทึกข้อมูลหน้าเมนู"}</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block font-semibold text-primary mb-1">
+                      ป้ายกำกับด้านบน (Badge)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น ร้านลำลำลับแลบ้าน ๑๐๐ ปี"
+                      value={settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน ๑๐๐ ปี"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, menu_page_badge: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-primary mb-1">
+                      ชื่อหัวข้อหน้าเมนู (Title)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น กับข้าวและสำรับอาหาร"
+                      value={settings.menu_page_title ?? "กับข้าวและสำรับอาหาร"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, menu_page_title: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block font-semibold text-primary mb-1">
+                      คำบรรยายใต้หัวข้อ (Subtitle)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล"
+                      value={settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, menu_page_subtitle: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block font-semibold text-primary mb-1 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5 text-accent" />
+                        ข้อความแจ้งเตือนพิเศษ (Cooking Notice - แสดงเป็นแถบสีเตือน เช่น อาหารปรุงสดจานต่อจาน)
+                      </span>
+                      <span className="text-[10px] text-primary/50 font-normal">หากไม่ต้องการแสดง ให้เว้นว่างไว้</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="เช่น อาหารปรุงสดจานต่อจาน หากมาช่วงเที่ยงอาจใช้เวลารอสักครู่ แนะนำจองโต๊ะหรือสั่งล่วงหน้าครับ"
+                      value={settings.menu_page_notice ?? ""}
+                      onChange={(e) => setSettings(prev => ({ ...prev, menu_page_notice: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                </div>
+
+                {/* PDF Menu Settings Box */}
+                <div className="p-4 bg-white border border-primary/10 rounded-xl space-y-4 text-xs">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-accent" />
+                      <span className="font-bold text-primary">เล่มเมนูฉบับเต็ม (PDF Menu File)</span>
+                    </div>
+                    <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={settings.menu_pdf_show !== "0"}
+                        onChange={(e) => setSettings(prev => ({ ...prev, menu_pdf_show: e.target.checked ? "1" : "0" }))}
+                        className="rounded border-primary/20 text-accent focus:ring-accent w-4 h-4"
+                      />
+                      <span className="font-semibold text-primary">เปิดแสดงปุ่มดาวน์โหลด/เปิดดู PDF</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block font-semibold text-primary mb-1">
+                        ข้อความบนปุ่มกด (Button Text)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="เปิดดูเล่มเมนูฉบับเต็ม (PDF)"
+                        value={settings.menu_pdf_btn_text ?? "เปิดดูเล่มเมนูฉบับเต็ม (PDF)"}
+                        onChange={(e) => setSettings(prev => ({ ...prev, menu_pdf_btn_text: e.target.value }))}
+                        className="w-full px-3 py-2 bg-cream/10 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-semibold text-primary mb-1">
+                        URL ไฟล์ PDF ปัจจุบัน
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="/menu-2026.pdf หรือ URL ภายนอก"
+                          value={settings.menu_pdf_url ?? "/menu-2026.pdf"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, menu_pdf_url: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/10 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent font-mono text-[11px]"
+                        />
+                        {settings.menu_pdf_url && (
+                          <a
+                            href={settings.menu_pdf_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 bg-primary/5 hover:bg-primary/10 rounded-xl text-primary shrink-0 border border-primary/15 flex items-center justify-center"
+                            title="ทดลองเปิดไฟล์ PDF"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Upload new PDF */}
+                  <div className="pt-2 border-t border-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <span className="font-semibold text-primary block">อัปโหลดไฟล์ PDF เล่มเมนูใหม่:</span>
+                      <span className="text-[10px] text-primary/60">รองรับไฟล์เอกสารนามสกุล .pdf จากคอมพิวเตอร์หรือมือถือของคุณ</span>
+                    </div>
+                    <div>
+                      <input
+                        type="file"
+                        id="upload-menu-pdf"
+                        accept=".pdf,application/pdf"
+                        className="hidden"
+                        onChange={handlePdfUpload}
+                        disabled={menuPdfUploading}
+                      />
+                      <label
+                        htmlFor="upload-menu-pdf"
+                        className={`inline-flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-dark text-white rounded-xl text-xs font-semibold cursor-pointer shadow-xs transition-all ${
+                          menuPdfUploading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>{menuPdfUploading ? "กำลังอัปโหลด PDF..." : "เลือกไฟล์ PDF เพื่ออัปโหลด"}</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowMenuHeaderEditor(false)}
+                    className="px-4 py-2 text-primary/60 hover:text-primary rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    ปิดหน้าต่าง
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveMenuHeader}
+                    disabled={settingsLoading}
+                    className="flex items-center gap-1.5 px-5 py-2.5 bg-primary hover:bg-primary-light text-white rounded-xl text-xs font-semibold transition-all cursor-pointer shadow"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{settingsLoading ? "กำลังบันทึก..." : "บันทึกการตั้งค่าหน้าเมนู"}</span>
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Filter and Bulk Actions Control Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl font-thai text-xs">
@@ -2794,6 +3094,7 @@ export default function AdminDashboard({
               {/* Settings Sub-tabs Navigation */}
               <div className="flex flex-wrap gap-2 p-1.5 bg-primary/5 rounded-2xl border border-primary/10">
                 <button
+                  id="subtab-info"
                   type="button"
                   onClick={() => setSettingsSubTab("info")}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -2806,6 +3107,7 @@ export default function AdminDashboard({
                   <span>1. ข้อมูลร้าน & เวลาเปิดปิด</span>
                 </button>
                 <button
+                  id="subtab-appearance"
                   type="button"
                   onClick={() => setSettingsSubTab("appearance")}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -2818,6 +3120,7 @@ export default function AdminDashboard({
                   <span>2. รูปภาพ & โทนสีร้าน</span>
                 </button>
                 <button
+                  id="subtab-social"
                   type="button"
                   onClick={() => setSettingsSubTab("social")}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -2830,6 +3133,7 @@ export default function AdminDashboard({
                   <span>3. โซเชียลมีเดีย & แผนที่</span>
                 </button>
                 <button
+                  id="subtab-layout"
                   type="button"
                   onClick={() => setSettingsSubTab("layout")}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -2842,6 +3146,7 @@ export default function AdminDashboard({
                   <span>4. จัดลำดับหน้าเว็บ & หมวดหมู่</span>
                 </button>
                 <button
+                  id="subtab-security"
                   type="button"
                   onClick={() => setSettingsSubTab("security")}
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -2858,6 +3163,91 @@ export default function AdminDashboard({
               {/* SUB-TAB 1: STORE INFO & BUTTONS */}
               {settingsSubTab === "info" && (
                 <div className="space-y-6">
+                  {/* Announcement Banner Box */}
+                  <div className="p-5 bg-cream/50 border border-primary/15 rounded-2xl space-y-4 shadow-xs">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-primary/10 pb-3">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="p-1.5 rounded-lg bg-accent/20 text-accent-dark">
+                            <Megaphone className="w-4 h-4" />
+                          </span>
+                          <h4 className="font-bold text-sm text-primary">แถบประกาศด่วนบนสุดของเว็บ (Top Announcement Banner)</h4>
+                        </div>
+                        <p className="text-xs text-primary/65">
+                          แสดงแถบข้อความสำคัญด้านบนสุดของทุกหน้าเว็บ (เช่น แจ้งวันหยุดเทศกาล, ฤดูทุเรียนลับแล, แจ้งโทรจองโต๊ะด่วน)
+                        </p>
+                      </div>
+                      <label className="flex items-center gap-2 cursor-pointer shrink-0">
+                        <input
+                          type="checkbox"
+                          checked={settings.announcement_enabled === "1"}
+                          onChange={(e) => setSettings(prev => ({
+                            ...prev,
+                            announcement_enabled: e.target.checked ? "1" : "0"
+                          }))}
+                          className="w-4 h-4 rounded text-accent focus:ring-accent accent-accent cursor-pointer"
+                        />
+                        <span className="text-xs font-bold text-primary">
+                          {settings.announcement_enabled === "1" ? "🟢 เปิดใช้งานประกาศ" : "⚪ ปิดประกาศ"}
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-2">
+                        <label className="block text-xs font-semibold text-primary mb-1">
+                          ข้อความประกาศ
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.announcement_text || ""}
+                          onChange={(e) => setSettings(prev => ({ ...prev, announcement_text: e.target.value }))}
+                          placeholder="เช่น ช่วงเทศกาลสงกรานต์ ร้านเปิดให้บริการตามปกติ แนะนำโทรจองโต๊ะล่วงหน้า"
+                          className="w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-primary mb-1">
+                          ป้ายกำกับประกาศ (Badge)
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.announcement_badge || ""}
+                          onChange={(e) => setSettings(prev => ({ ...prev, announcement_badge: e.target.value }))}
+                          placeholder="เช่น ประกาศจากทางร้าน หรือ ข่าวสาร"
+                          className="w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-primary mb-1">
+                          ลิงก์ปลายทางเมื่อคลิก (ไม่บังคับ)
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.announcement_link || ""}
+                          onChange={(e) => setSettings(prev => ({ ...prev, announcement_link: e.target.value }))}
+                          placeholder="เช่น tel:0956283125 หรือ /about หรือ https://line.me/..."
+                          className="w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-primary mb-1">
+                          ข้อความบนลิงก์
+                        </label>
+                        <input
+                          type="text"
+                          value={settings.announcement_link_text || ""}
+                          onChange={(e) => setSettings(prev => ({ ...prev, announcement_link_text: e.target.value }))}
+                          placeholder="เช่น อ่านเพิ่มเติม หรือ โทรจองโต๊ะทันที"
+                          className="w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* General Settings */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -3662,6 +4052,251 @@ export default function AdminDashboard({
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Homepage Section Headers & Teasers */}
+              <div id="admin-section-headers" className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-6">
+                <div>
+                  <h3 className="font-bold text-primary text-sm flex items-center gap-2 font-thai">
+                    <Sparkles className="w-4.5 h-4.5 text-accent" />
+                    <span>หัวข้อและข้อความประจำส่วนของหน้าแรก (Homepage Section Headers & Teasers)</span>
+                  </h3>
+                  <p className="text-xs text-primary/70 leading-relaxed font-thai">
+                    กำหนดป้ายข้อความ (Badge), ชื่อหัวข้อหลัก และคำบรรยายของแต่ละหมวดหมู่บนหน้าแรกได้อย่างอิสระ
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* 1. Featured Dishes Section */}
+                  <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4">
+                    <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
+                      <Utensils className="w-4 h-4 text-accent" />
+                      <h4 className="font-bold text-xs text-primary">ส่วนเมนูเด่นประจำร้าน (Featured Dishes)</h4>
+                    </div>
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          ป้ายกำกับด้านบน (Badge)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ของกิ๋นลำเมืองลับแล"
+                          value={settings.home_featured_badge ?? "ของกิ๋นลำเมืองลับแล"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_featured_badge: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          หัวข้อหลัก (Section Title)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="จานเด็ดประจำบ้าน ที่อยากให้ลองชิม"
+                          value={settings.home_featured_title ?? "จานเด็ดประจำบ้าน ที่อยากให้ลองชิม"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_featured_title: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          ข้อความบนปุ่มลิงก์ดูทั้งหมด (Button Text)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ดูเมนูอร่อยทั้งหมดเพิ่มเติม →"
+                          value={settings.featured_btn_text ?? "ดูเมนูอร่อยทั้งหมดเพิ่มเติม →"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, featured_btn_text: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. Seasonal Dishes Section */}
+                  <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4">
+                    <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
+                      <Leaf className="w-4 h-4 text-accent" />
+                      <h4 className="font-bold text-xs text-primary">ส่วนเมนูตามฤดูกาล (Seasonal Specialties)</h4>
+                    </div>
+                    <div className="space-y-3 text-xs">
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          ป้ายกำกับด้านบน (Badge)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ของอร่อยตามฤดูกาล"
+                          value={settings.home_seasonal_badge ?? "ของอร่อยตามฤดูกาล"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_seasonal_badge: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          หัวข้อหลัก (Section Title)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="วัตถุดิบสดใหม่ รสชาติตามฤดู"
+                          value={settings.home_seasonal_title ?? "วัตถุดิบสดใหม่ รสชาติตามฤดู"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_seasonal_title: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          ข้อความบนปุ่มลิงก์ดูทั้งหมด (Button Text)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →"
+                          value={settings.seasonal_btn_text ?? "ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, seasonal_btn_text: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Book Section */}
+                  <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4 md:col-span-2">
+                    <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
+                      <BookOpen className="w-4 h-4 text-accent" />
+                      <h4 className="font-bold text-xs text-primary">ส่วนตำราลับแลง ๓๒ ตอน (Heritage Book Teaser)</h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          ป้ายกำกับด้านบน (Badge)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="บันทึกเรื่องเล่าเมืองลับแล"
+                          value={settings.home_book_badge ?? "บันทึกเรื่องเล่าเมืองลับแล"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_book_badge: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          หัวข้อหลัก (Section Title)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="ตำราลับแลง (๓๒ ตอน)"
+                          value={settings.home_book_title ?? "ตำราลับแลง (๓๒ ตอน)"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_book_title: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          ข้อความบนปุ่มอ่านบทความ (Button Text)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="เปิดอ่านตำราลับแลง (๓๒ ตอน)"
+                          value={settings.home_book_btn_text ?? "เปิดอ่านตำราลับแลง (๓๒ ตอน)"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_book_btn_text: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                        />
+                      </div>
+                      <div>
+                        <label className="block font-semibold text-primary mb-1">
+                          คำบรรยายสรุป (Description)
+                        </label>
+                        <textarea
+                          rows={2}
+                          placeholder="เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ..."
+                          value={settings.home_book_description ?? "เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ"}
+                          onChange={(e) => setSettings(prev => ({ ...prev, home_book_description: e.target.value }))}
+                          className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent resize-y"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Customer Testimonial & Review Card */}
+              <div id="admin-testimonial-card" className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-5 font-thai">
+                <div>
+                  <h3 className="font-bold text-primary text-sm flex items-center gap-2">
+                    <Quote className="w-4.5 h-4.5 text-accent" />
+                    <span>การ์ดรีวิวและเสียงตอบรับจากลูกค้า (Customer Testimonial & Review Card)</span>
+                  </h3>
+                  <p className="text-xs text-primary/70 leading-relaxed">
+                    ปรับแต่งการ์ดรีวิวความประทับใจที่แสดงบนหน้าแรก ลิงก์ตรงไปยังหน้า Google Maps Reviews ของร้าน
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block font-semibold text-primary mb-1">
+                      ป้ายคะแนน / แพลตฟอร์ม (Badge)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="★ Google Maps"
+                      value={settings.home_testimonial_badge ?? "★ Google Maps"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, home_testimonial_badge: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-primary mb-1">
+                      ป้ายประเภท (Sub-Badge)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="รีวิวจากลูกค้า"
+                      value={settings.home_testimonial_subbadge ?? "รีวิวจากลูกค้า"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, home_testimonial_subbadge: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block font-semibold text-primary mb-1">
+                      ข้อความรีวิวความประทับใจ (Review Quote)
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="อาหารรสชาติดีมาก บรรยากาศร่มรื่น นั่งกินข้าวในบ้านไม้โบราณแล้วรู้สึกอบอุ่น..."
+                      value={settings.home_testimonial_text ?? "อาหารรสชาติดีมาก บรรยากาศร่มรื่น นั่งกินข้าวในบ้านไม้โบราณแล้วรู้สึกอบอุ่น ข้าวพันผักเหนียวนุ่มอร่อยมาก แนะนำเลยค่ะ!"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, home_testimonial_text: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent resize-y"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-primary mb-1">
+                      ชื่อลูกค้า / แหล่งที่มา (Author Signature)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="- รีวิวจากลูกค้าบน Google Maps"
+                      value={settings.home_testimonial_author ?? "- รีวิวจากลูกค้าบน Google Maps"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, home_testimonial_author: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-semibold text-primary mb-1">
+                      ข้อความบนปุ่มลิงก์ (Button Text)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="อ่านรีวิวบน Google Maps →"
+                      value={settings.home_testimonial_btn_text ?? "อ่านรีวิวบน Google Maps →"}
+                      onChange={(e) => setSettings(prev => ({ ...prev, home_testimonial_btn_text: e.target.value }))}
+                      className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
+                    />
                   </div>
                 </div>
               </div>

@@ -133,6 +133,13 @@ export default async function RootLayout({
   const navbarBtnText = (await getSetting("navbar_btn_text")) || "ดูเมนูอาหาร";
   const navbarBtnLink = (await getSetting("navbar_btn_link")) || "/menu";
 
+  // Announcement Banner settings
+  const announcementEnabled = (await getSetting("announcement_enabled")) === "1";
+  const announcementText = (await getSetting("announcement_text")) || "";
+  const announcementLink = (await getSetting("announcement_link")) || "";
+  const announcementLinkText = (await getSetting("announcement_link_text")) || "อ่านเพิ่มเติม";
+  const announcementBadge = (await getSetting("announcement_badge")) || "ประกาศจากทางร้าน";
+
   // Derive light/dark shades dynamically
   const primaryDark = adjustBrightness(primaryColor, -35);
   const primaryLight = adjustBrightness(primaryColor, 35);
@@ -203,8 +210,19 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1] overflow-x-hidden">
-        <Navbar logoUrl={brandLogo} btnText={navbarBtnText} btnLink={navbarBtnLink} />
-        <main className="flex-grow pt-24 pb-16 md:pb-0">{children}</main>
+        <Navbar
+          logoUrl={brandLogo}
+          btnText={navbarBtnText}
+          btnLink={navbarBtnLink}
+          announcement={{
+            enabled: announcementEnabled,
+            text: announcementText,
+            link: announcementLink,
+            linkText: announcementLinkText,
+            badge: announcementBadge,
+          }}
+        />
+        <main className={`flex-grow ${announcementEnabled && Boolean(announcementText) ? "pt-32" : "pt-24"} pb-16 md:pb-0`}>{children}</main>
         <Footer />
         <MobileQuickBar phone={phone} googleMapsUrl={googleMapsUrl} />
       </body>
