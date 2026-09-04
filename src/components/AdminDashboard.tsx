@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MenuItem, Article } from "@/lib/data";
 import StoryTextEditor, { StoryTextFields } from "./StoryTextEditor";
+import HeroSectionEditor from "./HeroSectionEditor";
+import AmbienceStoryEditor from "./AmbienceStoryEditor";
+import AmbienceGalleryEditor from "./AmbienceGalleryEditor";
+import { GalleryImageItem } from "./AtmosphereGallery";
 import {
   Calendar,
   Utensils,
@@ -108,16 +112,24 @@ export default function AdminDashboard({
   const [articleSearch, setArticleSearch] = useState("");
   const [articlePartFilter, setArticlePartFilter] = useState("ทั้งหมด");
 
-  // Gallery images parser
-  let galleryImages: string[] = [];
+  // Gallery items parser (supports both string[] and { url, caption }[])
+  let galleryItems: GalleryImageItem[] = [];
   try {
     if (settings.restaurant_gallery) {
-      galleryImages = JSON.parse(settings.restaurant_gallery);
-      if (!Array.isArray(galleryImages)) galleryImages = [];
+      const parsed = JSON.parse(settings.restaurant_gallery);
+      if (Array.isArray(parsed)) {
+        galleryItems = parsed
+          .map((item: any) => {
+            if (typeof item === "string") return { url: item, caption: "" };
+            return { url: item?.url || "", caption: item?.caption || "" };
+          })
+          .filter((item) => Boolean(item.url));
+      }
     }
   } catch {
-    galleryImages = [];
+    galleryItems = [];
   }
+  const galleryImages: string[] = galleryItems.map((i) => i.url);
 
   // Quick Facts Stories Manager state
   const [adminStoryTab, setAdminStoryTab] = useState<"house" | "wood" | "family" | "kitchen">("house");
@@ -498,6 +510,101 @@ export default function AdminDashboard({
       }
     } catch (err) {
       setSettingsMsg("ไม่สามารถเชื่อมต่อเครือข่ายได้");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  // Hero Section Handler
+  const handleSaveHeroSection = async (heroData: {
+    home_hero_image: string;
+    hero_badge: string;
+    hero_title: string;
+    hero_subtitle: string;
+    hero_description: string;
+    hero_btn1_text: string;
+    hero_btn1_link: string;
+    hero_btn2_text: string;
+    hero_btn2_link: string;
+  }) => {
+    setSettingsLoading(true);
+    setSettingsMsg("กำลังบันทึกข้อมูลภาพปกและข้อความฮีโร่...");
+    setSettings((prev) => ({ ...prev, ...heroData }));
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(heroData),
+      });
+      if (res.ok) {
+        setSettingsMsg("✅ บันทึกรูปภาพปกและข้อความฮีโร่สำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        router.refresh();
+      } else {
+        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลฮีโร่");
+      }
+    } catch {
+      setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  // Ambience Story Section Handler
+  const handleSaveAmbienceStory = async (storyData: {
+    home_about_image: string;
+    home_about_image_caption: string;
+    about_badge: string;
+    about_title: string;
+    about_quote: string;
+    about_quote_author: string;
+    about_story_text: string;
+  }) => {
+    setSettingsLoading(true);
+    setSettingsMsg("กำลังบันทึกรูปภาพและคำอธิบายเรื่องเล่า...");
+    setSettings((prev) => ({ ...prev, ...storyData }));
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storyData),
+      });
+      if (res.ok) {
+        setSettingsMsg("✅ บันทึกรูปภาพบรรยากาศและคำอธิบายเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        router.refresh();
+      } else {
+        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลเรื่องเล่า");
+      }
+    } catch {
+      setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  // Ambience Gallery Album Handler
+  const handleSaveAmbienceGallery = async (galleryData: {
+    restaurant_gallery: string;
+    gallery_badge: string;
+    gallery_title: string;
+    gallery_subtitle: string;
+  }) => {
+    setSettingsLoading(true);
+    setSettingsMsg("กำลังบันทึกอัลบั้มและคำอธิบายภาพบรรยากาศ...");
+    setSettings((prev) => ({ ...prev, ...galleryData }));
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(galleryData),
+      });
+      if (res.ok) {
+        setSettingsMsg("✅ บันทึกอัลบั้มและคำอธิบายภาพบรรยากาศสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        router.refresh();
+      } else {
+        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกอัลบั้ม");
+      }
+    } catch {
+      setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
     } finally {
       setSettingsLoading(false);
     }
@@ -1392,185 +1499,38 @@ export default function AdminDashboard({
               </div>
             )}
 
-            {/* Photo Cards Grid */}
+            {/* 1. Main Hero Banner & Story Texts */}
+            <HeroSectionEditor
+              currentHeroImage={settings.home_hero_image || ""}
+              currentBadge={settings.hero_badge || ""}
+              currentTitle={settings.hero_title || ""}
+              currentSubtitle={settings.hero_subtitle || ""}
+              currentDescription={settings.hero_description || ""}
+              currentBtn1Text={settings.hero_btn1_text || ""}
+              currentBtn1Link={settings.hero_btn1_link || ""}
+              currentBtn2Text={settings.hero_btn2_text || ""}
+              currentBtn2Link={settings.hero_btn2_link || ""}
+              onSave={handleSaveHeroSection}
+              handleFileUpload={handleFileUpload}
+              isLoading={settingsLoading}
+            />
+
+            {/* 2. Ambience Story Section & Photo */}
+            <AmbienceStoryEditor
+              currentAboutImage={settings.home_about_image || ""}
+              currentImageCaption={settings.home_about_image_caption || ""}
+              currentBadge={settings.about_badge || ""}
+              currentTitle={settings.about_title || ""}
+              currentQuote={settings.about_quote || ""}
+              currentQuoteAuthor={settings.about_quote_author || ""}
+              currentStoryText={settings.about_story_text || ""}
+              onSave={handleSaveAmbienceStory}
+              handleFileUpload={handleFileUpload}
+              isLoading={settingsLoading}
+            />
+
+            {/* 3 & 4: Logo & Dish Photos in 2-col Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 1. Hero Cover Image */}
-              <div className="p-6 bg-white rounded-3xl border border-primary/10 shadow-xs space-y-4 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-[11px] font-bold">
-                      รูปหลักหน้าแรก
-                    </span>
-                    <span className="text-[11px] text-primary/50">ขนาดแนะนำ: แนวนอน 16:9</span>
-                  </div>
-                  <h3 className="text-base font-bold text-primary">๑. รูปภาพปกด้านบนสุด (Main Hero Banner)</h3>
-                  <p className="text-xs text-primary/70 leading-relaxed">
-                    รูปภาพขนาดใหญ่ที่ลูกค้าเห็นเป็นภาพแรกเมื่อเปิดเข้าหน้าแรกของเว็บไซต์ แสดงอยู่ด้านหลังชื่อร้าน
-                  </p>
-                </div>
-
-                {/* Preview */}
-                <div className="relative aspect-video rounded-2xl overflow-hidden border border-primary/10 bg-primary/5 group shadow-inner">
-                  {settings.home_hero_image ? (
-                    <>
-                      <img
-                        src={settings.home_hero_image}
-                        alt="รูปหน้าปกเว็บไซต์"
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white p-4 text-center">
-                        <span className="text-xs font-bold bg-black/50 px-3 py-1 rounded-full backdrop-blur-xs">
-                          ตัวอย่างบนหน้าแรก: ร้านลำลำลับแลบ้าน ๑๐๐ ปี
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-primary/40 text-xs gap-2">
-                      <ImageIcon className="w-8 h-8 opacity-40" />
-                      <span>ยังไม่มีรูปภาพปก</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Upload action */}
-                <div className="pt-2 space-y-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    id="upload-hero-main"
-                    className="hidden"
-                    disabled={settingsLoading}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setSettingsLoading(true);
-                      setSettingsMsg("");
-                      await handleFileUpload(
-                        file,
-                        async (url) => {
-                          setSettings(prev => ({ ...prev, home_hero_image: url }));
-                          try {
-                            await fetch("/api/admin/settings", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ home_hero_image: url }),
-                            });
-                            setSettingsMsg("✅ บันทึกรูปภาพปกด้านบนสุดสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-                            router.refresh();
-                          } catch {
-                            setSettingsMsg("เกิดข้อผิดพลาดในการบันทึก");
-                          }
-                          setSettingsLoading(false);
-                        },
-                        (err) => {
-                          setSettingsMsg(`อัปโหลดไม่สำเร็จ: ${err}`);
-                          setSettingsLoading(false);
-                        }
-                      );
-                    }}
-                  />
-                  <label
-                    htmlFor="upload-hero-main"
-                    className={`flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer ${
-                      settingsLoading
-                        ? "bg-primary/20 text-primary/50 cursor-not-allowed"
-                        : "bg-accent hover:bg-accent-dark text-white hover:scale-[1.01]"
-                    }`}
-                  >
-                    <Camera className="w-4.5 h-4.5" />
-                    <span>{settingsLoading ? "กำลังอัปโหลดรูป..." : "📷 แตะเพื่อเปลี่ยนรูปภาพปกหน้าแรก"}</span>
-                  </label>
-                  <p className="text-[10px] text-center text-primary/40">
-                    แตะเพื่อเลือกรูปจากมือถือหรือคอมพิวเตอร์ ระบบจะบันทึกทันที
-                  </p>
-                </div>
-              </div>
-
-              {/* 2. About & Story Atmosphere Image */}
-              <div className="p-6 bg-white rounded-3xl border border-primary/10 shadow-xs space-y-4 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-[11px] font-bold">
-                      รูปเรื่องเล่าบ้าน ๑๐๐ ปี
-                    </span>
-                    <span className="text-[11px] text-primary/50">ขนาดแนะนำ: แนวนอน 16:9</span>
-                  </div>
-                  <h3 className="text-base font-bold text-primary">๒. รูปภาพบรรยากาศเรือนไม้โบราณ (Story Section)</h3>
-                  <p className="text-xs text-primary/70 leading-relaxed">
-                    รูปภาพบรรยากาศร้านที่แสดงคู่กับส่วน "เรื่องเล่าจากบ้าน ๑๐๐ ปี" และส่วน "ติดต่อร้าน" ด้านล่าง
-                  </p>
-                </div>
-
-                {/* Preview */}
-                <div className="relative aspect-video rounded-2xl overflow-hidden border border-primary/10 bg-primary/5 group shadow-inner">
-                  {settings.home_about_image ? (
-                    <img
-                      src={settings.home_about_image}
-                      alt="รูปบรรยากาศร้าน"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-primary/40 text-xs gap-2">
-                      <ImageIcon className="w-8 h-8 opacity-40" />
-                      <span>ยังไม่มีรูปภาพบรรยากาศ</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Upload action */}
-                <div className="pt-2 space-y-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    id="upload-about-main"
-                    className="hidden"
-                    disabled={settingsLoading}
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setSettingsLoading(true);
-                      setSettingsMsg("");
-                      await handleFileUpload(
-                        file,
-                        async (url) => {
-                          setSettings(prev => ({ ...prev, home_about_image: url }));
-                          try {
-                            await fetch("/api/admin/settings", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ home_about_image: url }),
-                            });
-                            setSettingsMsg("✅ บันทึกรูปภาพบรรยากาศเรือนไม้สำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-                            router.refresh();
-                          } catch {
-                            setSettingsMsg("เกิดข้อผิดพลาดในการบันทึก");
-                          }
-                          setSettingsLoading(false);
-                        },
-                        (err) => {
-                          setSettingsMsg(`อัปโหลดไม่สำเร็จ: ${err}`);
-                          setSettingsLoading(false);
-                        }
-                      );
-                    }}
-                  />
-                  <label
-                    htmlFor="upload-about-main"
-                    className={`flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer ${
-                      settingsLoading
-                        ? "bg-primary/20 text-primary/50 cursor-not-allowed"
-                        : "bg-accent hover:bg-accent-dark text-white hover:scale-[1.01]"
-                    }`}
-                  >
-                    <Camera className="w-4.5 h-4.5" />
-                    <span>{settingsLoading ? "กำลังอัปโหลดรูป..." : "📷 แตะเพื่อเปลี่ยนรูปบรรยากาศบ้าน ๑๐๐ ปี"}</span>
-                  </label>
-                  <p className="text-[10px] text-center text-primary/40">
-                    แตะเพื่อเลือกรูปจากมือถือหรือคอมพิวเตอร์ ระบบจะบันทึกทันที
-                  </p>
-                </div>
-              </div>
-
               {/* 3. Brand Logo */}
               <div className="p-6 bg-white rounded-3xl border border-primary/10 shadow-xs space-y-4 flex flex-col justify-between">
                 <div className="space-y-2">
@@ -1676,146 +1636,16 @@ export default function AdminDashboard({
               </div>
             </div>
 
-            {/* 5. Atmosphere Photo Gallery Album */}
-            <div className="p-6 sm:p-8 bg-white rounded-3xl border border-primary/10 shadow-xs space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/5 pb-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-[11px] font-bold">
-                      อัลบั้มแกลเลอรี่
-                    </span>
-                    <span className="text-xs font-bold text-primary">
-                      {galleryImages.length} รูปในอัลบั้ม
-                    </span>
-                  </div>
-                  <h3 className="text-lg font-bold text-primary">
-                    ๕. คลังภาพบรรยากาศร้าน (Atmosphere Gallery Album)
-                  </h3>
-                  <p className="text-xs text-primary/70 leading-relaxed">
-                    เพิ่มรูปภาพบรรยากาศร้านได้หลายๆ รูป (เช่น มุมโต๊ะอาหาร, ใต้ถุนเรือนไม้สัก, ซุ้มประตู, มุมสวน, แคร่ไม้, โคมไฟโบราณ) จะแสดงบนหน้าแรกและหน้าเกี่ยวกับร้าน
-                  </p>
-                </div>
-
-                {/* Upload Button */}
-                <div className="shrink-0 w-full sm:w-auto">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    id="upload-gallery-multi"
-                    className="hidden"
-                    disabled={settingsLoading}
-                    onChange={async (e) => {
-                      const files = Array.from(e.target.files || []);
-                      if (files.length === 0) return;
-                      setSettingsLoading(true);
-                      setSettingsMsg("กำลังอัปโหลดและบีบอัดรูปภาพ...");
-
-                      let currentGallery = [...galleryImages];
-                      let successCount = 0;
-
-                      for (const file of files) {
-                        await new Promise<void>((resolve) => {
-                          handleFileUpload(
-                            file,
-                            (url) => {
-                              currentGallery.push(url);
-                              successCount++;
-                              resolve();
-                            },
-                            () => {
-                              resolve();
-                            }
-                          );
-                        });
-                      }
-
-                      const newGalleryJson = JSON.stringify(currentGallery);
-                      setSettings(prev => ({ ...prev, restaurant_gallery: newGalleryJson }));
-                      try {
-                        await fetch("/api/admin/settings", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ restaurant_gallery: newGalleryJson }),
-                        });
-                        setSettingsMsg(`✅ เพิ่มรูปภาพบรรยากาศสำเร็จ ${successCount} รูปแล้ว! หน้าร้านอัปเดตทันที`);
-                        router.refresh();
-                      } catch {
-                        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกรูปภาพ");
-                      }
-                      setSettingsLoading(false);
-                    }}
-                  />
-                  <label
-                    htmlFor="upload-gallery-multi"
-                    className={`flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-3 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all cursor-pointer ${
-                      settingsLoading
-                        ? "bg-primary/20 text-primary/50 cursor-not-allowed"
-                        : "bg-accent hover:bg-accent-dark text-white hover:scale-[1.02]"
-                    }`}
-                  >
-                    <Plus className="w-4.5 h-4.5" />
-                    <span>{settingsLoading ? "กำลังอัปโหลด..." : "+ เพิ่มรูปบรรยากาศ (เลือกได้หลายรูป)"}</span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Gallery Grid */}
-              {galleryImages.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {galleryImages.map((imgUrl, idx) => (
-                    <div
-                      key={idx}
-                      className="group relative aspect-square rounded-2xl overflow-hidden border border-primary/10 bg-primary/5 shadow-xs"
-                    >
-                      <img
-                        src={imgUrl}
-                        alt={`ภาพบรรยากาศ ${idx + 1}`}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-xs">
-                        #{idx + 1}
-                      </div>
-                      {/* Delete button */}
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!confirm("ต้องการลบรูปภาพบรรยากาศนี้ใช่หรือไม่?")) return;
-                          const nextGallery = galleryImages.filter((_, i) => i !== idx);
-                          const nextGalleryJson = JSON.stringify(nextGallery);
-                          setSettings(prev => ({ ...prev, restaurant_gallery: nextGalleryJson }));
-                          try {
-                            await fetch("/api/admin/settings", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ restaurant_gallery: nextGalleryJson }),
-                            });
-                            setSettingsMsg("✅ ลบรูปภาพบรรยากาศเรียบร้อยแล้ว");
-                            router.refresh();
-                          } catch {
-                            setSettingsMsg("เกิดข้อผิดพลาดในการลบรูป");
-                          }
-                        }}
-                        className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                        title="ลบรูปนี้"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-12 border-2 border-dashed border-primary/20 rounded-2xl text-center space-y-3 bg-cream/30">
-                  <div className="inline-flex p-3 bg-white rounded-2xl text-accent">
-                    <Camera className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-bold text-sm text-primary">ยังไม่มีรูปในอัลบั้มบรรยากาศ</h4>
-                  <p className="text-xs text-primary/60 max-w-sm mx-auto">
-                    แตะปุ่ม "+ เพิ่มรูปบรรยากาศ" ด้านบนเพื่อเลือกรูปภาพจากมือถือหรือคอมพิวเตอร์ สามารถเลือกได้ครั้งละหลายๆ รูป
-                  </p>
-                </div>
-              )}
-            </div>
+            {/* 5. Atmosphere Photo Gallery Album with Captions */}
+            <AmbienceGalleryEditor
+              currentItems={galleryItems}
+              currentBadge={settings.gallery_badge || ""}
+              currentTitle={settings.gallery_title || ""}
+              currentSubtitle={settings.gallery_subtitle || ""}
+              onSave={handleSaveAmbienceGallery}
+              handleFileUpload={handleFileUpload}
+              isLoading={settingsLoading}
+            />
 
             {/* 6. Quick Facts 4 Stories Manager */}
             <div className="p-6 sm:p-8 bg-white rounded-3xl border border-primary/10 shadow-xs space-y-6">

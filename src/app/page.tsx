@@ -90,20 +90,52 @@ export default async function Home() {
   const seasonalBtnLink = await getSetting("seasonal_btn_link") || "/menu?category=อาหารตามฤดูกาล";
   const contactBtnText = await getSetting("contact_btn_text") || "เปิด Google Maps นำทางมาร้าน";
 
-  // Gallery photos
+  // Hero Section Customizable Texts & Descriptions
+  const heroBadge = (await getSetting("hero_badge")) || "เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์";
+  const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน ๑๐๐ ปี";
+  const heroSubtitle = (await getSetting("hero_subtitle")) || "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู";
+  const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ ๔ รุ่น แวะมากินข้าวบ้านญาตินะครับ";
+
+  // About / Story Ambience Section Customizable Texts
+  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง ๑๐๐ ปี";
+  const aboutBadge = (await getSetting("about_badge")) || "เรื่องเล่าจากบ้าน ๑๐๐ ปี";
+  const aboutTitle = (await getSetting("about_title")) || "บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา";
+  const aboutQuote = (await getSetting("about_quote")) || "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”";
+  const aboutQuoteAuthor = (await getSetting("about_quote_author")) || "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี";
+  const rawAboutStory = await getSetting("about_story_text");
+  let aboutParagraphs: string[] = [
+    "อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน",
+    "ลับแลเป็นเมืองที่ซ่อนตัวอยู่ในหุบเขา ทางเหนือหัวดงพูดคำเมืองแบบล้านนา ทางใต้แถบทุ่งยั้งสืบสำเนียงสุโขทัย สองสายวัฒนธรรมอยู่ร่วมกันมาหลายร้อยปี จนเกิดเป็นรสชาติที่ไม่ใช่เหนือแท้ ไม่ใช่กลางแท้ แต่เป็นของที่นี่ ของลับแลเท่านั้น",
+    "จานที่คุณสั่ง ล้วนสืบมาจากครัวของตากับยาย พริกแกงป้าชุมกับป้าชิดยังทำเองทุกวัน ไม่ใช้ของสำเร็จเลยสักอย่าง สมุนไพรเราก็ช่วยกันปลูกหลังบ้านและในชุมชน แวะมากินข้าวที่นี่ เหมือนมากินข้าวบ้านญาติครับ",
+  ];
+  if (rawAboutStory && rawAboutStory.trim()) {
+    const split = rawAboutStory.split(/\n\s*\n/).map((s) => s.trim()).filter(Boolean);
+    if (split.length > 0) aboutParagraphs = split;
+  }
+
+  // Gallery Section Customizable Texts & Items with Captions
+  const galleryBadge = (await getSetting("gallery_badge")) || "บรรยากาศบ้าน ๑๐๐ ปี";
+  const galleryTitle = (await getSetting("gallery_title")) || "ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี";
+  const gallerySubtitle = (await getSetting("gallery_subtitle")) || "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ";
+
   const rawGallery = await getSetting("restaurant_gallery");
-  let galleryImages: string[] = [];
+  let galleryItems: { url: string; caption?: string }[] = [];
   try {
     if (rawGallery) {
-      galleryImages = JSON.parse(rawGallery);
+      const parsed = JSON.parse(rawGallery);
+      if (Array.isArray(parsed)) {
+        galleryItems = parsed.map((item: any) => {
+          if (typeof item === "string") return { url: item, caption: "" };
+          return { url: item?.url || "", caption: item?.caption || "" };
+        }).filter((item) => Boolean(item.url));
+      }
     }
   } catch {
-    galleryImages = [];
+    galleryItems = [];
   }
-  if (!Array.isArray(galleryImages)) galleryImages = [];
-  if (galleryImages.length === 0) {
-    if (aboutImage) galleryImages.push(aboutImage);
-    if (heroImage) galleryImages.push(heroImage);
+  if (galleryItems.length === 0) {
+    if (aboutImage) galleryItems.push({ url: aboutImage, caption: "บรรยากาศเรือนไม้สักโบราณ ๑๐๐ ปี" });
+    if (heroImage) galleryItems.push({ url: heroImage, caption: "หน้าร้านลำลำลับแลบ้าน ๑๐๐ ปี" });
   }
 
   // Web Layout & Sections customizability
@@ -148,18 +180,20 @@ export default async function Home() {
         <div className="relative max-w-4xl mx-auto px-4 text-center space-y-6 z-10">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/20 text-accent border border-accent/35 text-xs sm:text-sm font-thai font-medium tracking-wide backdrop-blur-xs">
             <Sparkles className="w-4 h-4" />
-            เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์
+            {heroBadge}
           </span>
           
           <h1 className="font-thai font-bold text-3xl sm:text-5xl lg:text-6xl text-[#fff8ee] tracking-wide leading-tight drop-shadow-lg">
-            ร้านลำลำลับแลบ้าน ๑๐๐ ปี
-            <span className="block text-xl sm:text-2xl lg:text-3xl text-accent font-normal mt-2 drop-shadow-md">
-              กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู
-            </span>
+            {heroTitle}
+            {heroSubtitle && (
+              <span className="block text-xl sm:text-2xl lg:text-3xl text-accent font-normal mt-2 drop-shadow-md">
+                {heroSubtitle}
+              </span>
+            )}
           </h1>
           
           <p className="font-thai text-sm sm:text-base text-[#f7eee3]/90 max-w-xl mx-auto leading-relaxed drop-shadow-md">
-            อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ ๔ รุ่น แวะมากินข้าวบ้านญาตินะครับ
+            {heroDescription}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 w-full max-w-md mx-auto">
@@ -188,32 +222,32 @@ export default async function Home() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <span className="text-accent font-bold text-sm tracking-wider uppercase font-thai">
-                      เรื่องเล่าจากบ้าน ๑๐๐ ปี
+                      {aboutBadge}
                     </span>
                     <h2 className="text-3xl sm:text-4xl font-bold font-thai text-primary leading-tight">
-                      บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา
+                      {aboutTitle}
                     </h2>
                   </div>
 
                   {/* Ancestor Quote Callout */}
-                  <blockquote className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-accent/15 via-[#261810] to-accent/10 border-l-4 border-accent text-xs sm:text-sm font-thai italic text-[#f7eee3]/95 leading-relaxed shadow-xs">
-                    “นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”
-                    <span className="block not-italic font-semibold text-accent text-xs mt-1.5 text-right">— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี</span>
-                  </blockquote>
+                  {aboutQuote && (
+                    <blockquote className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-accent/15 via-[#261810] to-accent/10 border-l-4 border-accent text-xs sm:text-sm font-thai italic text-[#f7eee3]/95 leading-relaxed shadow-xs">
+                      {aboutQuote}
+                      {aboutQuoteAuthor && (
+                        <span className="block not-italic font-semibold text-accent text-xs mt-1.5 text-right">
+                          {aboutQuoteAuthor}
+                        </span>
+                      )}
+                    </blockquote>
+                  )}
 
                   {/* 4 Interactive Quick Facts of the 100-Year House with Story Modals */}
                   <QuickFactsStoryModal customStoriesData={customStoriesData} />
 
                   <div className="font-thai text-sm sm:text-base text-[#f5ece1]/85 leading-relaxed space-y-3">
-                    <p>
-                      อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน
-                    </p>
-                    <p>
-                      ลับแลเป็นเมืองที่ซ่อนตัวอยู่ในหุบเขา ทางเหนือหัวดงพูดคำเมืองแบบล้านนา ทางใต้แถบทุ่งยั้งสืบสำเนียงสุโขทัย สองสายวัฒนธรรมอยู่ร่วมกันมาหลายร้อยปี จนเกิดเป็นรสชาติที่ไม่ใช่เหนือแท้ ไม่ใช่กลางแท้ แต่เป็นของที่นี่ ของลับแลเท่านั้น
-                    </p>
-                    <p>
-                      จานที่คุณสั่ง ล้วนสืบมาจากครัวของตากับยาย พริกแกงป้าชุมกับป้าชิดยังทำเองทุกวัน ไม่ใช้ของสำเร็จเลยสักอย่าง สมุนไพรเราก็ช่วยกันปลูกหลังบ้านและในชุมชน แวะมากินข้าวที่นี่ เหมือนมากินข้าวบ้านญาติครับ
-                    </p>
+                    {aboutParagraphs.map((p, pIdx) => (
+                      <p key={pIdx}>{p}</p>
+                    ))}
                   </div>
                   <div className="flex flex-wrap gap-6 pt-2">
                     <div className="flex items-center gap-3">
@@ -237,26 +271,34 @@ export default async function Home() {
                   </div>
                 </div>
 
-                {/* About Image Section */}
+                {/* About Image Section with Caption */}
                 <div className="relative group rounded-3xl overflow-hidden shadow-lg aspect-video md:aspect-auto md:h-80 border border-primary/5">
                   <img 
                     src={aboutImage} 
-                    alt="บรรยากาศร้านลำลำลับแล" 
+                    alt={aboutImageCaption || "บรรยากาศร้านลำลำลับแล"} 
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
+                  {aboutImageCaption && (
+                    <div className="absolute inset-x-0 bottom-0 p-3.5 bg-gradient-to-t from-black/85 via-black/40 to-transparent flex items-end">
+                      <p className="text-xs sm:text-sm font-thai text-[#f7eee3] font-medium drop-shadow-md">
+                        {aboutImageCaption}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             </section>
           );
         }
 
-        if (sectionKey === "gallery" && galleryImages.length > 0) {
+        if (sectionKey === "gallery" && galleryItems.length > 0) {
           return (
             <AtmosphereGallery
               key="gallery"
-              images={galleryImages}
-              title="ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี"
-              subtitle="ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ"
+              images={galleryItems}
+              badge={galleryBadge}
+              title={galleryTitle}
+              subtitle={gallerySubtitle}
             />
           );
         }
