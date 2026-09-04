@@ -110,7 +110,7 @@ export default async function RootLayout({
   const primaryColor = (await getSetting("theme_primary_color")) || "#f7eee3";
   const accentColor = (await getSetting("theme_accent")) || "#d4a373";
   const warmBg = (await getSetting("theme_warm_bg")) || "#1a100a";
-  const creamColor = (await getSetting("theme_cream")) || "#261810";
+  const creamColor = (await getSetting("theme_cream")) || "#f7eee3";
 
   // Fetch Business Data for AI Search optimization (JSON-LD Schema)
   const restaurantName = (await getSetting("restaurant_name")) || "ร้านลำลำลับแลบ้าน 100 ปี";

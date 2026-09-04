@@ -7,7 +7,9 @@
   --color-accent: #d4a373;
   --color-accent-dark: #dfa86c;
   --color-warm-bg: #1a100a;
-  --color-cream: #261810;
+  --color-cream: #f7eee3;
+  --color-wood-card: #261810;
+  --color-wood-dark: #1f140e;
   
   --font-sans: var(--font-inter), var(--font-sarabun), system-ui, sans-serif;
   --font-thai: var(--font-sarabun), sans-serif;

@@ -129,40 +129,39 @@ export default async function Home() {
     <div className="flex flex-col space-y-20 pb-20">
       {/* 1. Hero Section (Always on Top) */}
       <section 
-        className="relative min-h-[85vh] flex items-center justify-center text-cream overflow-hidden bg-cover bg-center"
+        className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: `url('${heroImage}')` }}
       >
         {/* Soft atmospheric overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(70,38,15,0.2),transparent_75%)]" />
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#1a100a]" />
 
         <div className="relative max-w-4xl mx-auto px-4 text-center space-y-6 z-10">
-          <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/20 text-accent border border-accent/30 text-xs sm:text-sm font-thai font-medium tracking-wide">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/20 text-accent border border-accent/35 text-xs sm:text-sm font-thai font-medium tracking-wide backdrop-blur-xs">
             <Sparkles className="w-4 h-4" />
             เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์
           </span>
           
-          <h1 className="font-thai font-bold text-3xl sm:text-5xl lg:text-6xl text-cream tracking-wide leading-tight">
+          <h1 className="font-thai font-bold text-3xl sm:text-5xl lg:text-6xl text-[#fff8ee] tracking-wide leading-tight drop-shadow-lg">
             ร้านลำลำลับแลบ้าน ๑๐๐ ปี
-            <span className="block text-xl sm:text-2xl lg:text-3xl text-accent font-normal mt-2">
+            <span className="block text-xl sm:text-2xl lg:text-3xl text-accent font-normal mt-2 drop-shadow-md">
               กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู
             </span>
           </h1>
           
-          <p className="font-thai text-sm sm:text-lg text-cream/90 max-w-2xl mx-auto leading-relaxed">
+          <p className="font-thai text-sm sm:text-lg text-[#f7eee3]/90 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
             “นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด” — อาหารเหนือพื้นเมืองลับแล พริกแกงตำเอง แวะมากินข้าวบ้านญาตินะครับ
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
             <Link
               href={heroBtn1Link}
-              className="px-8 py-3.5 bg-accent hover:bg-accent-dark text-primary-dark font-thai font-semibold rounded-full shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-sm"
+              className="px-8 py-3.5 bg-gradient-to-r from-accent to-[#e6b87d] hover:brightness-110 text-[#1a100a] font-thai font-bold rounded-full shadow-lg transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-sm"
             >
               {heroBtn1Text}
             </Link>
             <Link
               href={heroBtn2Link}
-              className="px-8 py-3.5 border-2 border-cream hover:bg-cream hover:text-primary-dark text-cream font-thai font-semibold rounded-full transition-all duration-300 text-sm"
+              className="px-8 py-3.5 border-2 border-accent/60 hover:bg-accent hover:border-accent hover:text-[#1a100a] text-[#f7eee3] font-thai font-semibold rounded-full transition-all duration-300 text-sm backdrop-blur-xs"
             >
               เรื่องเล่าบ้าน ๑๐๐ ปี
             </Link>
@@ -308,22 +307,22 @@ export default async function Home() {
         if (sectionKey === "book") {
           return (
             <section key="book" className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="rounded-3xl bg-gradient-to-r from-primary via-primary-dark to-[#2b1809] text-cream p-8 sm:p-12 shadow-xl border border-accent/20 relative overflow-hidden flex flex-col md:flex-row gap-8 items-center justify-between">
+              <div className="rounded-3xl bg-gradient-to-r from-[#2c1a10] via-[#20120a] to-[#2c1a10] text-[#f7eee3] p-8 sm:p-12 shadow-xl border border-accent/25 relative overflow-hidden flex flex-col md:flex-row gap-8 items-center justify-between">
                 <div className="space-y-4 max-w-xl text-center md:text-left">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-thai font-medium border border-accent/30 tracking-wide">
                     <BookOpen className="w-3.5 h-3.5" />
                     บันทึกเรื่องเล่าเมืองลับแล
                   </span>
-                  <h2 className="text-2xl sm:text-4xl font-bold font-thai text-cream leading-tight">
+                  <h2 className="text-2xl sm:text-4xl font-bold font-thai text-[#f7eee3] leading-tight">
                     ตำราลับแลง (๓๒ ตอน)
                   </h2>
-                  <p className="font-thai text-xs sm:text-sm text-cream/80 leading-relaxed">
+                  <p className="font-thai text-xs sm:text-sm text-[#f7eee3]/80 leading-relaxed">
                     เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ
                   </p>
                   <div className="pt-2">
                     <Link
                       href="/blog"
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-accent hover:bg-accent-dark text-primary-dark rounded-full font-thai text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
+                      className="inline-flex items-center gap-2 px-6 py-3.5 bg-accent hover:brightness-110 text-[#1a100a] rounded-full font-thai text-xs sm:text-sm font-bold shadow-md transition-all hover:scale-105 cursor-pointer"
                     >
                       <span>เปิดอ่านตำราลับแลง (๓๒ ตอน)</span>
                       <ChevronRight className="w-4 h-4" />

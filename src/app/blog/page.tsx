@@ -21,7 +21,7 @@ export default async function BlogListingPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-12">
       {/* Book Title Banner */}
-      <div className="relative rounded-3xl bg-gradient-to-br from-primary via-primary-dark to-[#2b1809] text-cream p-8 sm:p-12 shadow-xl border border-accent/20 overflow-hidden text-center space-y-4">
+      <div className="relative rounded-3xl bg-gradient-to-br from-[#2c1a10] via-[#20120a] to-[#2c1a10] text-[#f7eee3] p-8 sm:p-12 shadow-xl border border-accent/25 overflow-hidden text-center space-y-4">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(197,160,89,0.15),transparent_70%)] pointer-events-none" />
         
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/20 text-accent text-xs font-thai font-medium border border-accent/30 tracking-wide">
@@ -29,7 +29,7 @@ export default async function BlogListingPage() {
           บันทึกเรื่องเล่าเมืองลับแล
         </span>
 
-        <h1 className="text-3xl sm:text-5xl font-bold font-thai text-cream tracking-wide">
+        <h1 className="text-3xl sm:text-5xl font-bold font-thai text-[#f7eee3] tracking-wide">
           ตำราลับแลง
         </h1>
 
@@ -37,12 +37,12 @@ export default async function BlogListingPage() {
           เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ และวิถีชีวิตเมืองลับแล
         </p>
 
-        <p className="text-xs sm:text-sm font-thai text-cream/75 max-w-md mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm font-thai text-[#f7eee3]/75 max-w-md mx-auto leading-relaxed">
           จากแผ่นดินล้านนา–สุโขทัย สู่สำรับอาหารของตาเงิน–ยายจัน<br />
           ร้านลำลำลับแลบ้าน ๑๐๐ ปี อ.ลับแล จ.อุตรดิตถ์
         </p>
 
-        <div className="pt-2 flex justify-center items-center gap-2 text-xs font-thai text-cream/60">
+        <div className="pt-2 flex justify-center items-center gap-2 text-xs font-thai text-[#f7eee3]/60">
           <span>รวมทั้งสิ้น {articles.length} บท</span>
           <span>•</span>
           <span>สแกนอ่านได้จากโต๊ะอาหาร</span>
