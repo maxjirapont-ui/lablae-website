@@ -118,6 +118,17 @@ export default function AdminDashboard({
     galleryImages = [];
   }
 
+  // Quick Facts Stories Manager state
+  const [adminStoryTab, setAdminStoryTab] = useState<"house" | "wood" | "family" | "kitchen">("house");
+  let customStoriesData: Record<string, any> = {};
+  try {
+    if (settings.custom_stories_data) {
+      customStoriesData = JSON.parse(settings.custom_stories_data);
+    }
+  } catch {
+    customStoriesData = {};
+  }
+
   // Logout Handler
   const handleLogout = async () => {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -1727,6 +1738,205 @@ export default function AdminDashboard({
                   </p>
                 </div>
               )}
+            </div>
+
+            {/* 6. Quick Facts 4 Stories Manager */}
+            <div className="p-6 sm:p-8 bg-white rounded-3xl border border-primary/10 shadow-xs space-y-6">
+              <div className="border-b border-primary/5 pb-4 space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-[11px] font-bold">
+                    ๔ จุดเด่นเรือน ๑๐๐ ปี
+                  </span>
+                  <span className="text-xs font-bold text-primary">
+                    อัปโหลดรูปภาพจริง & เรื่องเล่าเฉพาะจุด
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-primary">
+                  ๖. จัดการรูปภาพและเรื่องเล่า ๔ จุดเด่น (Quick Facts Stories)
+                </h3>
+                <p className="text-xs text-primary/70 leading-relaxed">
+                  จุดเด่นทั้ง ๔ ข้อบนหน้าแรก (🏛️ ๑๐๐+ ปี, 🔨 ๐ ตัว ไร้ตะปู, 👨‍👩‍👧‍👦 ๔ รุ่นคน, 🌶️ ตำมือ ๑๐๐%) สามารถกดเข้าไปดูอัลบั้มภาพและเรื่องราวได้ คุณสามารถเพิ่มรูปภาพจริง (ภาพบ้าน, ภาพข้อต่อไม้, ภาพครอบครัว, ภาพคุณป้าในครัว) ได้ที่นี่
+                </p>
+              </div>
+
+              {/* 4 Tabs selector */}
+              <div className="flex flex-wrap gap-2 border-b border-primary/10 pb-3">
+                {[
+                  { id: "house" as const, emoji: "🏛️", title: "๑. เรือนไม้สัก ๑๐๐+ ปี" },
+                  { id: "wood" as const, emoji: "🔨", title: "๒. ๐ ตัว ไร้ตะปู" },
+                  { id: "family" as const, emoji: "👨‍👩‍👧‍👦", title: "๓. คน ๔ รุ่น" },
+                  { id: "kitchen" as const, emoji: "🌶️", title: "๔. ตำมือ ๑๐๐% & คุณป้า" },
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setAdminStoryTab(tab.id)}
+                    className={`px-4 py-2 rounded-2xl text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      adminStoryTab === tab.id
+                        ? "bg-accent text-white shadow-xs"
+                        : "bg-cream text-primary/70 hover:bg-accent/10 hover:text-primary"
+                    }`}
+                  >
+                    <span>{tab.emoji}</span>
+                    <span>{tab.title}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              {(() => {
+                const currentData = customStoriesData[adminStoryTab] || {};
+                const photos: { url: string; caption: string; tag?: string }[] = currentData.photos || [];
+
+                return (
+                  <div className="space-y-6 pt-2">
+                    {/* Upload button for this story */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 bg-cream/40 rounded-2xl border border-primary/10">
+                      <div>
+                        <h4 className="font-bold text-sm text-primary">
+                          {adminStoryTab === "house" && "🏛️ คลังรูปภาพเรือนไม้สัก ๑๐๐+ ปี"}
+                          {adminStoryTab === "wood" && "🔨 คลังรูปภาพข้อต่อไม้ / เข้าเดือยไร้ตะปู"}
+                          {adminStoryTab === "family" && "👨‍👩‍👧‍👦 คลังรูปภาพครอบครัว ๔ รุ่น / หม่อนน้อย / ตายาย"}
+                          {adminStoryTab === "kitchen" && "🌶️ คลังรูปภาพคุณป้าในครัว & พริกแกงตำมือ"}
+                        </h4>
+                        <p className="text-xs text-primary/60">
+                          มีรูปภาพที่อัปโหลดเพิ่มในหมวดนี้แล้ว {photos.length} รูป (อัปโหลดเพิ่มได้ไม่จำกัด)
+                        </p>
+                      </div>
+
+                      <div className="shrink-0 w-full sm:w-auto">
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          id={`upload-story-${adminStoryTab}`}
+                          className="hidden"
+                          disabled={settingsLoading}
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            if (files.length === 0) return;
+                            setSettingsLoading(true);
+                            setSettingsMsg("กำลังอัปโหลดรูปภาพ...");
+
+                            let nextPhotos = [...photos];
+                            for (const file of files) {
+                              await new Promise<void>((resolve) => {
+                                handleFileUpload(
+                                  file,
+                                  (url) => {
+                                    nextPhotos.push({
+                                      url,
+                                      caption: file.name.replace(/\.[^/.]+$/, ""),
+                                      tag: adminStoryTab === "house" ? "เรือนโบราณ" : adminStoryTab === "wood" ? "ข้อต่อไม้" : adminStoryTab === "family" ? "ครอบครัว" : "ในครัว"
+                                    });
+                                    resolve();
+                                  },
+                                  () => resolve()
+                                );
+                              });
+                            }
+
+                            const nextCustomStories = {
+                              ...customStoriesData,
+                              [adminStoryTab]: {
+                                ...currentData,
+                                photos: nextPhotos
+                              }
+                            };
+                            const jsonStr = JSON.stringify(nextCustomStories);
+                            setSettings(prev => ({ ...prev, custom_stories_data: jsonStr }));
+
+                            try {
+                              await fetch("/api/admin/settings", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ custom_stories_data: jsonStr }),
+                              });
+                              setSettingsMsg(`✅ เพิ่มรูปภาพลงในเรื่องเล่าเรียบร้อยแล้ว!`);
+                              router.refresh();
+                            } catch {
+                              setSettingsMsg("เกิดข้อผิดพลาดในการบันทึก");
+                            }
+                            setSettingsLoading(false);
+                          }}
+                        />
+                        <label
+                          htmlFor={`upload-story-${adminStoryTab}`}
+                          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs bg-accent hover:bg-accent-dark text-white shadow-xs transition-all cursor-pointer ${
+                            settingsLoading ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
+                        >
+                          <Camera className="w-4 h-4" />
+                          <span>+ อัปโหลดรูปภาพเพิ่มในหมวดนี้</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Photos Grid */}
+                    {photos.length > 0 ? (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {photos.map((p, idx) => (
+                          <div
+                            key={idx}
+                            className="relative aspect-4/3 rounded-2xl overflow-hidden border border-primary/15 group shadow-xs bg-black/10"
+                          >
+                            <img
+                              src={p.url}
+                              alt={p.caption || "Story photo"}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            {p.tag && (
+                              <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/70 text-[10px] text-white font-bold">
+                                {p.tag}
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (!confirm("ต้องการลบรูปภาพนี้ใช่หรือไม่?")) return;
+                                const nextPhotos = photos.filter((_, i) => i !== idx);
+                                const nextCustomStories = {
+                                  ...customStoriesData,
+                                  [adminStoryTab]: {
+                                    ...currentData,
+                                    photos: nextPhotos
+                                  }
+                                };
+                                const jsonStr = JSON.stringify(nextCustomStories);
+                                setSettings(prev => ({ ...prev, custom_stories_data: jsonStr }));
+                                try {
+                                  await fetch("/api/admin/settings", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ custom_stories_data: jsonStr }),
+                                  });
+                                  setSettingsMsg("✅ ลบรูปภาพเรียบร้อยแล้ว");
+                                  router.refresh();
+                                } catch {
+                                  setSettingsMsg("เกิดข้อผิดพลาดในการลบรูป");
+                                }
+                              }}
+                              className="absolute top-2 right-2 p-1.5 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                              title="ลบรูปนี้"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 border border-dashed border-primary/20 rounded-2xl text-center space-y-2 bg-cream/20">
+                        <p className="text-xs text-primary/70 font-semibold">
+                          ยังไม่มีรูปภาพที่อัปโหลดเพิ่มเติมในหมวดนี้ (ระบบกำลังใช้รูปภาพเริ่มต้นที่สวยงามให้โดยอัตโนมัติ)
+                        </p>
+                        <p className="text-[11px] text-primary/50">
+                          เมื่อคุณมีรูปถ่ายจริง (เช่น ถ่ายข้อต่อไม้, ถ่ายคุณป้าตำพริกแกง) สามารถแตะปุ่ม "+ อัปโหลดรูปภาพเพิ่มในหมวดนี้" ได้ทันที
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         )}

@@ -4,6 +4,7 @@ import { getDb } from "@/lib/db";
 import { getSetting, MenuItem } from "@/lib/data";
 import BookingForm from "@/components/BookingForm";
 import AtmosphereGallery from "@/components/AtmosphereGallery";
+import QuickFactsStoryModal from "@/components/QuickFactsStoryModal";
 import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight } from "lucide-react";
 
 export const revalidate = 0; // Dynamic on request
@@ -125,6 +126,15 @@ export default async function Home() {
     }
   }
 
+  // Custom Stories Data for 4 Quick Facts
+  const rawCustomStories = await getSetting("custom_stories_data");
+  let customStoriesData = undefined;
+  try {
+    if (rawCustomStories) {
+      customStoriesData = JSON.parse(rawCustomStories);
+    }
+  } catch {}
+
   return (
     <div className="flex flex-col space-y-20 pb-20">
       {/* 1. Hero Section (Always on Top) */}
@@ -191,29 +201,8 @@ export default async function Home() {
                     <span className="block not-italic font-semibold text-accent text-xs mt-1.5 text-right">— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี</span>
                   </blockquote>
 
-                  {/* 4 Quick Facts of the 100-Year House */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
-                      <span className="text-xl">🏛️</span>
-                      <p className="font-thai font-bold text-base text-accent">๑๐๐+ ปี</p>
-                      <p className="text-[10px] font-thai text-[#f7eee3]/70">อายุเรือนไม้สัก</p>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
-                      <span className="text-xl">🔨</span>
-                      <p className="font-thai font-bold text-base text-accent">๐ ตัว</p>
-                      <p className="text-[10px] font-thai text-[#f7eee3]/70">ไร้ตะปู เข้าเดือย</p>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
-                      <span className="text-xl">👨‍👩‍👧‍👦</span>
-                      <p className="font-thai font-bold text-base text-accent">๔ รุ่นคน</p>
-                      <p className="text-[10px] font-thai text-[#f7eee3]/70">สืบทอดรสมือ</p>
-                    </div>
-                    <div className="p-3 rounded-2xl bg-[#261810] border border-accent/20 text-center space-y-1">
-                      <span className="text-xl">🌶️</span>
-                      <p className="font-thai font-bold text-base text-accent">ตำมือ ๑๐๐%</p>
-                      <p className="text-[10px] font-thai text-[#f7eee3]/70">พริกแกงสดไม่สำเร็จ</p>
-                    </div>
-                  </div>
+                  {/* 4 Interactive Quick Facts of the 100-Year House with Story Modals */}
+                  <QuickFactsStoryModal customStoriesData={customStoriesData} />
 
                   <div className="font-thai text-sm sm:text-base text-[#f5ece1]/85 leading-relaxed space-y-3">
                     <p>
