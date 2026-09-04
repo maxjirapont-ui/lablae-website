@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MenuItem, Article } from "@/lib/data";
+import StoryTextEditor, { StoryTextFields } from "./StoryTextEditor";
 import {
   Calendar,
   Utensils,
@@ -497,6 +498,82 @@ export default function AdminDashboard({
       }
     } catch (err) {
       setSettingsMsg("ไม่สามารถเชื่อมต่อเครือข่ายได้");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  // Quick Facts Stories handlers
+  const handleSaveStoryFields = async (
+    storyId: "house" | "wood" | "family" | "kitchen",
+    fields: StoryTextFields
+  ) => {
+    setSettingsLoading(true);
+    setSettingsMsg("กำลังบันทึกข้อมูลเรื่องเล่า...");
+
+    const currentTabPhotos = customStoriesData[storyId]?.photos || [];
+    const nextCustomStories = {
+      ...customStoriesData,
+      [storyId]: {
+        ...customStoriesData[storyId],
+        ...fields,
+        photos: currentTabPhotos,
+      },
+    };
+
+    const jsonStr = JSON.stringify(nextCustomStories);
+    setSettings((prev) => ({ ...prev, custom_stories_data: jsonStr }));
+
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ custom_stories_data: jsonStr }),
+      });
+      if (res.ok) {
+        setSettingsMsg("✅ บันทึกข้อความเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        router.refresh();
+      } else {
+        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลเรื่องเล่า");
+      }
+    } catch {
+      setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const handleResetStoryFields = async (
+    storyId: "house" | "wood" | "family" | "kitchen"
+  ) => {
+    setSettingsLoading(true);
+    setSettingsMsg("กำลังคืนค่าข้อความเริ่มต้น...");
+
+    const currentTabPhotos = customStoriesData[storyId]?.photos || [];
+    const nextCustomStories = { ...customStoriesData };
+    if (currentTabPhotos.length > 0) {
+      nextCustomStories[storyId] = { photos: currentTabPhotos };
+    } else {
+      delete nextCustomStories[storyId];
+    }
+
+    const jsonStr = JSON.stringify(nextCustomStories);
+    setSettings((prev) => ({ ...prev, custom_stories_data: jsonStr }));
+
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ custom_stories_data: jsonStr }),
+      });
+      if (res.ok) {
+        setSettingsMsg("✅ คืนค่าข้อความเริ่มต้นสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        router.refresh();
+      } else {
+        setSettingsMsg("เกิดข้อผิดพลาดในการคืนค่าข้อความ");
+      }
+    } catch {
+      setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
     } finally {
       setSettingsLoading(false);
     }
@@ -1934,6 +2011,38 @@ export default function AdminDashboard({
                         </p>
                       </div>
                     )}
+
+                    {/* Story Text & Narrative Editor */}
+                    <StoryTextEditor
+                      key={adminStoryTab}
+                      storyId={adminStoryTab}
+                      storyEmoji={
+                        adminStoryTab === "house"
+                          ? "🏛️"
+                          : adminStoryTab === "wood"
+                          ? "🔨"
+                          : adminStoryTab === "family"
+                          ? "👨‍👩‍👧‍👦"
+                          : "🌶️"
+                      }
+                      storyTabName={
+                        adminStoryTab === "house"
+                          ? "๑. เรือนไม้สัก ๑๐๐+ ปี"
+                          : adminStoryTab === "wood"
+                          ? "๒. ๐ ตัว ไร้ตะปู"
+                          : adminStoryTab === "family"
+                          ? "๓. คน ๔ รุ่น"
+                          : "๔. ตำมือ ๑๐๐% & คุณป้า"
+                      }
+                      currentCustomData={currentData}
+                      onSave={async (fields) => {
+                        await handleSaveStoryFields(adminStoryTab, fields);
+                      }}
+                      onReset={async () => {
+                        await handleResetStoryFields(adminStoryTab);
+                      }}
+                      isLoading={settingsLoading}
+                    />
                   </div>
                 );
               })()}

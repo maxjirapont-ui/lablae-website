@@ -25,7 +25,7 @@ export interface StoryData {
   }[];
 }
 
-const DEFAULT_STORIES: StoryData[] = [
+export const DEFAULT_STORIES: StoryData[] = [
   {
     id: "house",
     emoji: "🏛️",
@@ -213,9 +213,29 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
   const stories = DEFAULT_STORIES.map((story) => {
     const custom = customStoriesData?.[story.id];
     if (!custom) return story;
+
+    let paragraphs = story.paragraphs;
+    if (typeof custom.paragraphs === "string") {
+      const split = (custom.paragraphs as string)
+        .split(/\n\n+/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (split.length > 0) paragraphs = split;
+    } else if (Array.isArray(custom.paragraphs) && custom.paragraphs.length > 0) {
+      paragraphs = custom.paragraphs;
+    }
+
     return {
       ...story,
       ...custom,
+      badge: custom.badge?.trim() || story.badge,
+      title: custom.title?.trim() || story.title,
+      subtitle: custom.subtitle !== undefined ? custom.subtitle : story.subtitle,
+      quote: custom.quote !== undefined ? custom.quote : story.quote,
+      quoteAuthor: custom.quoteAuthor !== undefined ? custom.quoteAuthor : story.quoteAuthor,
+      stat: custom.stat?.trim() || story.stat,
+      statLabel: custom.statLabel?.trim() || story.statLabel,
+      paragraphs,
       photos: custom.photos && custom.photos.length > 0 ? custom.photos : story.photos,
     };
   });
