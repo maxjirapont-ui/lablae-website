@@ -1,10 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileQuickBar from "@/components/MobileQuickBar";
 import { getSetting } from "@/lib/data";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 const inter = Inter({
   variable: "--font-inter",
@@ -196,7 +202,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1]">
+      <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1] overflow-x-hidden">
         <Navbar logoUrl={brandLogo} btnText={navbarBtnText} btnLink={navbarBtnLink} />
         <main className="flex-grow pt-24 pb-16 md:pb-0">{children}</main>
         <Footer />
