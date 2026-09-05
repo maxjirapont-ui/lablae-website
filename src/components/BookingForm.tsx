@@ -37,21 +37,6 @@ const STATUS_LABEL: Record<SlotStatus, string> = {
   full: "เต็ม",
 };
 
-const STATUS_DOT: Record<SlotStatus, string> = {
-  available: "bg-emerald-400",
-  few: "bg-amber-400",
-  full: "bg-rose-400",
-};
-
-function formatDateLabel(date: string): { weekday: string; day: string; month: string } {
-  const value = new Date(`${date}T12:00:00+07:00`);
-  return {
-    weekday: new Intl.DateTimeFormat("th-TH", { weekday: "short", timeZone: "Asia/Bangkok" }).format(value),
-    day: String(value.getDate()),
-    month: new Intl.DateTimeFormat("th-TH", { month: "short", timeZone: "Asia/Bangkok" }).format(value),
-  };
-}
-
 export default function BookingForm() {
   const [formData, setFormData] = useState({ name: "", phone: "", date: "", time: "", guests: "2", notes: "" });
   const [availability, setAvailability] = useState<AvailabilityResponse | null>(null);
@@ -68,19 +53,14 @@ export default function BookingForm() {
     try {
       const query = startDate
         ? `/api/reservations/availability?days=1&date=${encodeURIComponent(startDate)}`
-        : "/api/reservations/availability?days=21";
+        : "/api/reservations/availability?days=1";
       const response = await fetch(query, { cache: "no-store" });
       const data = await response.json() as AvailabilityResponse & { error?: string };
       if (!response.ok) throw new Error(data.error || "โหลดเวลาว่างไม่สำเร็จ");
       setAvailability(data);
       if (!startDate && data.days[0]?.date) setMinimumDate(data.days[0].date);
       setFormData((previous) => {
-        const selectedStillOpen = data.days.some((day) => day.date === previous.date && day.status !== "full");
-        const nextDate = startDate
-          ? data.days[0]?.date || startDate
-          : selectedStillOpen
-            ? previous.date
-            : data.days.find((day) => day.status !== "full")?.date || "";
+        const nextDate = data.days[0]?.date || startDate || "";
         const selectedDay = data.days.find((day) => day.date === nextDate);
         const selectedSlotStillOpen = selectedDay?.slots.some((slot) => slot.time === previous.time && slot.status !== "full");
         return {
@@ -183,63 +163,22 @@ export default function BookingForm() {
           <legend className="flex items-center gap-2 font-thai text-sm font-bold text-cream mb-3">
             <CalendarDays className="w-4 h-4 text-accent" /> วันที่จอง
           </legend>
-          {loadingAvailability ? (
-            <div className="grid grid-cols-3 sm:grid-cols-7 gap-2" aria-label="กำลังโหลดวันว่าง">
-              {Array.from({ length: 7 }, (_, index) => <div key={index} className="h-20 rounded-xl bg-white/5 animate-pulse" />)}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-                {availability?.days.map((day) => {
-                  const label = formatDateLabel(day.date);
-                  const selected = formData.date === day.date;
-                  return (
-                    <button
-                      key={day.date}
-                      type="button"
-                      disabled={day.status === "full"}
-                      onClick={() => setFormData((previous) => ({ ...previous, date: day.date, time: "" }))}
-                      aria-pressed={selected}
-                      className={`min-h-20 rounded-xl border px-2 py-2.5 text-center transition-colors disabled:opacity-45 disabled:cursor-not-allowed ${selected ? "border-accent bg-accent/20 text-cream" : "border-white/10 bg-black/15 text-cream/80 hover:border-accent/50"}`}
-                    >
-                      <span className="block text-xs">{label.weekday}</span>
-                      <span className="block text-lg font-bold leading-tight">{label.day}</span>
-                      <span className="block text-xs">{label.month}</span>
-                      <span className="mt-1 flex items-center justify-center gap-1 text-[11px]">
-                        <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[day.status]}`} /> {STATUS_LABEL[day.status]}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-end gap-2 rounded-xl border border-white/10 bg-black/15 p-3">
-                <label className="flex-1 text-xs font-bold text-cream">
-                  เลือกวันอื่น
-                  <input
-                    type="date"
-                    min={minimumDate || undefined}
-                    value={formData.date}
-                    onChange={(event) => {
-                      const date = event.target.value;
-                      setFormData((previous) => ({ ...previous, date, time: "" }));
-                      if (date) void loadAvailability(date);
-                    }}
-                    className="mt-1 block w-full rounded-lg border border-accent/30 bg-[#1a100a] px-3 py-2 text-sm text-cream focus:outline-none focus:ring-2 focus:ring-accent/40"
-                  />
-                </label>
-                {availability?.days.length === 1 && (
-                  <button type="button" onClick={() => void loadAvailability()} className="rounded-lg border border-accent/30 px-3 py-2 text-xs font-bold text-accent hover:bg-accent/10">
-                    ดู 21 วันข้างหน้า
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+          <input
+            type="date"
+            min={minimumDate || undefined}
+            value={formData.date}
+            onChange={(event) => {
+              const date = event.target.value;
+              setFormData((previous) => ({ ...previous, date, time: "" }));
+              if (date) void loadAvailability(date);
+            }}
+            className="block w-full rounded-xl border border-accent/30 bg-[#1a100a] px-4 py-3 text-sm text-cream focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-60"
+          />
         </fieldset>
 
         <fieldset disabled={!selectedDay}>
           <legend className="flex items-center gap-2 font-thai text-sm font-bold text-cream mb-3">
-            <Clock className="w-4 h-4 text-accent" /> เวลาที่จอง
+            <Clock className="w-4 h-4 text-accent" /> เลือกเวลา
           </legend>
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
             {selectedDay?.slots.map((slot) => {
