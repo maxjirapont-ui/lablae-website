@@ -1,11 +1,28 @@
 import { setAdminPassword } from "./admin-auth";
 import { getDb } from "./db";
+import { toArabicDigits } from "./text";
 
 const CLIENT_BLOCKED_KEYS = new Set([
   "admin_password_hash",
   "admin_password_configured",
   "line_notify_token_configured",
   "last_published_at",
+]);
+
+const DIGIT_NORMALIZATION_EXCLUDED_KEYS = new Set([
+  "admin_password",
+  "line_notify_token",
+  "announcement_link",
+  "brand_logo",
+  "facebook_url",
+  "google_maps_url",
+  "google_reviews_url",
+  "hero_btn1_link",
+  "hero_btn2_link",
+  "home_about_image",
+  "home_hero_image",
+  "tiktok_url",
+  "youtube_url",
 ]);
 
 export async function saveAdminSettings(
@@ -28,8 +45,11 @@ export async function saveAdminSettings(
     // A blank field means "keep the existing token"; the stored token is never sent to the browser.
     if (key === "line_notify_token" && !String(value ?? "").trim()) continue;
 
-    const stringValue =
+    const rawStringValue =
       typeof value === "object" ? JSON.stringify(value) : String(value ?? "");
+    const stringValue = DIGIT_NORMALIZATION_EXCLUDED_KEYS.has(key)
+      ? rawStringValue
+      : toArabicDigits(rawStringValue);
     await db.run(
       `INSERT INTO settings (key, value) VALUES (?, ?)
        ON CONFLICT(key) DO UPDATE SET value = excluded.value`,

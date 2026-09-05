@@ -7,8 +7,8 @@ import { Sparkles, FileText, AlertCircle, Calendar } from "lucide-react";
 export const revalidate = 0; // Disable static cache for menu, so dashboard updates show instantly
 
 export const metadata = {
-  title: "กับข้าวและสำรับอาหาร | ร้านลำลำลับแลบ้าน ๑๐๐ ปี",
-  description: "เมนูอาหารเหนือแบบลับแล ขันโตก น้ำพริกหนุ่ม น้ำพริกอ่อง ข้าวพันผัก และอาหารพื้นบ้านสูตรโบราณ ๔ รุ่น",
+  title: "กับข้าวและสำรับอาหาร | ร้านลำลำลับแลบ้าน 100 ปี",
+  description: "เมนูอาหารเหนือแบบลับแล ขันโตก น้ำพริกหนุ่ม น้ำพริกอ่อง ข้าวพันผัก และอาหารพื้นบ้านสูตรโบราณ 4 รุ่น",
 };
 
 export default async function MenuPage() {
@@ -20,7 +20,7 @@ export default async function MenuPage() {
   const categoriesOrder = (await getSetting("menu_categories_order")) || "เซตขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มและน้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม";
 
   // Dynamic texts and PDF URL
-  const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน ๑๐๐ ปี";
+  const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน 100 ปี";
   const title = (await getSetting("menu_page_title")) || "กับข้าวและสำรับอาหาร";
   const subtitle = (await getSetting("menu_page_subtitle")) || "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล";
   const notice = (await getSetting("menu_page_notice")) || "";

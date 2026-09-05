@@ -71,16 +71,16 @@ export const DEFAULT_ABOUT_DATA: AboutCustomData = {
   header_title: "ที่นี่คือจุดที่อดีตยังกินได้จริง",
   header_subtitle: "เรื่องราวของเรือนไม้ไร้ตะปู คนสี่รุ่น และสำรับอาหารแห่งความทรงจำ ณ ลำลำลับแล",
 
-  tab1_title: "เรือนไม้ร้อยปีไร้ตะปู กับคน ๔ รุ่นที่รักษามันไว้",
+  tab1_title: "เรือนไม้ร้อยปีไร้ตะปู กับคน 4 รุ่นที่รักษามันไว้",
   tab1_desc: "จากพ่อขากลิ้ง–แม่ขายอด หม่อนน้อย ตาเงิน–ยายจัน สู่วันที่บ้านกลับมาหายใจ",
   tab1_intro: "เรือนไม้หลังนี้สร้างขึ้นเมื่อราวร้อยปีก่อน โดยทวดของเราสองท่าน — พ่อขากลิ้งกับแม่ขายอด ในยุคที่พระศรีพนมมาศเพิ่งวางผังเมืองลับแลเสร็จไม่นาน การสร้างเรือนใหญ่หลังวัดป่ายางในยุคนั้น คือการประกาศว่าครอบครัวนี้จะหยั่งรากและไม่ไปไหนอีกแล้ว",
-  tab1_gen1_badge: "รุ่นที่ ๑ · ผู้สร้าง",
+  tab1_gen1_badge: "รุ่นที่ 1 · ผู้สร้าง",
   tab1_gen1_name: "พ่อขากลิ้ง กับ แม่ขายอด (สถาปัตยกรรมไร้ตะปู)",
   tab1_gen1_desc: "ท่านสร้างบ้านด้วยวิธีของช่างโบราณแท้ๆ: ไม่ใช้ตะปูแม้แต่ตัวเดียว ไม้ทั้งหลังสอดรับจับกันด้วยการเข้าเดือยเข้าสลัก ยืดหยุ่นตามการหดขยายของไม้ อยู่ทนได้เป็นร้อยปีอย่างที่ตะปูเหล็กทำไม่ได้ ทวดของเราสร้างบ้านด้วยตรรกะเดียวกับคนเมืองนี้: ช้ากว่า ยากกว่า แต่อยู่ทนกว่า",
   tab1_gen2_badge: "ผู้เฝ้าเรือน · ผู้ซื่อสัตย์",
   tab1_gen2_name: "หม่อนน้อย (ผู้ทำให้บ้านรอดพ้นการถูกรื้อขาย)",
   tab1_gen2_desc: "หญิงชราเท้าเปล่าผู้ใช้ชีวิตอยู่บนเรือนใหญ่เพียงลำพัง เลี้ยงชีพด้วยการทอผ้าซิ่นตีนจกบนกี่และเลี้ยงหมูใต้ถุน ในยุคที่เรือนโบราณทั่วลับแลเริ่มถูกรื้อขายเป็นไม้เก่า เรือนของเราหลังนี้รอดมาได้เพราะมีหม่อนน้อยอยู่เฝ้าทุกคืนนานหลายสิบปี ท่านคือผู้ร่วมสร้างประวัติศาสตร์ที่มีชีวิตของบ้านหลังนี้",
-  tab1_gen3_badge: "รุ่นที่ ๓ · ผู้ให้รสมือ",
+  tab1_gen3_badge: "รุ่นที่ 3 · ผู้ให้รสมือ",
   tab1_gen3_name: "ตาเงิน กับ ยายจัน (กำเนิดสำรับปิ่นโตหน้ารถป๊อปน้อย)",
   tab1_gen3_desc: "ตาทำกับข้าว ยายจัดใส่ปิ่นโต ห้อยไว้กับรถป๊อปน้อยคู่ใจ ขี่ไปส่งลูกหลานทีละบ้าน กับข้าวเดินทางก่อนคำว่า “เดลิเวอรี” จะเกิดหลายสิบปี พริกแกงทุกครกโขลกเองด้วยมือ ไม่มีของสำเร็จเข้าบ้านนี้ และคือต้นกำเนิดของสำรับบ้านเรา: แกงอ่อม, สามชั้นทอดพริกข่า, น้ำพริกหนุ่ม, น้ำพริกอ่อง, และไส้อั่ว",
   tab1_gen4_badge: "รุ่นปัจจุบัน · ชุบชีวิต",
@@ -93,11 +93,11 @@ export const DEFAULT_ABOUT_DATA: AboutCustomData = {
   tab2_desc: "“บ้านเราอยู่ตรงกลางพอดี รสชาติมันเลยผสมๆ” — คำตอบของยายจัน",
   tab2_intro: "หลายคนแปลกใจเมื่อได้ทานอาหารลับแล เพราะถึงแม้จะใช้คำเมือง ทานข้าวเหนียว แต่รสชาติกลับกลมกล่อม หวานละมุน และถูกปากคนภาคกลางอย่างน่าประหลาด คำตอบของเรื่องนี้ ยายจันเคยตอบไว้ในประโยคเดียวระหว่างโขลกพริกแกง:",
   tab2_quote: "“อาหารบ้านเรามันผสมหลายวัฒนธรรม บ้านเหนือแถบหัวดงเป็นล้านนา บ้านใต้แถบทุ่งยั้งเป็นสุโขทัย บ้านเราอยู่ตรงกลางพอดี รสชาติมันเลยผสมๆ”",
-  tab2_card1_title: "๑. เผ็ดชาที่ผ่อนลงตามละติจูด",
+  tab2_card1_title: "1. เผ็ดชาที่ผ่อนลงตามละติจูด",
   tab2_card1_desc: "ลับแลคือด่านสุดท้ายของอาณาจักร “มะแขว่น” กลิ่นรสเผ็ดชาแบบล้านนายังอยู่ครบ แต่เบามือลงจนลิ้นภาคกลางรับไหว ไม่แสบแก้วหู",
-  tab2_card2_title: "๒. หวานธรรมชาติจากเมืองผลไม้",
+  tab2_card2_title: "2. หวานธรรมชาติจากเมืองผลไม้",
   tab2_card2_desc: "เมืองที่ล้อมด้วยทุเรียน ลางสาด ลองกอง ความหวานจึงแทรกซึมเข้าสู่น้ำพริกและแกงอย่างละมุน ไม่ใช่ความหวานแปลกปลอมจากน้ำตาล",
-  tab2_card3_title: "๓. ข้าวเจ้าเคียงข้าวเหนียว",
+  tab2_card3_title: "3. ข้าวเจ้าเคียงข้าวเหนียว",
   tab2_card3_desc: "โลกเหนือกินข้าวเหนียว โลกสยามกินข้าวเจ้า ลับแลกินทั้งคู่ เกิดเป็นจานพิเศษที่มีที่นี่ที่เดียวอย่าง “ข้าวพันผัก”",
   tab2_formula_title: "สมการแห่งเมืองลับแล: ข้าวพันผัก",
   tab2_formula_desc: "เทคนิคข้าวแคบจากเหนือ + ข้าวเจ้าจากสายสุโขทัย + ผักสดจากสวนตัวเอง = ข้าวพันผัก จานที่เล่าประวัติศาสตร์ของทั้งเมืองได้ในคำเดียว",
@@ -107,7 +107,7 @@ export const DEFAULT_ABOUT_DATA: AboutCustomData = {
   tab3_legend_title: "“ขอเพียงสัจจะวาจา”",
   tab3_legend_desc1: "ตำนานเมืองแม่ม่ายที่ชายหนุ่มพลัดหลงเข้าไป และต้องออกจากเมืองเพียงเพราะคำโกหกเดียวเพื่อปลอบลูกที่กำลังร้องไห้ ภรรยาให้ย่ามใส่ขมิ้นติดตัวมา แต่เขาเห็นว่าหนักจึงทิ้งไปตลอดทาง กว่าจะรู้ว่าขมิ้นกลายเป็นทองคำ ก็เหลืออยู่ก้นย่ามไม่กี่แง่ง",
   tab3_legend_desc2: "สูตรของยาย ผักพื้นบ้านริมรั้ว วิธีตำพริกด้วยมือ เตาถ่านที่ช้ากว่าแก๊ส เรือนไม้ที่ซ่อมแพงกว่ารื้อ — ทั้งหมดคือ “ขมิ้นในย่าม” ที่เราสัญญาว่าจะรักษาไว้ ไม่ทิ้งไปตามกาลเวลา",
-  tab3_card1_title: "ศิลาจารึกสุโขทัย (พุทธศตวรรษที่ ๑๙)",
+  tab3_card1_title: "ศิลาจารึกสุโขทัย (พุทธศตวรรษที่ 19)",
   tab3_card1_desc: "หลักฐานขุดพบหน้าวิหารวัดเจดีย์คีรีวิหาร และซากคันดินโบราณเมืองทุ่งยั้ง บ่งชี้ว่าเมืองลับแลเป็นชุมชนที่อยู่ในสายพระเนตรและสายบุญของราชธานีสุโขทัยมาเนิ่นนาน",
   tab3_card2_title: "พระศรีพนมมาศ (นายอำเภอทองอิน)",
   tab3_card2_desc: "จากเด็กกำพร้าวัดป่ายาง สู่ผู้วางผังเมือง สร้างฝายหลวง และให้กำเนิด “ไม้กวาดตองกง” หัตถกรรมที่เลี้ยงคนทั้งเมืองมานับร้อยปี",
@@ -195,7 +195,7 @@ export default function AboutPageEditor({
             จัดการเนื้อหาหน้า “รู้จักเรา & ตำนานลับแล” (About Page)
           </h3>
           <p className="text-xs text-primary/70 leading-relaxed">
-            สามารถแก้ไขชื่อบรรพบุรุษ ประวัติศาสตร์ ๔ รุ่นคน รสชาติรอยต่อวัฒนธรรม และตำนานเมืองลับแล ให้ถูกต้องตรงตามจริงได้ทุกส่วน
+            สามารถแก้ไขชื่อบรรพบุรุษ ประวัติศาสตร์ 4 รุ่นคน รสชาติรอยต่อวัฒนธรรม และตำนานเมืองลับแล ให้ถูกต้องตรงตามจริงได้ทุกส่วน
           </p>
         </div>
 
@@ -224,9 +224,9 @@ export default function AboutPageEditor({
       <div className="flex flex-wrap gap-2 border-b border-primary/10 pb-3">
         {[
           { id: "header" as const, label: "หัวข้อหน้าเว็บ", icon: Sparkles },
-          { id: "tab1" as const, label: "แท็บ ๑: คน ๔ รุ่น & เรือนไม้", icon: Home },
-          { id: "tab2" as const, label: "แท็บ ๒: รสชาติรอยต่อ", icon: UtensilsCrossed },
-          { id: "tab3" as const, label: "แท็บ ๓: ตำนานสัจจะวาจา", icon: Scroll },
+          { id: "tab1" as const, label: "แท็บ 1: คน 4 รุ่น & เรือนไม้", icon: Home },
+          { id: "tab2" as const, label: "แท็บ 2: รสชาติรอยต่อ", icon: UtensilsCrossed },
+          { id: "tab3" as const, label: "แท็บ 3: ตำนานสัจจะวาจา", icon: Scroll },
         ].map((tab) => {
           const Icon = tab.icon;
           const isSelected = activeTab === tab.id;
@@ -296,12 +296,12 @@ export default function AboutPageEditor({
             <div className="p-4 bg-cream/40 rounded-2xl border border-primary/10 space-y-3">
               <h4 className="font-bold text-sm text-primary flex items-center gap-1.5">
                 <Home className="w-4 h-4 text-accent" />
-                <span>หัวข้อและบทนำของแท็บ ๑</span>
+                <span>หัวข้อและบทนำของแท็บ 1</span>
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-primary mb-1">
-                    ชื่อหัวข้อแท็บ ๑
+                    ชื่อหัวข้อแท็บ 1
                   </label>
                   <input
                     type="text"
@@ -312,7 +312,7 @@ export default function AboutPageEditor({
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-primary mb-1">
-                    คำโปรยใต้หัวข้อแท็บ ๑
+                    คำโปรยใต้หัวข้อแท็บ 1
                   </label>
                   <input
                     type="text"
@@ -339,7 +339,7 @@ export default function AboutPageEditor({
             <div className="space-y-4">
               <h4 className="font-bold text-sm text-primary flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-accent" />
-                <span>ไทม์ไลน์บุคคล ๔ ยุคสมัย (ปรับเปลี่ยนชื่อและเรื่องเล่าได้ที่นี่)</span>
+                <span>ไทม์ไลน์บุคคล 4 ยุคสมัย (ปรับเปลี่ยนชื่อและเรื่องเล่าได้ที่นี่)</span>
               </h4>
 
               {/* Gen 1 */}
@@ -347,7 +347,7 @@ export default function AboutPageEditor({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-accent-dark mb-1">
-                      ป้ายกำกับรุ่นที่ ๑
+                      ป้ายกำกับรุ่นที่ 1
                     </label>
                     <input
                       type="text"
@@ -358,7 +358,7 @@ export default function AboutPageEditor({
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-[11px] font-bold text-primary mb-1">
-                      ชื่อบรรพบุรุษ / หัวข้อรุ่นที่ ๑
+                      ชื่อบรรพบุรุษ / หัวข้อรุ่นที่ 1
                     </label>
                     <input
                       type="text"
@@ -370,7 +370,7 @@ export default function AboutPageEditor({
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-primary/70 mb-1">
-                    เนื้อหาเรื่องราวรุ่นที่ ๑
+                    เนื้อหาเรื่องราวรุ่นที่ 1
                   </label>
                   <textarea
                     rows={3}
@@ -425,7 +425,7 @@ export default function AboutPageEditor({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-accent-dark mb-1">
-                      ป้ายกำกับรุ่นที่ ๓
+                      ป้ายกำกับรุ่นที่ 3
                     </label>
                     <input
                       type="text"
@@ -436,7 +436,7 @@ export default function AboutPageEditor({
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-[11px] font-bold text-primary mb-1">
-                      ชื่อบรรพบุรุษ / หัวข้อรุ่นที่ ๓
+                      ชื่อบรรพบุรุษ / หัวข้อรุ่นที่ 3
                     </label>
                     <input
                       type="text"
@@ -448,7 +448,7 @@ export default function AboutPageEditor({
                 </div>
                 <div>
                   <label className="block text-[11px] font-medium text-primary/70 mb-1">
-                    เนื้อหาเรื่องราวรุ่นที่ ๓ (ต้นกำเนิดรสมือ / เมนูเด็ด)
+                    เนื้อหาเรื่องราวรุ่นที่ 3 (ต้นกำเนิดรสมือ / เมนูเด็ด)
                   </label>
                   <textarea
                     rows={3}
@@ -502,7 +502,7 @@ export default function AboutPageEditor({
             {/* Bottom Quote */}
             <div className="p-4 bg-cream/40 rounded-2xl border border-primary/10 space-y-2">
               <label className="block text-xs font-bold text-primary">
-                คำคมปิดท้ายแท็บ ๑ (Callout Quote)
+                คำคมปิดท้ายแท็บ 1 (Callout Quote)
               </label>
               <input
                 type="text"
@@ -527,7 +527,7 @@ export default function AboutPageEditor({
             <div className="p-4 bg-cream/40 rounded-2xl border border-primary/10 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1">หัวข้อแท็บ ๒</label>
+                  <label className="block text-xs font-bold text-primary mb-1">หัวข้อแท็บ 2</label>
                   <input
                     type="text"
                     value={data.tab2_title}
@@ -536,7 +536,7 @@ export default function AboutPageEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1">คำโปรยแท็บ ๒</label>
+                  <label className="block text-xs font-bold text-primary mb-1">คำโปรยแท็บ 2</label>
                   <input
                     type="text"
                     value={data.tab2_desc}
@@ -570,7 +570,7 @@ export default function AboutPageEditor({
             {/* 3 Flavor Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="p-3 bg-white rounded-2xl border border-primary/15 space-y-2">
-                <label className="block text-[11px] font-bold text-primary">การ์ดที่ ๑</label>
+                <label className="block text-[11px] font-bold text-primary">การ์ดที่ 1</label>
                 <input
                   type="text"
                   value={data.tab2_card1_title}
@@ -585,7 +585,7 @@ export default function AboutPageEditor({
                 />
               </div>
               <div className="p-3 bg-white rounded-2xl border border-primary/15 space-y-2">
-                <label className="block text-[11px] font-bold text-primary">การ์ดที่ ๒</label>
+                <label className="block text-[11px] font-bold text-primary">การ์ดที่ 2</label>
                 <input
                   type="text"
                   value={data.tab2_card2_title}
@@ -600,7 +600,7 @@ export default function AboutPageEditor({
                 />
               </div>
               <div className="p-3 bg-white rounded-2xl border border-primary/15 space-y-2">
-                <label className="block text-[11px] font-bold text-primary">การ์ดที่ ๓</label>
+                <label className="block text-[11px] font-bold text-primary">การ์ดที่ 3</label>
                 <input
                   type="text"
                   value={data.tab2_card3_title}
@@ -641,7 +641,7 @@ export default function AboutPageEditor({
             <div className="p-4 bg-cream/40 rounded-2xl border border-primary/10 space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1">หัวข้อแท็บ ๓</label>
+                  <label className="block text-xs font-bold text-primary mb-1">หัวข้อแท็บ 3</label>
                   <input
                     type="text"
                     value={data.tab3_title}
@@ -650,7 +650,7 @@ export default function AboutPageEditor({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-primary mb-1">คำโปรยแท็บ ๓</label>
+                  <label className="block text-xs font-bold text-primary mb-1">คำโปรยแท็บ 3</label>
                   <input
                     type="text"
                     value={data.tab3_desc}
@@ -692,7 +692,7 @@ export default function AboutPageEditor({
             {/* 2 History cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 bg-white rounded-2xl border border-primary/15 space-y-2">
-                <label className="block text-[11px] font-bold text-primary">การ์ดที่ ๑ (ศิลาจารึกสุโขทัย)</label>
+                <label className="block text-[11px] font-bold text-primary">การ์ดที่ 1 (ศิลาจารึกสุโขทัย)</label>
                 <input
                   type="text"
                   value={data.tab3_card1_title}
@@ -707,7 +707,7 @@ export default function AboutPageEditor({
                 />
               </div>
               <div className="p-3 bg-white rounded-2xl border border-primary/15 space-y-2">
-                <label className="block text-[11px] font-bold text-primary">การ์ดที่ ๒ (พระศรีพนมมาศ)</label>
+                <label className="block text-[11px] font-bold text-primary">การ์ดที่ 2 (พระศรีพนมมาศ)</label>
                 <input
                   type="text"
                   value={data.tab3_card2_title}

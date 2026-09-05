@@ -30,7 +30,7 @@ export interface StoryTextFields {
 
 interface StoryTextEditorProps {
   storyId: "house" | "wood" | "family" | "kitchen";
-  storyEmoji: string;
+  storyImageUrl: string;
   storyTabName: string;
   currentCustomData?: Partial<StoryTextFields> & { photos?: unknown[] };
   onSave: (fields: StoryTextFields) => Promise<void>;
@@ -40,7 +40,7 @@ interface StoryTextEditorProps {
 
 export default function StoryTextEditor({
   storyId,
-  storyEmoji,
+  storyImageUrl,
   storyTabName,
   currentCustomData,
   onSave,
@@ -186,7 +186,9 @@ export default function StoryTextEditor({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-primary/10 pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xl">{storyEmoji}</span>
+            <span className="relative w-9 h-9 rounded-lg overflow-hidden border border-primary/15 bg-cream shrink-0">
+              <img src={storyImageUrl} alt="ภาพหน้าการ์ด" className="w-full h-full object-cover" />
+            </span>
             <h4 className="font-bold text-sm sm:text-base text-primary">
               แก้ไขข้อความ & เรื่องเล่า ({storyTabName})
             </h4>
@@ -240,7 +242,9 @@ export default function StoryTextEditor({
             {/* Mini Card Preview */}
             <div className="p-4 rounded-xl bg-[#2a1a12] border border-accent/20 text-center flex flex-col items-center">
               <span className="text-xs font-bold text-accent/70 mb-2">การ์ดหน้าแรก</span>
-              <span className="text-2xl mb-1">{storyEmoji}</span>
+              <span className="relative w-14 h-14 rounded-xl overflow-hidden border border-accent/25 mb-2">
+                <img src={storyImageUrl} alt="ภาพหน้าการ์ด" className="w-full h-full object-cover" />
+              </span>
               <p className="font-bold text-accent text-base">{stat || "—"}</p>
               <p className="text-xs text-[#f7eee3]/75 mt-0.5">{statLabel || "—"}</p>
             </div>
@@ -304,7 +308,7 @@ export default function StoryTextEditor({
               type="text"
               value={stat}
               onChange={(e) => handleFieldChange(setStat, e.target.value)}
-              placeholder="เช่น ๑๐๐+ ปี, ๐ ตัว, ๔ รุ่นคน"
+              placeholder="เช่น 100+ ปี, 0 ตัว, 4 รุ่นคน"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               required
             />
@@ -355,7 +359,7 @@ export default function StoryTextEditor({
             type="text"
             value={title}
             onChange={(e) => handleFieldChange(setTitle, e.target.value)}
-            placeholder="เช่น เรือนไม้สักทองโบราณ ๑๐๐+ ปี (เรือนหม่อนน้อย)"
+            placeholder="เช่น เรือนไม้สักทองโบราณ 100+ ปี (เรือนหม่อนน้อย)"
             className="w-full px-3.5 py-2.5 rounded-xl border border-primary/20 bg-cream/30 text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             required
           />
@@ -401,7 +405,7 @@ export default function StoryTextEditor({
               type="text"
               value={quoteAuthor}
               onChange={(e) => handleFieldChange(setQuoteAuthor, e.target.value)}
-              placeholder="เช่น ลูกหลานรุ่น ๔ ผู้ดูแลเรือน"
+              placeholder="เช่น ลูกหลานรุ่น 4 ผู้ดูแลเรือน"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             />
           </div>

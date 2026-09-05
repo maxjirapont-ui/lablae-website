@@ -47,11 +47,11 @@ interface HeroSectionEditorProps {
 }
 
 const DEFAULT_HERO_VALUES = {
-  hero_badge: "เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์",
-  hero_title: "ร้านลำลำลับแลบ้าน ๑๐๐ ปี",
+  hero_badge: "เรือนไม้สักโบราณไร้ตะปู 100 ปี · อ.ลับแล จ.อุตรดิตถ์",
+  hero_title: "ร้านลำลำลับแลบ้าน 100 ปี",
   hero_subtitle: "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู",
   hero_description:
-    "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ ๔ รุ่น แวะมากินข้าวบ้านญาตินะครับ",
+    "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ",
   hero_btn1_text: "ดูเมนูอาหารทั้งหมด",
   hero_btn1_link: "/menu",
   hero_btn2_text: "รู้จักบ้านและเรื่องเล่าลับแล",
@@ -174,7 +174,7 @@ export default function HeroSectionEditor({
             </span>
           </div>
           <h3 className="text-lg font-bold text-primary">
-            ๑. ภาพปกและคำอธิบายหน้าแรก
+            1. ภาพปกและคำอธิบายหน้าแรก
           </h3>
           <p className="text-xs text-primary/70 leading-relaxed">
             จุดแรกที่ลูกค้าเปิดเข้ามาพบ สามารถเปลี่ยนรูปภาพพื้นหลัง ป้ายกำกับ ชื่อร้าน คำโปรย คำอธิบาย และปุ่มกดได้ทั้งหมด
@@ -324,7 +324,7 @@ export default function HeroSectionEditor({
                 type="text"
                 value={badge}
                 onChange={(e) => handleFieldChange(setBadge, e.target.value)}
-                placeholder="เช่น เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์"
+                placeholder="เช่น เรือนไม้สักโบราณไร้ตะปู 100 ปี · อ.ลับแล จ.อุตรดิตถ์"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs font-medium text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               />
             </div>
@@ -340,7 +340,7 @@ export default function HeroSectionEditor({
                 type="text"
                 value={title}
                 onChange={(e) => handleFieldChange(setTitle, e.target.value)}
-                placeholder="เช่น ร้านลำลำลับแลบ้าน ๑๐๐ ปี"
+                placeholder="เช่น ร้านลำลำลับแลบ้าน 100 ปี"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
                 required
               />

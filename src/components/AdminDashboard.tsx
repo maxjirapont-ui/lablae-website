@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { MenuItem, Article } from "@/lib/data";
 import StoryTextEditor, { StoryTextFields } from "./StoryTextEditor";
+import { DEFAULT_STORIES } from "./QuickFactsStoryModal";
 import HeroSectionEditor from "./HeroSectionEditor";
 import AmbienceStoryEditor from "./AmbienceStoryEditor";
 import AmbienceGalleryEditor from "./AmbienceGalleryEditor";
@@ -80,7 +81,10 @@ interface Reservation {
 }
 
 type CustomStoryPhoto = GalleryImageItem & { tag?: string };
-type CustomStoryEntry = Partial<StoryTextFields> & { photos?: CustomStoryPhoto[] };
+type CustomStoryEntry = Partial<StoryTextFields> & {
+  photos?: CustomStoryPhoto[];
+  coverImage?: string;
+};
 
 export default function AdminDashboard({
   initialMenus,
@@ -196,6 +200,18 @@ export default function AdminDashboard({
   } catch {
     customStoriesData = {};
   }
+
+  const getStoryCoverImage = (storyId: "house" | "wood" | "family" | "kitchen") => {
+    const customStory = customStoriesData[storyId];
+    const defaultStory = DEFAULT_STORIES.find((story) => story.id === storyId);
+    return (
+      customStory?.coverImage ||
+      customStory?.photos?.[0]?.url ||
+      defaultStory?.coverImage ||
+      defaultStory?.photos[0]?.url ||
+      ""
+    );
+  };
 
   // Logout Handler
   const handleLogout = async () => {
@@ -988,9 +1004,13 @@ export default function AdminDashboard({
     setSettingsMsg("กำลังคืนค่าข้อความเริ่มต้น...");
 
     const currentTabPhotos = customStoriesData[storyId]?.photos || [];
+    const currentCoverImage = customStoriesData[storyId]?.coverImage;
     const nextCustomStories = { ...customStoriesData };
     if (currentTabPhotos.length > 0) {
-      nextCustomStories[storyId] = { photos: currentTabPhotos };
+      nextCustomStories[storyId] = {
+        photos: currentTabPhotos,
+        ...(currentCoverImage ? { coverImage: currentCoverImage } : {}),
+      };
     } else {
       delete nextCustomStories[storyId];
     }
@@ -1160,7 +1180,7 @@ export default function AdminDashboard({
     setSettingsMsg("กำลังบันทึกข้อมูลหน้าเมนูและเล่ม PDF...");
     try {
       const payload = {
-        menu_page_badge: settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน ๑๐๐ ปี",
+        menu_page_badge: settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน 100 ปี",
         menu_page_title: settings.menu_page_title ?? "กับข้าวและสำรับอาหาร",
         menu_page_subtitle: settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล",
         menu_page_notice: settings.menu_page_notice ?? "",
@@ -1805,14 +1825,14 @@ export default function AdminDashboard({
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30">
-                        ๓๒ ตอนครบถ้วน
+                        32 ตอนครบถ้วน
                       </span>
                       <h3 className="font-bold text-sm sm:text-base text-[#f5ece1]">
                         แก้ไขเนื้อหา “ตำราลับแลง” (ที่เป็นบท)
                       </h3>
                     </div>
                     <p className="text-xs text-[#f5ece1]/75 mt-0.5">
-                      แตะที่นี่เพื่อเปิดหน้าแก้ไขเนื้อหาแต่ละบท ทั้ง ๕ ภาค ๒๙ บท + คำนำ + บทส่งท้าย
+                      แตะที่นี่เพื่อเปิดหน้าแก้ไขเนื้อหาแต่ละบท ทั้ง 5 ภาค 29 บท + คำนำ + บทส่งท้าย
                     </p>
                   </div>
                 </div>
@@ -2436,7 +2456,7 @@ export default function AdminDashboard({
                 <div>
                   <h2 className="text-xl font-bold text-primary">จัดการรูปบรรยากาศร้านและหน้าปกเว็บไซต์</h2>
                   <p className="text-xs text-primary/70">
-                    อัปเดตรูปภาพบรรยากาศร้าน รูปหน้าปกหัวเว็บ และรูปบ้านโบราณ ๑๐๐ ปี ได้โดยตรงที่นี่ (ระบบจะบีบอัดและปรับขนาด HD ให้อัตโนมัติ)
+                    อัปเดตรูปภาพบรรยากาศร้าน รูปหน้าปกหัวเว็บ และรูปบ้านโบราณ 100 ปี ได้โดยตรงที่นี่ (ระบบจะบีบอัดและปรับขนาด HD ให้อัตโนมัติ)
                   </p>
                 </div>
               </div>
@@ -2501,7 +2521,7 @@ export default function AdminDashboard({
                     </span>
                     <span className="text-[11px] text-primary/50">ขนาดแนะนำ: สี่เหลี่ยมจัตุรัส หรือ PNG ใส</span>
                   </div>
-                  <h3 className="text-base font-bold text-primary">๓. โลโก้ร้านอาหาร</h3>
+                  <h3 className="text-base font-bold text-primary">3. โลโก้ร้านอาหาร</h3>
                   <p className="text-xs text-primary/70 leading-relaxed">
                     แสดงบนแถบเมนูด้านบนของทุกหน้า หากยังไม่มีโลโก้ ระบบจะแสดงชื่อร้านแทน
                   </p>
@@ -2578,7 +2598,7 @@ export default function AdminDashboard({
                   <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
                     รูปภาพอาหารแต่ละจาน
                   </span>
-                  <h3 className="text-base font-bold text-primary">๔. รูปภาพเมนูอาหาร</h3>
+                  <h3 className="text-base font-bold text-primary">4. รูปภาพเมนูอาหาร</h3>
                   <p className="text-xs text-primary/70 leading-relaxed">
                     หากต้องการใส่รูปภาพหรือเปลี่ยนรูปของอาหารแต่ละจาน (เช่น ขันโตก, หมูทอด, น้ำพริกหนุ่ม, ข้าวพันผัก) สามารถเข้าไปใส่รูปได้ทันทีในหน้าจัดการเมนูอาหาร
                   </p>
@@ -2613,27 +2633,27 @@ export default function AdminDashboard({
               <div className="border-b border-primary/5 pb-4 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-[11px] font-bold">
-                    ๔ จุดเด่นเรือน ๑๐๐ ปี
+                    4 จุดเด่นเรือน 100 ปี
                   </span>
                   <span className="text-xs font-bold text-primary">
                     อัปโหลดรูปภาพและเรื่องเล่าของแต่ละจุด
                   </span>
                 </div>
                 <h3 className="text-lg font-bold text-primary">
-                  ๖. จัดการรูปภาพและเรื่องเล่า ๔ จุดเด่น (Quick Facts Stories)
+                  6. จัดการรูปภาพและเรื่องเล่า 4 จุดเด่น (Quick Facts Stories)
                 </h3>
                 <p className="text-xs text-primary/70 leading-relaxed">
-                  จุดเด่นทั้ง ๔ ข้อบนหน้าแรก (🏛️ ๑๐๐+ ปี, 🔨 ๐ ตัว ไร้ตะปู, 👨‍👩‍👧‍👦 ๔ รุ่นคน, 🌶️ ตำมือ ๑๐๐%) สามารถกดเข้าไปดูอัลบั้มภาพและเรื่องราวได้ คุณสามารถเพิ่มรูปภาพจริง (ภาพบ้าน, ภาพข้อต่อไม้, ภาพครอบครัว, ภาพคุณป้าในครัว) ได้ที่นี่
+                  จุดเด่นทั้ง 4 ข้อบนหน้าแรก (เรือนไม้ 100+ ปี, 0 ตัว ไร้ตะปู, คน 4 รุ่น และพริกแกงตำมือ) ใช้ภาพถ่ายจริงเป็นภาพหน้าการ์ดและกดเข้าไปดูอัลบั้มได้ คุณสามารถอัปโหลดรูปและเลือก “ใช้เป็นภาพหน้าการ์ด” ได้ที่นี่
                 </p>
               </div>
 
               {/* 4 Tabs selector */}
               <div className="flex flex-wrap gap-2 border-b border-primary/10 pb-3">
                 {[
-                  { id: "house" as const, emoji: "🏛️", title: "๑. เรือนไม้สัก ๑๐๐+ ปี" },
-                  { id: "wood" as const, emoji: "🔨", title: "๒. ๐ ตัว ไร้ตะปู" },
-                  { id: "family" as const, emoji: "👨‍👩‍👧‍👦", title: "๓. คน ๔ รุ่น" },
-                  { id: "kitchen" as const, emoji: "🌶️", title: "๔. พริกแกงตำมือและป้า ๆ ในครัว" },
+                  { id: "house" as const, title: "1. เรือนไม้สัก 100+ ปี" },
+                  { id: "wood" as const, title: "2. 0 ตัว ไร้ตะปู" },
+                  { id: "family" as const, title: "3. คน 4 รุ่น" },
+                  { id: "kitchen" as const, title: "4. พริกแกงตำมือและป้า ๆ ในครัว" },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -2645,7 +2665,13 @@ export default function AdminDashboard({
                         : "bg-cream text-primary/70 hover:bg-accent/10 hover:text-primary"
                     }`}
                   >
-                    <span>{tab.emoji}</span>
+                    <span className="relative w-7 h-7 rounded-lg overflow-hidden border border-current/20 bg-white/20 shrink-0">
+                      <img
+                        src={getStoryCoverImage(tab.id)}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    </span>
                     <span>{tab.title}</span>
                   </button>
                 ))}
@@ -2665,10 +2691,10 @@ export default function AdminDashboard({
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 bg-cream/40 rounded-2xl border border-primary/10">
                       <div>
                         <h4 className="font-bold text-sm text-primary">
-                          {adminStoryTab === "house" && "🏛️ คลังรูปภาพเรือนไม้สัก ๑๐๐+ ปี"}
-                          {adminStoryTab === "wood" && "🔨 คลังรูปภาพข้อต่อไม้ / เข้าเดือยไร้ตะปู"}
-                          {adminStoryTab === "family" && "👨‍👩‍👧‍👦 คลังรูปภาพครอบครัว ๔ รุ่น / หม่อนน้อย / ตายาย"}
-                          {adminStoryTab === "kitchen" && "🌶️ คลังรูปป้า ๆ ในครัวและพริกแกงตำมือ"}
+                          {adminStoryTab === "house" && "คลังรูปภาพเรือนไม้สัก 100+ ปี"}
+                          {adminStoryTab === "wood" && "คลังรูปภาพข้อต่อไม้ / เข้าเดือยไร้ตะปู"}
+                          {adminStoryTab === "family" && "คลังรูปภาพครอบครัว 4 รุ่น / หม่อนน้อย / ตายาย"}
+                          {adminStoryTab === "kitchen" && "คลังรูปป้า ๆ ในครัวและพริกแกงตำมือ"}
                         </h4>
                         <p className="text-xs text-primary/60">
                           มีรูปภาพที่อัปโหลดเพิ่มในหมวดนี้แล้ว {photos.length} รูป (อัปโหลดเพิ่มได้ไม่จำกัด)
@@ -2761,17 +2787,57 @@ export default function AdminDashboard({
                                 {p.tag}
                               </span>
                             )}
+                            {getStoryCoverImage(adminStoryTab) === p.url ? (
+                              <span className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-accent text-white text-[10px] font-bold shadow-md">
+                                ภาพหน้าการ์ด
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  const nextCustomStories = {
+                                    ...customStoriesData,
+                                    [adminStoryTab]: {
+                                      ...currentData,
+                                      photos,
+                                      coverImage: p.url,
+                                    },
+                                  };
+                                  const jsonStr = JSON.stringify(nextCustomStories);
+                                  setSettings(prev => ({ ...prev, custom_stories_data: jsonStr }));
+                                  try {
+                                    const res = await fetch("/api/admin/settings", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ custom_stories_data: jsonStr }),
+                                    });
+                                    if (!res.ok) throw new Error();
+                                    setSettingsMsg("✅ ตั้งเป็นภาพหน้าการ์ดแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
+                                    refreshPublicContent();
+                                  } catch {
+                                    setSettingsMsg("เกิดข้อผิดพลาดในการตั้งภาพหน้าการ์ด");
+                                  }
+                                }}
+                                className="absolute bottom-2 right-2 px-2 py-1 rounded-lg bg-black/75 hover:bg-accent text-white text-[10px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                              >
+                                ใช้เป็นภาพหน้าการ์ด
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={async () => {
                                 if (!confirm("ต้องการลบรูปภาพนี้ใช่หรือไม่?")) return;
                                 const nextPhotos = photos.filter((_, i) => i !== idx);
+                                const nextEntry: CustomStoryEntry = {
+                                  ...currentData,
+                                  photos: nextPhotos,
+                                };
+                                if (currentData.coverImage === p.url) {
+                                  nextEntry.coverImage = nextPhotos[0]?.url;
+                                }
                                 const nextCustomStories = {
                                   ...customStoriesData,
-                                  [adminStoryTab]: {
-                                    ...currentData,
-                                    photos: nextPhotos
-                                  }
+                                  [adminStoryTab]: nextEntry,
                                 };
                                 const jsonStr = JSON.stringify(nextCustomStories);
                                 setSettings(prev => ({ ...prev, custom_stories_data: jsonStr }));
@@ -2810,23 +2876,15 @@ export default function AdminDashboard({
                     <StoryTextEditor
                       key={adminStoryTab}
                       storyId={adminStoryTab}
-                      storyEmoji={
-                        adminStoryTab === "house"
-                          ? "🏛️"
-                          : adminStoryTab === "wood"
-                          ? "🔨"
-                          : adminStoryTab === "family"
-                          ? "👨‍👩‍👧‍👦"
-                          : "🌶️"
-                      }
+                      storyImageUrl={getStoryCoverImage(adminStoryTab)}
                       storyTabName={
                         adminStoryTab === "house"
-                          ? "๑. เรือนไม้สัก ๑๐๐+ ปี"
+                          ? "1. เรือนไม้สัก 100+ ปี"
                           : adminStoryTab === "wood"
-                          ? "๒. ๐ ตัว ไร้ตะปู"
+                          ? "2. 0 ตัว ไร้ตะปู"
                           : adminStoryTab === "family"
-                          ? "๓. คน ๔ รุ่น"
-                          : "๔. พริกแกงตำมือและป้า ๆ ในครัว"
+                          ? "3. คน 4 รุ่น"
+                          : "4. พริกแกงตำมือและป้า ๆ ในครัว"
                       }
                       currentCustomData={currentData}
                       onSave={async (fields) => {
@@ -2992,8 +3050,8 @@ export default function AdminDashboard({
                     </label>
                     <input
                       type="text"
-                      placeholder="เช่น ร้านลำลำลับแลบ้าน ๑๐๐ ปี"
-                      value={settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน ๑๐๐ ปี"}
+                      placeholder="เช่น ร้านลำลำลับแลบ้าน 100 ปี"
+                      value={settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน 100 ปี"}
                       onChange={(e) => setSettings(prev => ({ ...prev, menu_page_badge: e.target.value }))}
                       className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                     />
@@ -4094,7 +4152,7 @@ export default function AdminDashboard({
               <div>
                 <h2 className="text-xl font-bold text-primary flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-accent" />
-                  จัดการเนื้อหา “ตำราลับแลง” (๓๒ ตอน)
+                  จัดการเนื้อหา “ตำราลับแลง” (32 ตอน)
                 </h2>
                 <p className="text-xs text-primary/70 mt-1">
                   แตะที่บทที่ต้องการแก้ไข เพื่อเปิดหน้าต่างพิมพ์แก้ไขข้อความ ชื่อตอน หรือเรื่องเล่าได้ทันทีครับ
@@ -4115,7 +4173,7 @@ export default function AdminDashboard({
                 <Search className="w-4 h-4 text-primary/40 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
-                  placeholder="พิมพ์ค้นหาบท เช่น ข้าวพันผัก, มะแขว่น, บทที่ ๑..."
+                  placeholder="พิมพ์ค้นหาบท เช่น ข้าวพันผัก, มะแขว่น, บทที่ 1..."
                   value={articleSearch}
                   onChange={(e) => setArticleSearch(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 bg-primary/5 border border-primary/10 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-accent text-primary placeholder:text-primary/40 font-thai"
@@ -5426,7 +5484,7 @@ export default function AdminDashboard({
                   <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4 md:col-span-2">
                     <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
                       <BookOpen className="w-4 h-4 text-accent" />
-                      <h4 className="font-bold text-xs text-primary">ส่วนแนะนำตำราลับแลง ๓๒ ตอน</h4>
+                      <h4 className="font-bold text-xs text-primary">ส่วนแนะนำตำราลับแลง 32 ตอน</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div>
@@ -5447,8 +5505,8 @@ export default function AdminDashboard({
                         </label>
                         <input
                           type="text"
-                          placeholder="ตำราลับแลง (๓๒ ตอน)"
-                          value={settings.home_book_title ?? "ตำราลับแลง (๓๒ ตอน)"}
+                          placeholder="ตำราลับแลง (32 ตอน)"
+                          value={settings.home_book_title ?? "ตำราลับแลง (32 ตอน)"}
                           onChange={(e) => setSettings(prev => ({ ...prev, home_book_title: e.target.value }))}
                           className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                         />
@@ -5459,8 +5517,8 @@ export default function AdminDashboard({
                         </label>
                         <input
                           type="text"
-                          placeholder="เปิดอ่านตำราลับแลง (๓๒ ตอน)"
-                          value={settings.home_book_btn_text ?? "เปิดอ่านตำราลับแลง (๓๒ ตอน)"}
+                          placeholder="เปิดอ่านตำราลับแลง (32 ตอน)"
+                          value={settings.home_book_btn_text ?? "เปิดอ่านตำราลับแลง (32 ตอน)"}
                           onChange={(e) => setSettings(prev => ({ ...prev, home_book_btn_text: e.target.value }))}
                           className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                         />
@@ -5471,8 +5529,8 @@ export default function AdminDashboard({
                         </label>
                         <textarea
                           rows={2}
-                          placeholder="เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ..."
-                          value={settings.home_book_description ?? "เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ"}
+                          placeholder="เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ..."
+                          value={settings.home_book_description ?? "เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ"}
                           onChange={(e) => setSettings(prev => ({ ...prev, home_book_description: e.target.value }))}
                           className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent resize-y"
                         />
@@ -5640,7 +5698,7 @@ export default function AdminDashboard({
                           สำรองข้อมูลทั้งหมด
                         </h3>
                         <p className="text-xs text-primary/70 leading-relaxed">
-                          ดาวน์โหลดข้อมูลทั้งหมดของร้าน (การตั้งค่าร้าน, เมนูอาหารทั้งหมด, บทความตำราลับแลง ๓๒ ตอน, และประวัติการจองโต๊ะ) บันทึกเก็บไว้ในเครื่องของคุณได้ตลอดเวลาเพื่อความปลอดภัยสูงสุด
+                          ดาวน์โหลดข้อมูลทั้งหมดของร้าน (การตั้งค่าร้าน, เมนูอาหารทั้งหมด, บทความตำราลับแลง 32 ตอน, และประวัติการจองโต๊ะ) บันทึกเก็บไว้ในเครื่องของคุณได้ตลอดเวลาเพื่อความปลอดภัยสูงสุด
                         </p>
                       </div>
                       <button

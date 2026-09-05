@@ -43,12 +43,12 @@ interface AmbienceStoryEditorProps {
 }
 
 const DEFAULT_STORY_VALUES = {
-  home_about_image_caption: "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง ๑๐๐ ปี",
-  about_badge: "เรื่องเล่าจากบ้าน ๑๐๐ ปี",
+  home_about_image_caption: "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง 100 ปี",
+  about_badge: "เรื่องเล่าจากบ้าน 100 ปี",
   about_title: "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ",
   about_quote:
     "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”",
-  about_quote_author: "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี",
+  about_quote_author: "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน 100 ปี",
   about_story_text:
     "อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน\n\nลับแลเป็นเมืองที่ซ่อนตัวอยู่ในหุบเขา ทางเหนือหัวดงพูดคำเมืองแบบล้านนา ทางใต้แถบทุ่งยั้งสืบสำเนียงสุโขทัย สองสายวัฒนธรรมอยู่ร่วมกันมาหลายร้อยปี จนเกิดเป็นรสชาติที่ไม่ใช่เหนือแท้ ไม่ใช่กลางแท้ แต่เป็นของที่นี่ ของลับแลเท่านั้น\n\nจานที่คุณสั่ง ล้วนสืบมาจากครัวของตากับยาย พริกแกงป้าชุมกับป้าชิดยังทำเองทุกวัน ไม่ใช้ของสำเร็จเลยสักอย่าง สมุนไพรเราก็ช่วยกันปลูกหลังบ้านและในชุมชน แวะมากินข้าวที่นี่ เหมือนมากินข้าวบ้านญาติครับ",
 };
@@ -166,11 +166,11 @@ export default function AmbienceStoryEditor({
               รูปภาพบรรยากาศ & เรื่องเล่า
             </span>
             <span className="text-xs font-bold text-primary">
-              ส่วนเรื่องเล่าบ้าน ๑๐๐ ปี (Intro Story Section)
+              ส่วนเรื่องเล่าบ้าน 100 ปี (Intro Story Section)
             </span>
           </div>
           <h3 className="text-lg font-bold text-primary">
-            ๒. รูปภาพบรรยากาศเรือนไม้และคำอธิบายเรื่องเล่า (Story Section)
+            2. รูปภาพบรรยากาศเรือนไม้และคำอธิบายเรื่องเล่า (Story Section)
           </h3>
           <p className="text-xs text-primary/70 leading-relaxed">
             รูปภาพบรรยากาศเรือนไม้ที่แสดงคู่กับเนื้อหาเรื่องเล่า สามารถเปลี่ยนรูป คำบรรยายใต้รูป คำคม และเนื้อเรื่องประวัติได้ทั้งหมด
@@ -328,7 +328,7 @@ export default function AmbienceStoryEditor({
                 type="text"
                 value={imageCaption}
                 onChange={(e) => handleFieldChange(setImageCaption, e.target.value)}
-                placeholder="เช่น บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง ๑๐๐ ปี"
+                placeholder="เช่น บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง 100 ปี"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               />
               <p className="text-[10px] text-primary/50">
@@ -350,7 +350,7 @@ export default function AmbienceStoryEditor({
                   type="text"
                   value={badge}
                   onChange={(e) => handleFieldChange(setBadge, e.target.value)}
-                  placeholder="เช่น เรื่องเล่าจากบ้าน ๑๐๐ ปี"
+                  placeholder="เช่น เรื่องเล่าจากบ้าน 100 ปี"
                   className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
                 />
               </div>
@@ -377,7 +377,7 @@ export default function AmbienceStoryEditor({
               <div className="space-y-1">
                 <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Quote className="w-3.5 h-3.5 text-accent" />
-                  <span>คำคมประจำบ้าน ๑๐๐ ปี</span>
+                  <span>คำคมประจำบ้าน 100 ปี</span>
                 </label>
                 <input
                   type="text"
@@ -397,7 +397,7 @@ export default function AmbienceStoryEditor({
                   type="text"
                   value={quoteAuthor}
                   onChange={(e) => handleFieldChange(setQuoteAuthor, e.target.value)}
-                  placeholder="เช่น — คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี"
+                  placeholder="เช่น — คำของตาเงิน–ยายจัน และคนทำครัวบ้าน 100 ปี"
                   className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-white text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
                 />
               </div>

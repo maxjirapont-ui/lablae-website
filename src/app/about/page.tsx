@@ -6,8 +6,8 @@ import { DEFAULT_ABOUT_DATA, AboutCustomData } from "@/components/AboutPageEdito
 export const revalidate = 0; // Disable static cache so admin edits reflect immediately
 
 export const metadata = {
-  title: "รู้จักบ้านและเรื่องเล่าลับแล | ร้านลำลำลับแลบ้าน ๑๐๐ ปี",
-  description: "เรื่องราวของเรือนไม้ไร้ตะปู ๑๐๐ ปี คนสี่รุ่น และอาหารแห่งความทรงจำ ณ ลำลำลับแล จ.อุตรดิตถ์",
+  title: "รู้จักบ้านและเรื่องเล่าลับแล | ร้านลำลำลับแลบ้าน 100 ปี",
+  description: "เรื่องราวของเรือนไม้ไร้ตะปู 100 ปี คนสี่รุ่น และอาหารแห่งความทรงจำ ณ ลำลำลับแล จ.อุตรดิตถ์",
 };
 
 export default async function AboutPage() {

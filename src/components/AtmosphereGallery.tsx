@@ -17,9 +17,9 @@ interface AtmosphereGalleryProps {
 
 export default function AtmosphereGallery({
   images,
-  badge = "บรรยากาศบ้าน ๑๐๐ ปี",
-  title = "ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี",
-  subtitle = "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และเต็มไปด้วยกลิ่นอายประวัติศาสตร์",
+  badge = "บรรยากาศบ้าน 100 ปี",
+  title = "ภาพบรรยากาศร้านลำลำลับแลบ้าน 100 ปี",
+  subtitle = "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า 100 ปี อบอุ่น ร่มรื่น และเต็มไปด้วยกลิ่นอายประวัติศาสตร์",
 }: AtmosphereGalleryProps) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
 

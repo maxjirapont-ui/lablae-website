@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { toArabicDigits } from "@/lib/text";
 
 function revalidateMenuPages() {
   try {
@@ -45,10 +46,10 @@ export async function POST(request: NextRequest) {
     await db.run(
       "INSERT INTO menus (name, price, category, description, image_url, available, is_recommended, is_seasonal, is_visible, sort_order) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM menus))",
       [
-        name, 
+        toArabicDigits(String(name)),
         parseFloat(price), 
-        category, 
-        description || "", 
+        toArabicDigits(String(category)),
+        toArabicDigits(String(description || "")),
         image_url || "", 
         is_recommended ? 1 : 0, 
         is_seasonal ? 1 : 0, 
@@ -80,10 +81,10 @@ export async function PUT(request: NextRequest) {
     await db.run(
       "UPDATE menus SET name = ?, price = ?, category = ?, description = ?, image_url = ?, available = ?, is_recommended = ?, is_seasonal = ?, is_visible = ? WHERE id = ?",
       [
-        name, 
+        toArabicDigits(String(name)),
         parseFloat(price), 
-        category, 
-        description || "", 
+        toArabicDigits(String(category)),
+        toArabicDigits(String(description || "")),
         image_url || "", 
         available !== undefined ? (available ? 1 : 0) : 1, 
         is_recommended ? 1 : 0, 

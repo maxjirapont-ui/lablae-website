@@ -123,9 +123,9 @@ export default async function Home() {
   const seasonalTitle = (await getSetting("home_seasonal_title")) || "วัตถุดิบสดใหม่ รสชาติตามฤดู";
 
   const bookBadge = (await getSetting("home_book_badge")) || "บันทึกเรื่องเล่าเมืองลับแล";
-  const bookTitle = (await getSetting("home_book_title")) || "ตำราลับแลง (๓๒ ตอน)";
-  const bookDescription = (await getSetting("home_book_description")) || "เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ";
-  const bookBtnText = (await getSetting("home_book_btn_text")) || "เปิดอ่านตำราลับแลง (๓๒ ตอน)";
+  const bookTitle = (await getSetting("home_book_title")) || "ตำราลับแลง (32 ตอน)";
+  const bookDescription = (await getSetting("home_book_description")) || "เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ";
+  const bookBtnText = (await getSetting("home_book_btn_text")) || "เปิดอ่านตำราลับแลง (32 ตอน)";
 
   // Testimonial Card
   const testimonialBadge = (await getSetting("home_testimonial_badge")) || "★ Google Maps";
@@ -135,17 +135,17 @@ export default async function Home() {
   const testimonialBtnText = (await getSetting("home_testimonial_btn_text")) || "อ่านรีวิวบน Google Maps →";
 
   // Hero Section Customizable Texts & Descriptions
-  const heroBadge = (await getSetting("hero_badge")) || "เรือนไม้สักโบราณไร้ตะปู ๑๐๐ ปี · อ.ลับแล จ.อุตรดิตถ์";
-  const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน ๑๐๐ ปี";
+  const heroBadge = (await getSetting("hero_badge")) || "เรือนไม้สักโบราณไร้ตะปู 100 ปี · อ.ลับแล จ.อุตรดิตถ์";
+  const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน 100 ปี";
   const heroSubtitle = (await getSetting("hero_subtitle")) || "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู";
-  const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ ๔ รุ่น แวะมากินข้าวบ้านญาตินะครับ";
+  const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ";
 
   // About / Story Ambience Section Customizable Texts
-  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง ๑๐๐ ปี";
-  const aboutBadge = (await getSetting("about_badge")) || "เรื่องเล่าจากบ้าน ๑๐๐ ปี";
+  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง 100 ปี";
+  const aboutBadge = (await getSetting("about_badge")) || "เรื่องเล่าจากบ้าน 100 ปี";
   const aboutTitle = (await getSetting("about_title")) || "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ";
   const aboutQuote = (await getSetting("about_quote")) || "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”";
-  const aboutQuoteAuthor = (await getSetting("about_quote_author")) || "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี";
+  const aboutQuoteAuthor = (await getSetting("about_quote_author")) || "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน 100 ปี";
   const rawAboutStory = await getSetting("about_story_text");
   let aboutParagraphs: string[] = [
     "อายุกว่าร้อยปี ทวดเราสร้างไว้โดยไม่ใช้ตะปูเลยสักตัว ไม้ทุกแผ่นเข้าเดือยกันเองแบบช่างสมัยก่อน เราโตมากับบ้านหลังนี้ กินข้าวที่ตายายทำแทบทุกวัน",
@@ -413,24 +413,24 @@ export default async function Home() {
 
                 <div className="grid grid-cols-2 gap-3 w-full md:w-auto shrink-0 max-w-xs text-xs font-thai">
                   <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๑</span>
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ 1</span>
                     <p className="font-bold text-white text-xs">แผ่นดินที่ซ่อนตัว</p>
                     <p className="text-[10px] text-cream/70">ภูเขา ตำนาน และคำสัตย์</p>
                   </div>
                   <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๒</span>
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ 2</span>
                     <p className="font-bold text-white text-xs">เมืองที่ทัพต้องยั้ง</p>
                     <p className="text-[10px] text-cream/70">คำตอบของยายจัน</p>
                   </div>
                   <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๓</span>
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ 3</span>
                     <p className="font-bold text-white text-xs">จากดินสู่ครก</p>
                     <p className="text-[10px] text-cream/70">มะแขว่น & ผักริมรั้ว</p>
                   </div>
                   <div className="p-4 bg-white/10 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-                    <span className="text-accent text-[10px] font-bold">ภาคที่ ๔ & ๕</span>
+                    <span className="text-accent text-[10px] font-bold">ภาคที่ 4 & 5</span>
                     <p className="font-bold text-white text-xs">สำรับ & เรือนไม้</p>
-                    <p className="text-[10px] text-cream/70">ข้าวพันผัก & คน ๔ รุ่น</p>
+                    <p className="text-[10px] text-cream/70">ข้าวพันผัก & คน 4 รุ่น</p>
                   </div>
                 </div>
               </div>
@@ -518,7 +518,7 @@ export default async function Home() {
                     ติดตามบรรยากาศและเรื่องราวของบ้านเรา
                   </h2>
                   <p className="font-thai text-xs sm:text-sm text-[#f5ece1]/70 max-w-xl mx-auto">
-                    อัปเดตเมนูประจำวัน กิจกรรม และภาพบรรยากาศอบอุ่นจากเรือนไม้ ๑๐๐ ปี
+                    อัปเดตเมนูประจำวัน กิจกรรม และภาพบรรยากาศอบอุ่นจากเรือนไม้ 100 ปี
                   </p>
                 </div>
 
@@ -581,7 +581,7 @@ export default async function Home() {
                             </div>
                           </div>
                           <p className="text-xs font-semibold text-[#f5ece1] line-clamp-2">
-                            ชมคลิปบรรยากาศใต้ถุนเรือนไม้ ๑๐๐ ปี และวิธีทำข้าวพันผักเมืองลับแล
+                            ชมคลิปบรรยากาศใต้ถุนเรือนไม้ 100 ปี และวิธีทำข้าวพันผักเมืองลับแล
                           </p>
                         </div>
                         <span className="text-[10px] text-accent font-semibold mt-4 block">กดไปดูคลิป TikTok →</span>
@@ -684,7 +684,7 @@ export default async function Home() {
                   จองโต๊ะอาหารล่วงหน้า
                 </h2>
                 <p className="font-thai text-xs sm:text-sm text-[#f5ece1]/80 max-w-lg mx-auto leading-relaxed">
-                  สัมผัสบรรยากาศบ้านไม้โบราณ ๑๐๐ ปี เพื่อความสะดวกและไม่ต้องรอคิว (โดยเฉพาะช่วงวันหยุดและมื้อเย็น) กรุณากรอกข้อมูลจองโต๊ะล่วงหน้าได้เลยครับ
+                  สัมผัสบรรยากาศบ้านไม้โบราณ 100 ปี เพื่อความสะดวกและไม่ต้องรอคิว (โดยเฉพาะช่วงวันหยุดและมื้อเย็น) กรุณากรอกข้อมูลจองโต๊ะล่วงหน้าได้เลยครับ
                 </p>
               </div>
               <BookingForm />
@@ -707,7 +707,7 @@ export default async function Home() {
                     </h2>
                   </div>
                   <p className="font-thai text-sm sm:text-base text-[#f5ece1]/85 leading-relaxed">
-                    มากินข้าวใต้ถุนเรือนไม้โบราณ ๑๐๐ ปี สัมผัสรสมือของครอบครัวเราที่ปรุงสดใหม่ทุกจาน จะแวะมาเที่ยวหรือพาครอบครัวมาทานข้าว ยินดีต้อนรับทุกท่านครับ
+                    มากินข้าวใต้ถุนเรือนไม้โบราณ 100 ปี สัมผัสรสมือของครอบครัวเราที่ปรุงสดใหม่ทุกจาน จะแวะมาเที่ยวหรือพาครอบครัวมาทานข้าว ยินดีต้อนรับทุกท่านครับ
                   </p>
 
                   <div className="space-y-4 font-thai text-sm text-[#f5ece1]/85 pt-2">
@@ -752,7 +752,7 @@ export default async function Home() {
                   />
                   {/* Elegant directions overlay */}
                   <div className="absolute inset-0 bg-black/45 flex flex-col justify-end p-6 sm:p-8 space-y-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <h4 className="font-thai font-bold text-cream text-lg">ยินดีต้อนรับสู่บ้าน ๑๐๐ ปี</h4>
+                    <h4 className="font-thai font-bold text-cream text-lg">ยินดีต้อนรับสู่บ้าน 100 ปี</h4>
                     <p className="font-thai text-xs text-cream/90">ตั้งอยู่ในอำเภอลับแล จังหวัดอุตรดิตถ์ มีที่จอดรถสะดวกสบาย</p>
                     <div>
                       <a

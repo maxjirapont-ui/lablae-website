@@ -34,12 +34,12 @@ export default async function BlogListingPage() {
         </h1>
 
         <p className="text-base sm:text-lg font-thai text-accent font-medium max-w-xl mx-auto">
-          เรื่องเล่าของคน ๔ รุ่น บันทึกครัวโบราณ และวิถีชีวิตเมืองลับแล
+          เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ และวิถีชีวิตเมืองลับแล
         </p>
 
         <p className="text-xs sm:text-sm font-thai text-[#f7eee3]/75 max-w-md mx-auto leading-relaxed">
           จากแผ่นดินล้านนา–สุโขทัย สู่สำรับอาหารของตาเงิน–ยายจัน<br />
-          ร้านลำลำลับแลบ้าน ๑๐๐ ปี อ.ลับแล จ.อุตรดิตถ์
+          ร้านลำลำลับแลบ้าน 100 ปี อ.ลับแล จ.อุตรดิตถ์
         </p>
 
         <div className="pt-2 flex justify-center items-center gap-2 text-xs font-thai text-[#f7eee3]/60">

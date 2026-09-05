@@ -40,10 +40,10 @@ interface AmbienceGalleryEditorProps {
 }
 
 const DEFAULT_GALLERY_VALUES = {
-  gallery_badge: "บรรยากาศบ้าน ๑๐๐ ปี",
-  gallery_title: "ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี",
+  gallery_badge: "บรรยากาศบ้าน 100 ปี",
+  gallery_title: "ภาพบรรยากาศร้านลำลำลับแลบ้าน 100 ปี",
   gallery_subtitle:
-    "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ",
+    "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า 100 ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ",
 };
 
 export default function AmbienceGalleryEditor({
@@ -197,7 +197,7 @@ export default function AmbienceGalleryEditor({
             </span>
           </div>
           <h3 className="text-lg font-bold text-primary">
-            ๕. คลังภาพบรรยากาศร้านและคำอธิบายภาพ (Atmosphere Gallery Album)
+            5. คลังภาพบรรยากาศร้านและคำอธิบายภาพ (Atmosphere Gallery Album)
           </h3>
           <p className="text-xs text-primary/70 leading-relaxed">
             เพิ่มรูปภาพบรรยากาศร้าน (เช่น มุมโต๊ะอาหาร, ใต้ถุนเรือนไม้สัก, โคมไฟ, มุมสวน) พร้อมใส่คำอธิบายภาพแต่ละรูปได้
@@ -266,7 +266,7 @@ export default function AmbienceGalleryEditor({
           <div className="text-center space-y-1.5">
             <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-accent/20 text-accent text-xs font-medium">
               <Camera className="w-3.5 h-3.5" />
-              {badge || "บรรยากาศบ้าน ๑๐๐ ปี"}
+              {badge || "บรรยากาศบ้าน 100 ปี"}
             </span>
             <h4 className="text-xl font-bold text-[#fff8ee]">{title || "—"}</h4>
             <p className="text-xs text-accent/80 max-w-lg mx-auto">{subtitle || "—"}</p>
@@ -309,7 +309,7 @@ export default function AmbienceGalleryEditor({
                 setIsDirty(true);
                 setSaveSuccess(false);
               }}
-              placeholder="เช่น บรรยากาศบ้าน ๑๐๐ ปี"
+              placeholder="เช่น บรรยากาศบ้าน 100 ปี"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-white text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -328,7 +328,7 @@ export default function AmbienceGalleryEditor({
                 setIsDirty(true);
                 setSaveSuccess(false);
               }}
-              placeholder="เช่น ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี"
+              placeholder="เช่น ภาพบรรยากาศร้านลำลำลับแลบ้าน 100 ปี"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-white text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               required
             />
@@ -347,7 +347,7 @@ export default function AmbienceGalleryEditor({
                 setIsDirty(true);
                 setSaveSuccess(false);
               }}
-              placeholder="เช่น ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี..."
+              placeholder="เช่น ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า 100 ปี..."
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-white text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             />
           </div>

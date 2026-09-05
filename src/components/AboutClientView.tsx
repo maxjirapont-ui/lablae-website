@@ -25,7 +25,7 @@ export default function AboutClientView({
   const tabs = [
     {
       id: "house" as const,
-      label: "คน ๔ รุ่นกับเรือนไม้ไร้ตะปู",
+      label: "คน 4 รุ่นกับเรือนไม้ไร้ตะปู",
       icon: Home,
       title: data.tab1_title,
       desc: data.tab1_desc,
@@ -236,7 +236,7 @@ export default function AboutClientView({
           <BookOpen className="w-6 h-6" />
         </div>
         <h3 className="font-thai font-bold text-xl sm:text-2xl text-primary">
-          อ่านฉบับเต็มใน “ตำราลับแลง” ทั้ง ๓๒ ตอน
+          อ่านฉบับเต็มใน “ตำราลับแลง” ทั้ง 32 ตอน
         </h3>
         <p className="font-thai text-xs sm:text-sm text-primary/70 max-w-md mx-auto">
           อ่านเรื่องราวประวัติศาสตร์ บันทึกครัวตาเงิน-ยายจัน และวิธีปรุงอาหารสูตรดั้งเดิมบนหน้าเว็บได้ฟรี
@@ -272,7 +272,7 @@ export default function AboutClientView({
           <div className="flex items-start space-x-3">
             <MapPin className="w-5 h-5 text-accent shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <h4 className="font-thai font-bold text-sm text-primary">ที่ตั้งเรือน ๑๐๐ ปี</h4>
+              <h4 className="font-thai font-bold text-sm text-primary">ที่ตั้งเรือน 100 ปี</h4>
               <p className="font-thai text-xs text-primary/80 leading-relaxed">
                 {address}
               </p>

@@ -216,7 +216,7 @@ export default function MenuList({
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="text-lg shrink-0">⭐</span>
           <p className="text-xs sm:text-sm text-[#f7eee3] truncate font-medium">
-            <strong className="text-accent">มาครั้งแรกสั่งอะไรดี?</strong> แนะนำ: ชุดขันโตกบ้าน ๑๐๐ ปี, หมูทอดลับแลพริกข่า, ข้าวพันผัก, อ่องมันปู
+            <strong className="text-accent">มาครั้งแรกสั่งอะไรดี?</strong> แนะนำ: ชุดขันโตกบ้าน 100 ปี, หมูทอดลับแลพริกข่า, ข้าวพันผัก, อ่องมันปู
           </p>
         </div>
         <span className="text-[11px] font-bold text-accent shrink-0 group-hover:underline flex items-center gap-1">

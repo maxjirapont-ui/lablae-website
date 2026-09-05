@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { toArabicDigits } from "@/lib/text";
 
 function revalidateArticlePages() {
   try {
@@ -51,7 +52,14 @@ export async function POST(request: NextRequest) {
     try {
       await db.run(
         "INSERT INTO articles (title, slug, content, image_url, part_title, excerpt) VALUES (?, ?, ?, ?, ?, ?)",
-        [title, cleanSlug, content, image_url || "", part_title || "", excerpt || ""]
+        [
+          toArabicDigits(String(title)),
+          cleanSlug,
+          toArabicDigits(String(content)),
+          image_url || "",
+          toArabicDigits(String(part_title || "")),
+          toArabicDigits(String(excerpt || "")),
+        ]
       );
     } catch (dbErr: unknown) {
       if (dbErr instanceof Error && dbErr.message.includes("UNIQUE")) {
@@ -86,7 +94,15 @@ export async function PUT(request: NextRequest) {
     try {
       await db.run(
         "UPDATE articles SET title = ?, slug = ?, content = ?, image_url = ?, part_title = COALESCE(?, part_title), excerpt = COALESCE(?, excerpt) WHERE id = ?",
-        [title, cleanSlug, content, image_url || "", part_title ?? null, excerpt ?? null, id]
+        [
+          toArabicDigits(String(title)),
+          cleanSlug,
+          toArabicDigits(String(content)),
+          image_url || "",
+          part_title == null ? null : toArabicDigits(String(part_title)),
+          excerpt == null ? null : toArabicDigits(String(excerpt)),
+          id,
+        ]
       );
     } catch (dbErr: unknown) {
       if (dbErr instanceof Error && dbErr.message.includes("UNIQUE")) {
