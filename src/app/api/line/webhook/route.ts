@@ -96,9 +96,9 @@ async function handlePostback(event: LineEvent): Promise<void> {
 async function handleCustomerMessage(event: LineEvent, text: string): Promise<void> {
   if (!event.source.userId) return;
   const bookingCode = text.trim().toUpperCase();
-  // Accept both the current short code and the previous format so existing
-  // customers can still connect reservations created before this change.
-  if (!/^(?:LL-[A-Z2-9]{6}|LL-\d{8}-[A-Z2-9]{8})$/.test(bookingCode)) {
+  // Accept the current numeric code and both previous formats so reservations
+  // created before this change can still be connected.
+  if (!/^(?:\d{6}|LL-[A-Z2-9]{6}|LL-\d{8}-[A-Z2-9]{8})$/.test(bookingCode)) {
     await reply(event.replyToken, "ส่งเลขที่การจองจากหน้าเว็บไซต์มาในแชทนี้ เพื่อรับข้อความยืนยันโต๊ะทาง LINE");
     return;
   }

@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomInt } from "node:crypto";
 import type { Database } from "sqlite";
 import { getDb } from "./db";
 
@@ -230,15 +230,11 @@ export async function getAvailability(days?: number, requestedStartDate?: string
 }
 
 function generateBookingCode(): string {
-  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = randomBytes(6);
-  let suffix = "";
-  for (const byte of bytes) suffix += alphabet[byte % alphabet.length];
-  return `LL-${suffix}`;
+  return randomInt(100000, 1000000).toString();
 }
 
 async function generateUniqueBookingCode(db: Database): Promise<string> {
-  for (let attempt = 0; attempt < 5; attempt += 1) {
+  for (let attempt = 0; attempt < 10; attempt += 1) {
     const bookingCode = generateBookingCode();
     const existing = await db.get<{ id: number }>(
       "SELECT id FROM reservations WHERE booking_code = ? LIMIT 1",
