@@ -13,6 +13,27 @@ export const revalidate = 0; // Dynamic on request
 async function getFeaturedDishes(): Promise<MenuItem[]> {
   try {
     const db = await getDb();
+
+    // Check if custom ordered list of featured menu IDs is set
+    const rawFeaturedIds = await getSetting("homepage_featured_menu_ids");
+    if (rawFeaturedIds) {
+      try {
+        const ids: number[] = JSON.parse(rawFeaturedIds);
+        if (Array.isArray(ids) && ids.length > 0) {
+          const placeholders = ids.map(() => "?").join(",");
+          const rows = await db.all<MenuItem[]>(
+            `SELECT * FROM menus WHERE id IN (${placeholders}) AND is_visible = 1`,
+            ids
+          );
+          const dishMap = new Map(rows.map((r) => [r.id, r]));
+          const sorted = ids.map((id) => dishMap.get(id)).filter((d): d is MenuItem => Boolean(d));
+          if (sorted.length > 0) return sorted;
+        }
+      } catch (err) {
+        console.error("Error parsing homepage_featured_menu_ids:", err);
+      }
+    }
+
     // First, try to fetch user-defined recommended dishes ordered by sort_order
     let dishes = await db.all<MenuItem[]>(
       `SELECT * FROM menus 

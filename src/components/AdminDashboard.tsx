@@ -57,7 +57,8 @@ import {
   Quote,
   Download,
   Globe,
-  ChevronsUp
+  ChevronsUp,
+  ChevronsDown
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -75,11 +76,27 @@ export default function AdminDashboard({
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<"overview" | "reservations" | "photos" | "menus" | "articles" | "settings" | "preview">("overview");
   const [settingsSubTab, setSettingsSubTab] = useState<"info" | "appearance" | "social" | "layout" | "security">("info");
-  const [menuViewMode, setMenuViewMode] = useState<"cards" | "table">("cards");
+  const [menuViewMode, setMenuViewMode] = useState<"cards" | "table" | "featured_home">("cards");
   const [quickSearch, setQuickSearch] = useState<string>("");
   const [resStatusFilter, setResStatusFilter] = useState<string>("ทั้งหมด");
   const [showFloatingPreview, setShowFloatingPreview] = useState(false);
   const router = useRouter();
+
+  // Homepage Featured Dishes Order State
+  const [featuredMenuIds, setFeaturedMenuIds] = useState<number[]>(() => {
+    if (initialSettings.homepage_featured_menu_ids) {
+      try {
+        const parsed = JSON.parse(initialSettings.homepage_featured_menu_ids);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch {}
+    }
+    return initialMenus.filter(m => m.is_recommended === 1).map(m => m.id);
+  });
+  const [featuredSaveLoading, setFeaturedSaveLoading] = useState(false);
+  const [featuredSaveSuccess, setFeaturedSaveSuccess] = useState(false);
+  const [showAddFeaturedModal, setShowAddFeaturedModal] = useState(false);
+  const [addFeaturedSearch, setAddFeaturedSearch] = useState("");
+  const [draggedFeaturedIdx, setDraggedFeaturedIdx] = useState<number | null>(null);
 
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
@@ -360,22 +377,104 @@ export default function AdminDashboard({
     }
   };
 
-  const handleToggleMenuRecommended = async (id: number, currentRecommended: number) => {
-    const nextRecommended = currentRecommended === 1 ? 0 : 1;
+  // --- HOMEPAGE FEATURED MENU REORDER HANDLERS ---
+  const handleSaveFeaturedOrder = async (newIds: number[]) => {
+    setFeaturedMenuIds(newIds);
+    setFeaturedSaveLoading(true);
+    setFeaturedSaveSuccess(false);
+
+    // Optimistically update menus state
+    setMenus(prev =>
+      prev.map(m => ({
+        ...m,
+        is_recommended: newIds.includes(m.id) ? 1 : 0
+      }))
+    );
+
     try {
-      const res = await fetch("/api/admin/menu/toggle", {
+      const res = await fetch("/api/admin/menu/featured-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, is_recommended: nextRecommended === 1 }),
+        body: JSON.stringify({ featuredIds: newIds })
       });
       if (res.ok) {
-        setMenus(prev =>
-          prev.map(m => (m.id === id ? { ...m, is_recommended: nextRecommended } : m))
-        );
+        setFeaturedSaveSuccess(true);
+        setTimeout(() => setFeaturedSaveSuccess(false), 3000);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Save featured order failed:", err);
+    } finally {
+      setFeaturedSaveLoading(false);
     }
+  };
+
+  const handleMoveFeatured = (index: number, action: "top" | "up" | "down" | "bottom") => {
+    if (index < 0 || index >= featuredMenuIds.length) return;
+    const newIds = [...featuredMenuIds];
+    const target = newIds[index];
+
+    if (action === "top") {
+      if (index === 0) return;
+      newIds.splice(index, 1);
+      newIds.unshift(target);
+    } else if (action === "bottom") {
+      if (index === newIds.length - 1) return;
+      newIds.splice(index, 1);
+      newIds.push(target);
+    } else if (action === "up") {
+      if (index === 0) return;
+      const prev = newIds[index - 1];
+      newIds[index - 1] = target;
+      newIds[index] = prev;
+    } else if (action === "down") {
+      if (index === newIds.length - 1) return;
+      const next = newIds[index + 1];
+      newIds[index + 1] = target;
+      newIds[index] = next;
+    }
+
+    handleSaveFeaturedOrder(newIds);
+  };
+
+  const handleRemoveFeatured = (id: number) => {
+    const newIds = featuredMenuIds.filter(i => i !== id);
+    handleSaveFeaturedOrder(newIds);
+  };
+
+  const handleAddFeatured = (id: number) => {
+    if (featuredMenuIds.includes(id)) return;
+    const newIds = [...featuredMenuIds, id];
+    handleSaveFeaturedOrder(newIds);
+    setShowAddFeaturedModal(false);
+  };
+
+  const handleDragFeaturedStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("text/plain", index.toString());
+    setDraggedFeaturedIdx(index);
+  };
+
+  const handleDropFeatured = (e: React.DragEvent, targetIndex: number) => {
+    e.preventDefault();
+    if (draggedFeaturedIdx === null || draggedFeaturedIdx === targetIndex) {
+      setDraggedFeaturedIdx(null);
+      return;
+    }
+    const newIds = [...featuredMenuIds];
+    const [moved] = newIds.splice(draggedFeaturedIdx, 1);
+    newIds.splice(targetIndex, 0, moved);
+    setDraggedFeaturedIdx(null);
+    handleSaveFeaturedOrder(newIds);
+  };
+
+  const handleToggleMenuRecommended = async (id: number, currentRecommended: number) => {
+    const nextRecommended = currentRecommended === 1 ? 0 : 1;
+    let newFeaturedIds = [...featuredMenuIds];
+    if (nextRecommended === 1) {
+      if (!newFeaturedIds.includes(id)) newFeaturedIds.push(id);
+    } else {
+      newFeaturedIds = newFeaturedIds.filter(i => i !== id);
+    }
+    handleSaveFeaturedOrder(newFeaturedIds);
   };
 
   const handleToggleMenuSeasonal = async (id: number, currentSeasonal: number) => {
@@ -2704,6 +2803,19 @@ export default function AdminDashboard({
                     <List className="w-3.5 h-3.5" />
                     <span>ตารางสรุป</span>
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setMenuViewMode("featured_home")}
+                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      menuViewMode === "featured_home" ? "bg-accent text-[#1a100a] shadow-xs font-bold" : "text-primary/70 hover:text-accent"
+                    }`}
+                  >
+                    <Star className="w-3.5 h-3.5 fill-current text-amber-500" />
+                    <span>จัดลำดับเมนูแนะนำหน้าแรก</span>
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full bg-black/15 text-[10px]">
+                      {featuredMenuIds.length}
+                    </span>
+                  </button>
                 </div>
 
                 <div className="relative flex-grow sm:w-48">
@@ -3173,8 +3285,284 @@ export default function AdminDashboard({
           </div>
         )}
 
-            {/* Menu List: Cards View vs Table View */}
-            {filteredMenus.length > 0 ? (
+            {/* Quick Banner to jump to Homepage Featured Dishes reordering */}
+            {menuViewMode !== "featured_home" && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 bg-gradient-to-r from-accent/20 via-[#2a1b12] to-accent/15 border border-accent/35 rounded-2xl font-thai text-xs shadow-xs">
+                <div className="flex items-center gap-2.5 text-[#f5ece1]">
+                  <div className="p-1.5 rounded-lg bg-accent/20 text-accent shrink-0">
+                    <Star className="w-4 h-4 fill-accent" />
+                  </div>
+                  <span>
+                    <strong className="text-accent">เมนูแนะนำหน้าแรก:</strong> มีเมนูที่กำลังแสดงบนหน้าแรกทั้งหมด <strong className="text-accent underline font-bold">{featuredMenuIds.length}</strong> จาน (สามารถกดจัดลำดับเพื่อสลับตำแหน่งและเลือกจานได้อิสระ)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMenuViewMode("featured_home")}
+                  className="px-3.5 py-1.5 bg-accent hover:brightness-110 text-[#1a100a] font-bold rounded-xl transition-all cursor-pointer shrink-0 shadow-xs flex items-center gap-1.5"
+                >
+                  <Star className="w-3.5 h-3.5 fill-current" />
+                  <span>จัดลำดับเมนูหน้าแรกทันที →</span>
+                </button>
+              </div>
+            )}
+
+            {/* Menu List: Featured Home Manager vs Cards View vs Table View */}
+            {menuViewMode === "featured_home" ? (
+              /* Dedicated Homepage Featured Dishes Reordering Manager */
+              <div className="space-y-4 font-thai">
+                {/* Header Banner */}
+                <div className="p-5 rounded-2xl bg-[#20140c] border-2 border-accent/35 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent font-bold text-xs border border-accent/30 flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 fill-accent" />
+                        เมนูแนะนำบนหน้าแรก (จานเด็ดประจำบ้าน)
+                      </span>
+                      <span className="text-xs text-[#f5ece1]/70">
+                        {featuredMenuIds.length} รายการ
+                      </span>
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-[#fff8ee]">
+                      จัดลำดับเมนูที่จะแสดงบนหน้าแรกของเว็บไซต์
+                    </h3>
+                    <p className="text-xs text-[#f5ece1]/75 max-w-2xl leading-relaxed">
+                      💡 เมนูเหล่านี้จะแสดงบนหน้าแรกเรียงจากซ้ายไปขวา (จานที่ 1, 2, 3...) คุณพี่สามารถ<strong>กดปุ่ม [ขึ้น] [ลง] [บนสุด] หรือลากเพื่อสลับอันดับ</strong> ได้อย่างอิสระตามใจชอบครับ
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2.5 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddFeaturedModal(true)}
+                      className="px-4 py-2.5 bg-accent hover:brightness-110 text-[#1a100a] font-bold rounded-xl text-xs sm:text-sm flex items-center gap-1.5 shadow-md cursor-pointer transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>เพิ่มเมนูขึ้นหน้าแรก</span>
+                    </button>
+                    {featuredSaveLoading ? (
+                      <span className="text-xs text-amber-400 font-semibold flex items-center gap-1 animate-pulse">
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>กำลังบันทึก...</span>
+                      </span>
+                    ) : featuredSaveSuccess ? (
+                      <span className="text-xs text-green-400 font-semibold flex items-center gap-1">
+                        <CheckCircle className="w-4 h-4 text-green-400" />
+                        <span>บันทึกแล้ว</span>
+                      </span>
+                    ) : (
+                      <span className="text-xs text-accent/70 font-semibold flex items-center gap-1">
+                        <Check className="w-3.5 h-3.5 text-accent" />
+                        <span>ซิงค์ตรงกับหน้าแรก</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Items List */}
+                {featuredMenuIds.length === 0 ? (
+                  <div className="text-center py-16 bg-[#20140c]/60 border border-dashed border-accent/20 rounded-2xl space-y-3">
+                    <Star className="w-10 h-10 text-accent/40 mx-auto" />
+                    <p className="text-sm font-semibold text-[#f5ece1]/80">ยังไม่มีเมนูที่เลือกแสดงบนหน้าแรก</p>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddFeaturedModal(true)}
+                      className="px-4 py-2 bg-accent text-[#1a100a] font-bold text-xs rounded-xl cursor-pointer"
+                    >
+                      กดที่นี่เพื่อเพิ่มเมนูขึ้นหน้าแรก
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {featuredMenuIds.map((id, index) => {
+                      const menu = menus.find(m => m.id === id);
+                      if (!menu) return null;
+                      return (
+                        <div
+                          key={id}
+                          draggable
+                          onDragStart={(e) => handleDragFeaturedStart(e, index)}
+                          onDragOver={(e) => e.preventDefault()}
+                          onDrop={(e) => handleDropFeatured(e, index)}
+                          className={`p-3 sm:p-4 rounded-2xl bg-[#261810] border border-accent/20 hover:border-accent/50 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all cursor-grab active:cursor-grabbing ${
+                            draggedFeaturedIdx === index ? "opacity-30 border-accent scale-98" : ""
+                          }`}
+                        >
+                          {/* Left: Grip, Rank, Image, Title & Price */}
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex items-center gap-2 shrink-0">
+                              <GripVertical className="w-4 h-4 text-accent/40 hover:text-accent cursor-grab" />
+                              <span className="w-8 h-8 rounded-xl bg-accent/20 text-accent border border-accent/35 font-bold text-xs flex items-center justify-center font-thai shadow-xs">
+                                #{index + 1}
+                              </span>
+                            </div>
+
+                            {menu.image_url ? (
+                              <img
+                                src={menu.image_url}
+                                alt={menu.name}
+                                className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border border-accent/20 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent/50 shrink-0">
+                                <Utensils className="w-5 h-5" />
+                              </div>
+                            )}
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm sm:text-base font-bold text-[#f7eee3] truncate">
+                                  {menu.name}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-full bg-accent/15 text-accent text-[10px] border border-accent/25">
+                                  {menu.category}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 mt-1 text-xs">
+                                <span className="font-bold text-accent">฿{menu.price}</span>
+                                <span className={`text-[11px] font-semibold ${menu.available !== 0 ? "text-green-400" : "text-red-400"}`}>
+                                  {menu.available !== 0 ? "● พร้อมเสิร์ฟ" : "○ หมดชั่วคราว"}
+                                </span>
+                                {menu.description && (
+                                  <span className="text-[#f5ece1]/50 text-[11px] truncate max-w-xs hidden md:inline">
+                                    {menu.description}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right: Move buttons & Remove */}
+                          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => handleMoveFeatured(index, "top")}
+                              className="px-2.5 py-1.5 rounded-xl bg-accent/15 text-accent hover:bg-accent hover:text-[#1a100a] disabled:opacity-20 disabled:pointer-events-none text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border border-accent/25"
+                              title="ย้ายขึ้นไปอยู่อันดับ 1 บนสุด"
+                            >
+                              <ChevronsUp className="w-3.5 h-3.5" />
+                              <span className="hidden md:inline">บนสุด</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === 0}
+                              onClick={() => handleMoveFeatured(index, "up")}
+                              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-accent/15 text-accent hover:bg-accent hover:text-[#1a100a] disabled:opacity-20 disabled:pointer-events-none text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border border-accent/25"
+                              title="เลื่อนขึ้น 1 อันดับ"
+                            >
+                              <ChevronUp className="w-4 h-4" />
+                              <span className="hidden md:inline">ขึ้น</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === featuredMenuIds.length - 1}
+                              onClick={() => handleMoveFeatured(index, "down")}
+                              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-accent/15 text-accent hover:bg-accent hover:text-[#1a100a] disabled:opacity-20 disabled:pointer-events-none text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border border-accent/25"
+                              title="เลื่อนลง 1 อันดับ"
+                            >
+                              <ChevronDown className="w-4 h-4" />
+                              <span className="hidden md:inline">ลง</span>
+                            </button>
+                            <button
+                              type="button"
+                              disabled={index === featuredMenuIds.length - 1}
+                              onClick={() => handleMoveFeatured(index, "bottom")}
+                              className="px-2.5 py-1.5 rounded-xl bg-accent/15 text-accent hover:bg-accent hover:text-[#1a100a] disabled:opacity-20 disabled:pointer-events-none text-xs font-semibold transition-all cursor-pointer flex items-center gap-1 border border-accent/25"
+                              title="ย้ายลงไปอยู่ล่างสุด"
+                            >
+                              <ChevronsDown className="w-3.5 h-3.5" />
+                              <span className="hidden md:inline">ล่างสุด</span>
+                            </button>
+
+                            <div className="w-px h-5 bg-accent/25 mx-1" />
+
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFeatured(id)}
+                              className="px-2.5 py-1.5 rounded-xl bg-red-950/40 text-red-300 border border-red-800/40 hover:bg-red-900/60 hover:text-red-200 text-xs font-semibold transition-all cursor-pointer flex items-center gap-1"
+                              title="เอาออกจากเมนูแนะนำหน้าแรก"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>นำออก</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Modal Add Menu to Featured */}
+                {showAddFeaturedModal && (
+                  <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="bg-[#1f140e] text-[#f7eee3] rounded-3xl p-5 sm:p-6 max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl border border-accent/30 font-thai">
+                      <div className="flex justify-between items-center pb-3 border-b border-accent/20">
+                        <h3 className="font-bold text-base sm:text-lg text-accent flex items-center gap-2">
+                          <Star className="w-5 h-5 fill-accent" />
+                          <span>เลือกเมนูเพื่อเพิ่มขึ้นหน้าแรก</span>
+                        </h3>
+                        <button
+                          type="button"
+                          onClick={() => setShowAddFeaturedModal(false)}
+                          className="p-1 rounded-xl text-[#f5ece1]/60 hover:text-[#f5ece1] hover:bg-accent/15 cursor-pointer"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="my-3 relative">
+                        <Search className="w-4 h-4 absolute left-3 top-3 text-accent/60" />
+                        <input
+                          type="text"
+                          placeholder="พิมพ์ค้นหาชื่อเมนู หรือหมวดหมู่..."
+                          value={addFeaturedSearch}
+                          onChange={(e) => setAddFeaturedSearch(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2 bg-[#261810] border border-accent/25 rounded-xl text-xs sm:text-sm text-[#f7eee3] focus:outline-none focus:border-accent"
+                          autoFocus
+                        />
+                      </div>
+
+                      <div className="overflow-y-auto space-y-2 flex-grow pr-1 max-h-[55vh]">
+                        {menus
+                          .filter(m => !featuredMenuIds.includes(m.id))
+                          .filter(m => !addFeaturedSearch || m.name.toLowerCase().includes(addFeaturedSearch.toLowerCase()) || m.category.toLowerCase().includes(addFeaturedSearch.toLowerCase()))
+                          .map(m => (
+                            <div key={m.id} className="p-3 rounded-xl bg-[#261810] border border-accent/15 flex items-center justify-between gap-3 hover:border-accent/40 transition-all">
+                              <div className="flex items-center gap-3 min-w-0">
+                                {m.image_url ? (
+                                  <img src={m.image_url} alt={m.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center text-accent/50 shrink-0">
+                                    <Utensils className="w-4 h-4" />
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="font-bold text-xs sm:text-sm text-[#f5ece1] truncate">{m.name}</p>
+                                  <p className="text-[11px] text-accent/80">{m.category} · ฿{m.price}</p>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleAddFeatured(m.id)}
+                                className="px-3 py-1.5 rounded-lg bg-accent hover:brightness-110 text-[#1a100a] font-bold text-xs flex items-center gap-1 cursor-pointer transition-all shrink-0"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>เพิ่มขึ้นหน้าแรก</span>
+                              </button>
+                            </div>
+                          ))}
+                        {menus.filter(m => !featuredMenuIds.includes(m.id)).length === 0 && (
+                          <div className="text-center py-8 text-xs text-[#f5ece1]/50">
+                            เมนูทั้งหมดถูกเพิ่มขึ้นหน้าแรกเรียบร้อยแล้ว
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : filteredMenus.length > 0 ? (
               menuViewMode === "cards" ? (
                 /* Visual Card Grid View (Merchant App Style) */
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[60vh] overflow-y-auto p-1">
@@ -3267,10 +3655,10 @@ export default function AdminDashboard({
                           </span>
 
                           {/* Recommendation Star Badge */}
-                          {(menu.is_recommended ?? 0) === 1 && (
+                          {featuredMenuIds.includes(menu.id) && (
                             <span className="absolute top-2 right-2 px-2.5 py-1 bg-amber-400 text-amber-950 font-bold rounded-full text-[10px] shadow-xs flex items-center gap-1 pointer-events-none">
                               <Star className="w-3 h-3 fill-current" />
-                              <span>แนะนำ</span>
+                              <span>หน้าแรก #{featuredMenuIds.indexOf(menu.id) + 1}</span>
                             </span>
                           )}
 
@@ -3527,7 +3915,9 @@ export default function AdminDashboard({
                               }`}
                               title="สลับแนะนำ"
                             >
-                              {(menu.is_recommended ?? 0) === 1 ? "★ แนะนำ" : "ทั่วไป"}
+                              {(menu.is_recommended ?? 0) === 1
+                                ? (featuredMenuIds.includes(menu.id) ? `★ หน้าแรก #${featuredMenuIds.indexOf(menu.id) + 1}` : "★ แนะนำ")
+                                : "ทั่วไป"}
                             </button>
                           </td>
                           <td className="px-4 py-3 text-center">
