@@ -557,7 +557,7 @@ export default function AboutPageEditor({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-primary mb-1">คำคมยายจัน (Quote)</label>
+                <label className="block text-xs font-bold text-primary mb-1">คำคมยายจัน</label>
                 <textarea
                   rows={2}
                   value={data.tab2_quote}

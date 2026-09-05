@@ -45,10 +45,10 @@ export default function BookingForm() {
           guests: "2",
         });
       } else {
-        setStatus({ type: "error", message: data.error || "เกิดข้อผิดพลาดในการจอง" });
+        setStatus({ type: "error", message: data.error || "จองโต๊ะไม่สำเร็จ กรุณาลองอีกครั้ง" });
       }
     } catch (err) {
-      setStatus({ type: "error", message: "ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง" });
+      setStatus({ type: "error", message: "ส่งข้อมูลการจองไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง" });
     } finally {
       setLoading(false);
     }
@@ -59,7 +59,7 @@ export default function BookingForm() {
       <div className="text-center mb-6 space-y-1">
         <h3 className="font-thai text-xl sm:text-2xl font-bold text-cream">จองโต๊ะอาหารล่วงหน้า</h3>
         <p className="font-thai text-xs sm:text-sm text-cream/70">
-          กรุณากรอกข้อมูลเพื่อจองโต๊ะอาหาร (มื้อเย็นหรือวันหยุดแนะนำจองล่วงหน้าครับ)
+          กรอกข้อมูลเพื่อจองโต๊ะ โดยเฉพาะมื้อเย็นและวันหยุดที่อาจมีลูกค้าหนาแน่น
         </p>
       </div>
 
@@ -97,7 +97,7 @@ export default function BookingForm() {
               required
               value={formData.name}
               onChange={handleChange}
-              placeholder="คุณรักดี เรียนเก่ง"
+              placeholder="ชื่อ–นามสกุล"
               className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
             />
           </div>

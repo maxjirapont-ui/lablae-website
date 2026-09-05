@@ -54,7 +54,7 @@ const DEFAULT_HERO_VALUES = {
     "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ ๔ รุ่น แวะมากินข้าวบ้านญาตินะครับ",
   hero_btn1_text: "ดูเมนูอาหารทั้งหมด",
   hero_btn1_link: "/menu",
-  hero_btn2_text: "รู้จักกับเรา & ตำนานลับแล",
+  hero_btn2_text: "รู้จักบ้านและเรื่องเล่าลับแล",
   hero_btn2_link: "/about",
 };
 
@@ -167,14 +167,14 @@ export default function HeroSectionEditor({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-[11px] font-bold">
-              รูปภาพปก & ข้อความหลักหน้าแรก
+              รูปภาพปกและข้อความหลักหน้าแรก
             </span>
             <span className="text-xs font-bold text-primary">
               ฮีโร่แบนเนอร์ (Main Hero Section)
             </span>
           </div>
           <h3 className="text-lg font-bold text-primary">
-            ๑. ภาพหลักฮีโร่และคำอธิบาย (Hero Banner & Story Texts)
+            ๑. ภาพปกและคำอธิบายหน้าแรก
           </h3>
           <p className="text-xs text-primary/70 leading-relaxed">
             จุดแรกที่ลูกค้าเปิดเข้ามาพบ สามารถเปลี่ยนรูปภาพพื้นหลัง ป้ายกำกับ ชื่อร้าน คำโปรย คำอธิบาย และปุ่มกดได้ทั้งหมด
@@ -318,7 +318,7 @@ export default function HeroSectionEditor({
             <div className="space-y-1">
               <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                 <Tag className="w-3.5 h-3.5 text-accent" />
-                <span>ป้ายกำกับบนสุด (Badge)</span>
+                <span>ป้ายกำกับด้านบน</span>
               </label>
               <input
                 type="text"
@@ -333,7 +333,7 @@ export default function HeroSectionEditor({
             <div className="space-y-1">
               <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                 <Type className="w-3.5 h-3.5 text-accent" />
-                <span>ชื่อร้าน / หัวข้อหลัก (Title)</span>
+                <span>ชื่อร้านหรือหัวข้อหลัก</span>
                 <span className="text-red-500">*</span>
               </label>
               <input
@@ -350,7 +350,7 @@ export default function HeroSectionEditor({
             <div className="space-y-1">
               <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-accent" />
-                <span>คำโปรยใต้ชื่อร้าน (Subtitle)</span>
+                <span>คำโปรยใต้ชื่อร้าน</span>
               </label>
               <input
                 type="text"
@@ -365,13 +365,13 @@ export default function HeroSectionEditor({
             <div className="space-y-1">
               <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-accent" />
-                <span>คำอธิบายหน้าแรก (Description)</span>
+                <span>คำอธิบายหน้าแรก</span>
               </label>
               <textarea
                 rows={3}
                 value={description}
                 onChange={(e) => handleFieldChange(setDescription, e.target.value)}
-                placeholder="พิมพ์คำอธิบายสั้นๆ ของร้านเพื่อต้อนรับลูกค้าบนหน้าแรก..."
+                placeholder="เขียนคำอธิบายสั้น ๆ ของร้านเพื่อต้อนรับลูกค้าบนหน้าแรก"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs leading-relaxed text-primary focus:outline-hidden focus:ring-2 focus:ring-accent font-sans"
               />
             </div>
@@ -383,7 +383,7 @@ export default function HeroSectionEditor({
           <div className="space-y-2">
             <span className="text-xs font-bold text-primary flex items-center gap-1.5">
               <LinkIcon className="w-3.5 h-3.5 text-accent" />
-              <span>ปุ่มที่ ๑ (Primary Button)</span>
+              <span>ปุ่มหลัก</span>
             </span>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -410,7 +410,7 @@ export default function HeroSectionEditor({
           <div className="space-y-2">
             <span className="text-xs font-bold text-primary flex items-center gap-1.5">
               <LinkIcon className="w-3.5 h-3.5 text-accent" />
-              <span>ปุ่มที่ ๒ (Secondary Button)</span>
+              <span>ปุ่มรอง</span>
             </span>
             <div className="grid grid-cols-2 gap-2">
               <div>

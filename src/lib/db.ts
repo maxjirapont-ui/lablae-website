@@ -8,6 +8,14 @@ const dbPath = getDatabasePath();
 // Global database connection cache to prevent multiple connections in dev hot-reloads
 let globalDb: Database | null = null;
 
+const LEGACY_COPY_UPDATES = [
+  ["hero_btn2_text", "รู้จักกับเรา & ตำนานลับแล", "รู้จักบ้านและเรื่องเล่าลับแล"],
+  ["featured_btn_text", "ดูเมนูอร่อยทั้งหมดเพิ่มเติม →", "ดูเมนูแนะนำทั้งหมด →"],
+  ["seasonal_btn_text", "ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →", "ดูเมนูตามฤดูกาลทั้งหมด →"],
+  ["contact_btn_text", "เปิด Google Maps นำทางมาร้าน", "เปิดเส้นทางใน Google Maps"],
+  ["about_title", "บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา", "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ"],
+] as const;
+
 export async function getDb(): Promise<Database> {
   if (globalDb) {
     return globalDb;
@@ -75,6 +83,14 @@ export async function getDb(): Promise<Database> {
   try {
     await db.exec("ALTER TABLE menus ADD COLUMN sort_order INTEGER DEFAULT 0");
   } catch {}
+
+  // Keep existing custom copy intact and update only untouched legacy defaults.
+  for (const [key, legacyValue, updatedValue] of LEGACY_COPY_UPDATES) {
+    await db.run(
+      "UPDATE settings SET value = ? WHERE key = ? AND value = ?",
+      [updatedValue, key, legacyValue],
+    );
+  }
 
   globalDb = db;
   return db;

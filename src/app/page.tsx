@@ -107,13 +107,13 @@ export default async function Home() {
   // Dynamic Button Configurations
   const heroBtn1Text = await getSetting("hero_btn1_text") || "ดูเมนูอาหารทั้งหมด";
   const heroBtn1Link = await getSetting("hero_btn1_link") || "/menu";
-  const heroBtn2Text = await getSetting("hero_btn2_text") || "รู้จักกับเรา & ตำนานลับแล";
+  const heroBtn2Text = await getSetting("hero_btn2_text") || "รู้จักบ้านและเรื่องเล่าลับแล";
   const heroBtn2Link = await getSetting("hero_btn2_link") || "/about";
-  const featuredBtnText = await getSetting("featured_btn_text") || "ดูเมนูอร่อยทั้งหมดเพิ่มเติม →";
+  const featuredBtnText = await getSetting("featured_btn_text") || "ดูเมนูแนะนำทั้งหมด →";
   const featuredBtnLink = await getSetting("featured_btn_link") || "/menu?category=เมนูแนะนำ";
-  const seasonalBtnText = await getSetting("seasonal_btn_text") || "ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →";
+  const seasonalBtnText = await getSetting("seasonal_btn_text") || "ดูเมนูตามฤดูกาลทั้งหมด →";
   const seasonalBtnLink = await getSetting("seasonal_btn_link") || "/menu?category=อาหารตามฤดูกาล";
-  const contactBtnText = await getSetting("contact_btn_text") || "เปิด Google Maps นำทางมาร้าน";
+  const contactBtnText = await getSetting("contact_btn_text") || "เปิดเส้นทางใน Google Maps";
 
   // Section Headers & Teasers
   const featuredBadge = (await getSetting("home_featured_badge")) || "ของกิ๋นลำเมืองลับแล";
@@ -143,7 +143,7 @@ export default async function Home() {
   // About / Story Ambience Section Customizable Texts
   const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง ๑๐๐ ปี";
   const aboutBadge = (await getSetting("about_badge")) || "เรื่องเล่าจากบ้าน ๑๐๐ ปี";
-  const aboutTitle = (await getSetting("about_title")) || "บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา";
+  const aboutTitle = (await getSetting("about_title")) || "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ";
   const aboutQuote = (await getSetting("about_quote")) || "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”";
   const aboutQuoteAuthor = (await getSetting("about_quote_author")) || "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี";
   const rawAboutStory = await getSetting("about_story_text");
@@ -237,7 +237,7 @@ export default async function Home() {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 hover:bg-black/60 border border-accent/40 text-xs sm:text-sm text-accent hover:text-white transition-all font-thai font-medium backdrop-blur-xs shadow-xs"
             >
               <Clock className="w-3.5 h-3.5 text-accent" />
-              <span>ต้องการจองโต๊ะอาหารล่วงหน้า? กดจองโต๊ะที่นี่</span>
+              <span>จองโต๊ะล่วงหน้าได้ที่นี่</span>
               <span className="text-accent">↓</span>
             </Link>
           </div>
@@ -518,7 +518,7 @@ export default async function Home() {
                     ติดตามบรรยากาศและเรื่องราวของบ้านเรา
                   </h2>
                   <p className="font-thai text-xs sm:text-sm text-[#f5ece1]/70 max-w-xl mx-auto">
-                    อัปเดตเมนูประจำวัน กิจกรรม และภาพบรรยากาศน่ารักๆ จากเรือนไม้ ๑๐๐ ปี
+                    อัปเดตเมนูประจำวัน กิจกรรม และภาพบรรยากาศอบอุ่นจากเรือนไม้ ๑๐๐ ปี
                   </p>
                 </div>
 
@@ -721,7 +721,7 @@ export default async function Home() {
                     <div className="flex items-start">
                       <Phone className="w-5 h-5 mr-3 text-accent flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-semibold text-primary">เบอร์โทรศัพท์ติดต่อ / โทรจองโต๊ะ</p>
+                        <p className="font-semibold text-primary">โทรสอบถามหรือจองโต๊ะ</p>
                         <p className="text-[#f5ece1]/80">{phone}</p>
                       </div>
                     </div>
@@ -736,7 +736,7 @@ export default async function Home() {
                           rel="noopener noreferrer"
                           className="text-xs text-accent hover:underline inline-block mt-1 font-semibold"
                         >
-                          เปิด Google Maps เพื่อดูเส้นทางนำทาง →
+                          เปิดเส้นทางใน Google Maps →
                         </a>
                       </div>
                     </div>

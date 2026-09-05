@@ -305,7 +305,7 @@ export default function AdminDashboard({
       if (res.ok && data.success) {
         setPublishNotice({
           type: "success",
-          message: data.message || "ส่งข้อมูลขึ้นระบบเว็บไซต์จริงสำเร็จแล้ว",
+          message: data.message || "อัปเดตเว็บไซต์เรียบร้อยแล้ว",
         });
         if (data.published_at) {
           setSettings(prev => ({ ...prev, last_published_at: data.published_at }));
@@ -314,14 +314,14 @@ export default function AdminDashboard({
       } else {
         setPublishNotice({
           type: "error",
-          message: data.error || "เกิดข้อผิดพลาดในการเผยแพร่ข้อมูล",
+          message: data.error || "อัปเดตเว็บไซต์ไม่สำเร็จ กรุณาลองอีกครั้ง",
         });
       }
     } catch (err) {
       console.error("Publish error:", err);
       setPublishNotice({
         type: "error",
-        message: "เชื่อมต่อระบบเผยแพร่ไม่ได้ ข้อมูลยังไม่ได้ถูกส่งขึ้นเว็บไซต์จริง",
+        message: "อัปเดตเว็บไซต์ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองอีกครั้ง",
       });
     } finally {
       setIsPublishing(false);
@@ -585,10 +585,10 @@ export default function AdminDashboard({
 
   const handleBulkToggleCategory = async (categoryName: string, actionType: "available" | "unavailable" | "hide" | "show") => {
     let confirmMsg = "";
-    if (actionType === "unavailable") confirmMsg = `คุณพี่แน่ใจใช่ไหมครับที่จะตั้งค่าให้ทุกเมนูในหมวดหมู่ "${categoryName}" เป็น "หมดชั่วคราว"?`;
-    if (actionType === "available") confirmMsg = `คุณพี่ต้องการเปิดจำหน่ายเมนูทั้งหมดในหมวดหมู่ "${categoryName}" ใช่หรือไม่?`;
-    if (actionType === "hide") confirmMsg = `คุณพี่ต้องการซ่อนทุกเมนูในหมวดหมู่ "${categoryName}" จากหน้าเว็บลูกค้าใช่หรือไม่?`;
-    if (actionType === "show") confirmMsg = `คุณพี่ต้องการแสดงทุกเมนู in หมวดหมู่ "${categoryName}" บนหน้าเว็บลูกค้าใช่หรือไม่?`;
+    if (actionType === "unavailable") confirmMsg = `ต้องการตั้งค่าเมนูทั้งหมดในหมวด “${categoryName}” เป็น “หมดชั่วคราว” หรือไม่?`;
+    if (actionType === "available") confirmMsg = `ต้องการเปิดขายเมนูทั้งหมดในหมวด “${categoryName}” หรือไม่?`;
+    if (actionType === "hide") confirmMsg = `ต้องการซ่อนเมนูทั้งหมดในหมวด “${categoryName}” จากหน้าเว็บไซต์หรือไม่?`;
+    if (actionType === "show") confirmMsg = `ต้องการแสดงเมนูทั้งหมดในหมวด “${categoryName}” บนหน้าเว็บไซต์หรือไม่?`;
 
     if (!confirm(confirmMsg)) return;
 
@@ -792,7 +792,7 @@ export default function AdminDashboard({
       });
 
       if (res.ok) {
-        setSettingsMsg("✅ บันทึกข้อมูลการตั้งค่าเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ บันทึกการตั้งค่าแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         if (res.status === 401) {
@@ -832,7 +832,7 @@ export default function AdminDashboard({
         body: JSON.stringify(heroData),
       });
       if (res.ok) {
-        setSettingsMsg("✅ บันทึกรูปภาพปกและข้อความฮีโร่สำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ บันทึกภาพปกและข้อความแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         if (res.status === 401) {
@@ -873,7 +873,7 @@ export default function AdminDashboard({
         body: JSON.stringify(storyData),
       });
       if (res.ok) {
-        setSettingsMsg("✅ บันทึกรูปภาพบรรยากาศและคำอธิบายเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ บันทึกภาพบรรยากาศและเรื่องเล่าแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         if (res.status === 401) {
@@ -911,7 +911,7 @@ export default function AdminDashboard({
         body: JSON.stringify(galleryData),
       });
       if (res.ok) {
-        setSettingsMsg("✅ บันทึกอัลบั้มและคำอธิบายภาพบรรยากาศสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ บันทึกอัลบั้มและคำอธิบายภาพแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         if (res.status === 401) {
@@ -960,7 +960,7 @@ export default function AdminDashboard({
         body: JSON.stringify({ custom_stories_data: jsonStr }),
       });
       if (res.ok) {
-        setSettingsMsg("✅ บันทึกข้อความเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ บันทึกเรื่องเล่าแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         if (res.status === 401) {
@@ -1005,7 +1005,7 @@ export default function AdminDashboard({
         body: JSON.stringify({ custom_stories_data: jsonStr }),
       });
       if (res.ok) {
-        setSettingsMsg("✅ คืนค่าข้อความเริ่มต้นสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ คืนค่าข้อความเริ่มต้นแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         if (res.status === 401) {
@@ -1174,7 +1174,7 @@ export default function AdminDashboard({
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        setSettingsMsg("✅ บันทึกข้อมูลส่วนหัวหน้าเมนูและเล่ม PDF เรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
+        setSettingsMsg("✅ บันทึกส่วนหัวและไฟล์เมนู PDF แล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
         refreshPublicContent();
       } else {
         setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลหน้าเมนู");
@@ -1226,14 +1226,14 @@ export default function AdminDashboard({
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
             </span>
             <h3 className="font-bold text-sm">
-              {previewMode === "mobile" ? "พรีวิวหน้าร้านบนมือถือ (Live Mobile)" : "พรีวิวหน้าร้านบนคอมฯ (Live Desktop)"}
+              {previewMode === "mobile" ? "ตัวอย่างหน้าเว็บไซต์บนมือถือ" : "ตัวอย่างหน้าเว็บไซต์บนคอมพิวเตอร์"}
             </h3>
           </div>
           <button
             type="button"
             onClick={() => setShowFloatingPreview(false)}
             className="w-8 h-8 flex items-center justify-center hover:bg-white/10 rounded-full text-white font-bold cursor-pointer text-sm transition-colors"
-            title="ปิดหน้าพรีวิว"
+            title="ปิดตัวอย่างหน้าเว็บไซต์"
           >
             ✕
           </button>
@@ -1249,10 +1249,10 @@ export default function AdminDashboard({
                 onChange={(e) => setPreviewUrl(e.target.value)}
                 className="w-full px-2 py-1.5 bg-cream border border-primary/10 rounded-lg text-xs font-semibold focus:outline-none cursor-pointer text-primary"
               >
-                <option value="/">หน้าแรก (Home)</option>
-                <option value="/menu">หน้าเมนูอาหาร (Menu)</option>
-                <option value="/about">หน้ารู้จักเรา (About)</option>
-                <option value="/blog">หน้าบทความ (Blog)</option>
+                <option value="/">หน้าแรก</option>
+                <option value="/menu">หน้าเมนูอาหาร</option>
+                <option value="/about">หน้ารู้จักเรา</option>
+                <option value="/blog">หน้าบทความ</option>
               </select>
             </div>
 
@@ -1287,7 +1287,7 @@ export default function AdminDashboard({
               type="button"
               onClick={() => setIframeKey((prev) => prev + 1)}
               className="px-2.5 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 rounded-lg text-[10px] font-bold transition-all cursor-pointer shrink-0"
-              title="รีเฟรชหน้าพรีวิว"
+              title="โหลดตัวอย่างหน้าเว็บไซต์ใหม่"
             >
               รีเฟรช
             </button>
@@ -1338,7 +1338,7 @@ export default function AdminDashboard({
                   <iframe
                     key={`${previewUrl}-${previewMode}-${iframeKey}`}
                     src={previewUrl}
-                    title={`พรีวิวมือถือ ${previewUrl}`}
+                    title={`ตัวอย่างบนมือถือ ${previewUrl}`}
                     className="w-full h-full border-none bg-white"
                   />
                 </div>
@@ -1354,7 +1354,7 @@ export default function AdminDashboard({
               <iframe
                 key={`${previewUrl}-${previewMode}-${iframeKey}`}
                 src={previewUrl}
-                title={`พรีวิวเดสก์ท็อป ${previewUrl}`}
+                title={`ตัวอย่างบนคอมพิวเตอร์ ${previewUrl}`}
                 className="border-none bg-white"
                 style={{
                   width: 1280,
@@ -1388,11 +1388,11 @@ export default function AdminDashboard({
             </span>
           </div>
           <p className="text-xs sm:text-sm font-thai text-primary/70">
-            ยินดีต้อนรับผู้ดูแลระบบ จัดการข้อมูลร้าน เมนูอาหาร และเนื้อหาเว็บไซต์ แล้วกดเผยแพร่สู่หน้าเว็บจริงได้ทันที
+            จัดการข้อมูลร้าน เมนูอาหาร และเนื้อหาได้จากหน้านี้ จากนั้นกดอัปเดตเว็บไซต์เมื่อพร้อม
           </p>
           {settings.last_published_at && (
             <p className="text-[11px] font-thai text-accent-dark mt-1">
-              🕒 เผยแพร่ครั้งล่าสุด: {new Date(settings.last_published_at).toLocaleString("th-TH")}
+              🕒 อัปเดตครั้งล่าสุด: {new Date(settings.last_published_at).toLocaleString("th-TH")}
             </p>
           )}
         </div>
@@ -1405,10 +1405,10 @@ export default function AdminDashboard({
             onClick={handlePublishAll}
             disabled={isPublishing}
             className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-800 hover:from-emerald-700 hover:to-green-900 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer transform active:scale-98"
-            title="บันทึกข้อมูลทั้งหมดและส่งขึ้นระบบเว็บไซต์จริง"
+            title="บันทึกข้อมูลทั้งหมดและอัปเดตเว็บไซต์"
           >
             <Sparkles className={`w-4 h-4 text-amber-300 ${isPublishing ? "animate-spin" : ""}`} />
-            <span>{isPublishing ? "กำลังเผยแพร่ขึ้นเว็บ..." : "🚀 เผยแพร่ทั้งหมดสู่หน้าเว็บ"}</span>
+            <span>{isPublishing ? "กำลังอัปเดต..." : "อัปเดตเว็บไซต์"}</span>
           </button>
 
           <a
@@ -1416,10 +1416,10 @@ export default function AdminDashboard({
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-primary/20 hover:border-accent text-primary rounded-2xl text-xs sm:text-sm font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer"
-            title="เปิดหน้าเว็บจริงในแท็บใหม่"
+            title="เปิดเว็บไซต์ในแท็บใหม่"
           >
             <Globe className="w-4 h-4 text-accent" />
-            <span>ดูหน้าเว็บจริง</span>
+            <span>ดูเว็บไซต์</span>
             <ExternalLink className="w-3.5 h-3.5 opacity-60" />
           </a>
         </div>
@@ -1452,8 +1452,8 @@ export default function AdminDashboard({
                 publishNotice.type === "success" ? "text-emerald-800" : "text-red-800"
               }`}>
                 {publishNotice.type === "success"
-                  ? "ระบบยืนยันการบันทึกแล้ว หน้าร้านและพรีวิวจะอ่านข้อมูลชุดเดียวกัน"
-                  : "ระบบจะไม่แสดงว่าสำเร็จจนกว่าจะยืนยันการส่งข้อมูลได้ กรุณาแก้ตามข้อความแล้วกดเผยแพร่อีกครั้ง"}
+                  ? "บันทึกสำเร็จแล้ว หน้าเว็บไซต์ใช้ข้อมูลชุดล่าสุด"
+                  : "ยังอัปเดตเว็บไซต์ไม่สำเร็จ กรุณาแก้ไขตามข้อความแล้วลองอีกครั้ง"}
               </p>
             </div>
           </div>
@@ -1465,7 +1465,7 @@ export default function AdminDashboard({
                 rel="noopener noreferrer"
                 className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
               >
-                เปิดดูหน้าเว็บจริง ↗
+                เปิดดูเว็บไซต์ ↗
               </a>
             )}
             <button
@@ -1536,7 +1536,7 @@ export default function AdminDashboard({
               }`}
             >
               <Camera className="w-4.5 h-4.5 text-accent" />
-              <span>📸 รูปบรรยากาศ & หน้าปก</span>
+              <span>📸 รูปบรรยากาศและหน้าปก</span>
             </button>
 
             <button
@@ -1590,7 +1590,7 @@ export default function AdminDashboard({
               }`}
             >
               <Eye className="w-4.5 h-4.5" />
-              <span>พรีวิวเว็บจริง</span>
+              <span>ดูตัวอย่างเว็บไซต์</span>
             </button>
           </nav>
 
@@ -1612,7 +1612,7 @@ export default function AdminDashboard({
                   )}
                   <span className={`relative inline-flex rounded-full h-2 w-2 ${showFloatingPreview ? "bg-accent-dark" : "bg-primary/45"}`}></span>
                 </span>
-                <span>เปิดพรีวิวมือถือ</span>
+                <span>ดูตัวอย่างบนมือถือ</span>
               </div>
               <span className="text-[10px] bg-primary/5 px-2 py-0.5 rounded-md font-mono shrink-0">
                 {showFloatingPreview ? "เปิด" : "ปิด"}
@@ -1629,7 +1629,7 @@ export default function AdminDashboard({
             className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
           >
             <Sparkles className={`w-3.5 h-3.5 text-amber-300 ${isPublishing ? "animate-spin" : ""}`} />
-            <span>{isPublishing ? "กำลังเผยแพร่..." : "🚀 เผยแพร่ทั้งหมด"}</span>
+            <span>{isPublishing ? "กำลังอัปเดต..." : "อัปเดตเว็บไซต์"}</span>
           </button>
 
           <button
@@ -1657,7 +1657,7 @@ export default function AdminDashboard({
                   <Store className="w-3.5 h-3.5 text-accent" />
                   {settings.restaurant_name || "ร้านลำลำลับแลบ้าน 100 ปี"}
                 </span>
-                <h2 className="text-xl sm:text-2xl font-bold">ศูนย์จัดการด่วน (Quick Hub)</h2>
+                <h2 className="text-xl sm:text-2xl font-bold">ศูนย์จัดการด่วน</h2>
                 <p className="text-xs text-white/80 mt-1">
                   ปรับสถานะเมนูหมดวันนี้ เปลี่ยนเมนูแนะนำ และเช็คความพร้อมของร้านได้ในคลิกเดียวครับ
                 </p>
@@ -1670,7 +1670,7 @@ export default function AdminDashboard({
                   className="flex items-center gap-2 px-4 py-2.5 bg-accent hover:bg-accent-dark text-primary-dark rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
                 >
                   <Eye className="w-4 h-4" />
-                  <span>ดูหน้าเว็บจริง</span>
+                  <span>ดูเว็บไซต์</span>
                 </button>
               </div>
             </div>
@@ -1957,7 +1957,7 @@ export default function AdminDashboard({
                         <Star className="w-4 h-4 fill-current" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-primary text-sm">เมนูแนะนำประจำร้าน (Featured)</h3>
+                        <h3 className="font-bold text-primary text-sm">เมนูแนะนำประจำร้าน</h3>
                         <p className="text-[10px] text-primary/60">ติ๊กเพื่อเลือกจานเด่นไปแสดงบนหน้าแรกของเว็บ</p>
                       </div>
                     </div>
@@ -2059,7 +2059,7 @@ export default function AdminDashboard({
                     className="p-3 bg-cream border border-primary/15 rounded-xl flex items-center gap-2 hover:bg-white hover:border-accent transition-all cursor-pointer font-bold text-primary"
                   >
                     <Camera className="w-4 h-4 text-accent" />
-                    <span>📸 จัดการรูปบรรยากาศร้าน & ปก</span>
+                    <span>📸 จัดการรูปบรรยากาศร้านและหน้าปก</span>
                   </button>
                 </div>
 
@@ -2310,12 +2310,12 @@ export default function AdminDashboard({
                             {/* Status Badge */}
                             {isPending && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 border border-amber-300 text-amber-800 rounded-lg text-xs font-bold animate-pulse">
-                                ⏳ รอยืนยัน (Pending)
+                                ⏳ รอยืนยัน
                               </span>
                             )}
                             {isConfirmed && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg text-xs font-bold">
-                                ✅ ยืนยันแล้ว (Confirmed)
+                                ✅ ยืนยันแล้ว
                               </span>
                             )}
                             {isCompleted && (
@@ -2434,7 +2434,7 @@ export default function AdminDashboard({
                   <Camera className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-primary">จัดการรูปภาพบรรยากาศร้าน & หน้าปกเว็บไซต์</h2>
+                  <h2 className="text-xl font-bold text-primary">จัดการรูปบรรยากาศร้านและหน้าปกเว็บไซต์</h2>
                   <p className="text-xs text-primary/70">
                     อัปเดตรูปภาพบรรยากาศร้าน รูปหน้าปกหัวเว็บ และรูปบ้านโบราณ ๑๐๐ ปี ได้โดยตรงที่นี่ (ระบบจะบีบอัดและปรับขนาด HD ให้อัตโนมัติ)
                   </p>
@@ -2501,9 +2501,9 @@ export default function AdminDashboard({
                     </span>
                     <span className="text-[11px] text-primary/50">ขนาดแนะนำ: สี่เหลี่ยมจัตุรัส หรือ PNG ใส</span>
                   </div>
-                  <h3 className="text-base font-bold text-primary">๓. โลโก้ร้านอาหาร (Brand Logo)</h3>
+                  <h3 className="text-base font-bold text-primary">๓. โลโก้ร้านอาหาร</h3>
                   <p className="text-xs text-primary/70 leading-relaxed">
-                    แสดงที่แถบเมนูด้านบนสุด (Navbar) ทุกหน้าเว็บ หากยังไม่มีระบบจะแสดงชื่อร้านเป็นตัวอักษรแทน
+                    แสดงบนแถบเมนูด้านบนของทุกหน้า หากยังไม่มีโลโก้ ระบบจะแสดงชื่อร้านแทน
                   </p>
                 </div>
 
@@ -2578,7 +2578,7 @@ export default function AdminDashboard({
                   <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
                     รูปภาพอาหารแต่ละจาน
                   </span>
-                  <h3 className="text-base font-bold text-primary">๔. รูปภาพเมนูอาหาร (Dish Photos)</h3>
+                  <h3 className="text-base font-bold text-primary">๔. รูปภาพเมนูอาหาร</h3>
                   <p className="text-xs text-primary/70 leading-relaxed">
                     หากต้องการใส่รูปภาพหรือเปลี่ยนรูปของอาหารแต่ละจาน (เช่น ขันโตก, หมูทอด, น้ำพริกหนุ่ม, ข้าวพันผัก) สามารถเข้าไปใส่รูปได้ทันทีในหน้าจัดการเมนูอาหาร
                   </p>
@@ -2616,7 +2616,7 @@ export default function AdminDashboard({
                     ๔ จุดเด่นเรือน ๑๐๐ ปี
                   </span>
                   <span className="text-xs font-bold text-primary">
-                    อัปโหลดรูปภาพจริง & เรื่องเล่าเฉพาะจุด
+                    อัปโหลดรูปภาพและเรื่องเล่าของแต่ละจุด
                   </span>
                 </div>
                 <h3 className="text-lg font-bold text-primary">
@@ -2633,7 +2633,7 @@ export default function AdminDashboard({
                   { id: "house" as const, emoji: "🏛️", title: "๑. เรือนไม้สัก ๑๐๐+ ปี" },
                   { id: "wood" as const, emoji: "🔨", title: "๒. ๐ ตัว ไร้ตะปู" },
                   { id: "family" as const, emoji: "👨‍👩‍👧‍👦", title: "๓. คน ๔ รุ่น" },
-                  { id: "kitchen" as const, emoji: "🌶️", title: "๔. ตำมือ ๑๐๐% & คุณป้า" },
+                  { id: "kitchen" as const, emoji: "🌶️", title: "๔. พริกแกงตำมือและป้า ๆ ในครัว" },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -2668,7 +2668,7 @@ export default function AdminDashboard({
                           {adminStoryTab === "house" && "🏛️ คลังรูปภาพเรือนไม้สัก ๑๐๐+ ปี"}
                           {adminStoryTab === "wood" && "🔨 คลังรูปภาพข้อต่อไม้ / เข้าเดือยไร้ตะปู"}
                           {adminStoryTab === "family" && "👨‍👩‍👧‍👦 คลังรูปภาพครอบครัว ๔ รุ่น / หม่อนน้อย / ตายาย"}
-                          {adminStoryTab === "kitchen" && "🌶️ คลังรูปภาพคุณป้าในครัว & พริกแกงตำมือ"}
+                          {adminStoryTab === "kitchen" && "🌶️ คลังรูปป้า ๆ ในครัวและพริกแกงตำมือ"}
                         </h4>
                         <p className="text-xs text-primary/60">
                           มีรูปภาพที่อัปโหลดเพิ่มในหมวดนี้แล้ว {photos.length} รูป (อัปโหลดเพิ่มได้ไม่จำกัด)
@@ -2826,7 +2826,7 @@ export default function AdminDashboard({
                           ? "๒. ๐ ตัว ไร้ตะปู"
                           : adminStoryTab === "family"
                           ? "๓. คน ๔ รุ่น"
-                          : "๔. ตำมือ ๑๐๐% & คุณป้า"
+                          : "๔. พริกแกงตำมือและป้า ๆ ในครัว"
                       }
                       currentCustomData={currentData}
                       onSave={async (fields) => {
@@ -2856,7 +2856,7 @@ export default function AdminDashboard({
                     body: JSON.stringify({ about_page_custom_data: jsonStr }),
                   });
                   if (res.ok) {
-                    setSettingsMsg("✅ บันทึกเนื้อหาหน้ารู้จักเราเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
+                    setSettingsMsg("✅ บันทึกหน้ารู้จักเราแล้ว หน้าเว็บไซต์อัปเดตเรียบร้อย");
                     refreshPublicContent();
                   } else {
                     if (res.status === 401) {
@@ -2949,7 +2949,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <FileText className="w-4 h-4" />
-                  <span>{showMenuHeaderEditor ? "ซ่อนตั้งค่าหัวข้อ & PDF" : "ตั้งค่าหัวข้อหน้าเมนู & PDF"}</span>
+                  <span>{showMenuHeaderEditor ? "ซ่อนการตั้งค่าหัวข้อและ PDF" : "ตั้งค่าหัวข้อหน้าเมนูและ PDF"}</span>
                 </button>
                 <button
                   onClick={handleOpenAddMenu}
@@ -2968,7 +2968,7 @@ export default function AdminDashboard({
                   <div>
                     <h3 className="font-bold text-primary text-sm sm:text-base flex items-center gap-2">
                       <FileText className="w-4.5 h-4.5 text-accent" />
-                      <span>ปรับแต่งข้อความส่วนหัวหน้าเมนูอาหาร & เล่มเมนู PDF</span>
+                      <span>ปรับข้อความส่วนหัวและไฟล์เมนู PDF</span>
                     </h3>
                     <p className="text-xs text-primary/70">
                       แก้ไขหัวเรื่อง คำบรรยาย ข้อความแจ้งเตือน และอัปโหลดไฟล์ PDF เมนูฉบับเต็มได้ทันที
@@ -2988,7 +2988,7 @@ export default function AdminDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
                     <label className="block font-semibold text-primary mb-1">
-                      ป้ายกำกับด้านบน (Badge)
+                      ป้ายกำกับด้านบน
                     </label>
                     <input
                       type="text"
@@ -3001,7 +3001,7 @@ export default function AdminDashboard({
 
                   <div>
                     <label className="block font-semibold text-primary mb-1">
-                      ชื่อหัวข้อหน้าเมนู (Title)
+                      ชื่อหัวข้อหน้าเมนู
                     </label>
                     <input
                       type="text"
@@ -3048,7 +3048,7 @@ export default function AdminDashboard({
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-accent" />
-                      <span className="font-bold text-primary">เล่มเมนูฉบับเต็ม (PDF Menu File)</span>
+                      <span className="font-bold text-primary">เล่มเมนูฉบับเต็ม (PDF)</span>
                     </div>
                     <label className="inline-flex items-center gap-2 cursor-pointer select-none">
                       <input
@@ -3064,7 +3064,7 @@ export default function AdminDashboard({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block font-semibold text-primary mb-1">
-                        ข้อความบนปุ่มกด (Button Text)
+                        ข้อความบนปุ่ม
                       </label>
                       <input
                         type="text"
@@ -3402,7 +3402,7 @@ export default function AdminDashboard({
                     <Star className="w-4 h-4 fill-accent" />
                   </div>
                   <span>
-                    <strong className="text-accent">เมนูแนะนำหน้าแรก:</strong> มีเมนูที่กำลังแสดงบนหน้าแรกทั้งหมด <strong className="text-accent underline font-bold">{featuredMenuIds.length}</strong> จาน (สามารถกดจัดลำดับเพื่อสลับตำแหน่งและเลือกจานได้อิสระ)
+                    <strong className="text-accent">เมนูแนะนำหน้าแรก:</strong> กำลังแสดงทั้งหมด <strong className="text-accent underline font-bold">{featuredMenuIds.length}</strong> จาน สามารถจัดลำดับหรือเปลี่ยนรายการได้
                   </span>
                 </div>
                 <button
@@ -3436,7 +3436,7 @@ export default function AdminDashboard({
                       จัดลำดับเมนูที่จะแสดงบนหน้าแรกของเว็บไซต์
                     </h3>
                     <p className="text-xs text-[#f5ece1]/75 max-w-2xl leading-relaxed">
-                      💡 เมนูเหล่านี้จะแสดงบนหน้าแรกเรียงจากซ้ายไปขวา (จานที่ 1, 2, 3...) คุณพี่สามารถ<strong>กดปุ่ม [ขึ้น] [ลง] [บนสุด] หรือลากเพื่อสลับอันดับ</strong> ได้อย่างอิสระตามใจชอบครับ
+                      เมนูจะแสดงบนหน้าแรกจากซ้ายไปขวา สามารถ<strong>กดปุ่มขึ้น ลง บนสุด หรือลากเพื่อสลับลำดับ</strong>ได้
                     </p>
                   </div>
 
@@ -4364,7 +4364,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <Store className="w-4 h-4" />
-                  <span>1. ข้อมูลร้าน & เวลาเปิดปิด</span>
+                  <span>1. ข้อมูลร้านและเวลาเปิด–ปิด</span>
                 </button>
                 <button
                   id="subtab-appearance"
@@ -4377,7 +4377,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <Palette className="w-4 h-4" />
-                  <span>2. รูปภาพ & โทนสีร้าน</span>
+                  <span>2. รูปภาพและโทนสีร้าน</span>
                 </button>
                 <button
                   id="subtab-social"
@@ -4390,7 +4390,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <Share2 className="w-4 h-4" />
-                  <span>3. โซเชียลมีเดีย & แผนที่</span>
+                  <span>3. โซเชียลมีเดียและแผนที่</span>
                 </button>
                 <button
                   id="subtab-layout"
@@ -4403,7 +4403,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <Layers className="w-4 h-4" />
-                  <span>4. จัดลำดับหน้าเว็บ & หมวดหมู่</span>
+                  <span>4. จัดลำดับหน้าเว็บและหมวดหมู่</span>
                 </button>
                 <button
                   id="subtab-security"
@@ -4416,7 +4416,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  <span>5. รหัสผ่าน, แจ้งเตือน LINE & สำรองข้อมูล</span>
+                  <span>5. รหัสผ่าน การแจ้งเตือน LINE และสำรองข้อมูล</span>
                 </button>
               </div>
 
@@ -4431,7 +4431,7 @@ export default function AdminDashboard({
                           <span className="p-1.5 rounded-lg bg-accent/20 text-accent-dark">
                             <Megaphone className="w-4 h-4" />
                           </span>
-                          <h4 className="font-bold text-sm text-primary">แถบประกาศด่วนบนสุดของเว็บ (Top Announcement Banner)</h4>
+                          <h4 className="font-bold text-sm text-primary">แถบประกาศด้านบนเว็บไซต์</h4>
                         </div>
                         <p className="text-xs text-primary/65">
                           แสดงแถบข้อความสำคัญด้านบนสุดของทุกหน้าเว็บ (เช่น แจ้งวันหยุดเทศกาล, ฤดูทุเรียนลับแล, แจ้งโทรจองโต๊ะด่วน)
@@ -4468,7 +4468,7 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-primary mb-1">
-                          ป้ายกำกับประกาศ (Badge)
+                          ป้ายกำกับประกาศ
                         </label>
                         <input
                           type="text"
@@ -4582,16 +4582,16 @@ export default function AdminDashboard({
               <div className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-4">
                 <h3 className="font-bold text-primary text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 bg-accent rounded-full animate-pulse"></span>
-                  จัดการปุ่มกดและลิงก์เชื่อมโยงบนเว็บไซต์ (Buttons & Links Manager)
+                  จัดการปุ่มและลิงก์บนเว็บไซต์
                 </h3>
                 <p className="text-xs text-primary/70 leading-relaxed">
-                  คุณพี่สามารถกำหนดชื่อตัวหนังสือบนปุ่ม และลิงก์ปลายทางของแต่ละปุ่มในหน้าต่างๆ ได้โดยตรงเหมือนใน Google Sites เพื่อควบคุมการนำทางของลูกค้าครับ
+                  กำหนดข้อความบนปุ่มและลิงก์ปลายทางของแต่ละหน้า เพื่อให้ลูกค้าไปยังข้อมูลที่ต้องการได้ง่ายขึ้น
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Navbar Button */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-3">
-                    <h4 className="font-semibold text-xs text-primary">1. ปุ่มบนเมนูด้านบนสุด (Navbar Button)</h4>
+                    <h4 className="font-semibold text-xs text-primary">1. ปุ่มบนแถบเมนูด้านบน</h4>
                     <div>
                       <label htmlFor="navbar_btn_text" className="block text-[10px] font-semibold text-primary/70 mb-1">ชื่อปุ่ม</label>
                       <input
@@ -4616,7 +4616,7 @@ export default function AdminDashboard({
 
                   {/* Hero Button 1 */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-3">
-                    <h4 className="font-semibold text-xs text-primary">2. ปุ่มแรกด้านบนสุด (Hero Primary Button)</h4>
+                    <h4 className="font-semibold text-xs text-primary">2. ปุ่มหลักบนภาพปก</h4>
                     <div>
                       <label htmlFor="hero_btn1_text" className="block text-[10px] font-semibold text-primary/70 mb-1">ชื่อปุ่ม</label>
                       <input
@@ -4641,13 +4641,13 @@ export default function AdminDashboard({
 
                   {/* Hero Button 2 */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-3">
-                    <h4 className="font-semibold text-xs text-primary">3. ปุ่มที่สองด้านบนสุด (Hero Secondary Button)</h4>
+                    <h4 className="font-semibold text-xs text-primary">3. ปุ่มรองบนภาพปก</h4>
                     <div>
                       <label htmlFor="hero_btn2_text" className="block text-[10px] font-semibold text-primary/70 mb-1">ชื่อปุ่ม</label>
                       <input
                         type="text"
                         id="hero_btn2_text"
-                        value={settings.hero_btn2_text || "รู้จักกับเรา & ตำนานลับแล"}
+                        value={settings.hero_btn2_text || "รู้จักบ้านและเรื่องเล่าลับแล"}
                         onChange={e => setSettings(prev => ({ ...prev, hero_btn2_text: e.target.value }))}
                         className="block w-full px-2 py-1.5 bg-white border border-primary/10 rounded-lg text-xs focus:outline-none"
                       />
@@ -4666,13 +4666,13 @@ export default function AdminDashboard({
 
                   {/* Featured Dishes Button */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-3">
-                    <h4 className="font-semibold text-xs text-primary">4. ปุ่มดูเมนูแนะนำเพิ่มเติม (Featured Dishes Button)</h4>
+                    <h4 className="font-semibold text-xs text-primary">4. ปุ่มดูเมนูแนะนำ</h4>
                     <div>
                       <label htmlFor="featured_btn_text" className="block text-[10px] font-semibold text-primary/70 mb-1">ชื่อปุ่ม</label>
                       <input
                         type="text"
                         id="featured_btn_text"
-                        value={settings.featured_btn_text || "ดูเมนูอร่อยทั้งหมดเพิ่มเติม →"}
+                        value={settings.featured_btn_text || "ดูเมนูแนะนำทั้งหมด →"}
                         onChange={e => setSettings(prev => ({ ...prev, featured_btn_text: e.target.value }))}
                         className="block w-full px-2 py-1.5 bg-white border border-primary/10 rounded-lg text-xs focus:outline-none"
                       />
@@ -4691,13 +4691,13 @@ export default function AdminDashboard({
 
                   {/* Google Maps Nav button */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-3 sm:col-span-2">
-                    <h4 className="font-semibold text-xs text-primary">5. ปุ่มเปิดแผนที่นำทาง (Google Maps Button ในส่วนติดต่อเรา)</h4>
+                    <h4 className="font-semibold text-xs text-primary">5. ปุ่มเปิดเส้นทางใน Google Maps</h4>
                     <div>
                       <label htmlFor="contact_btn_text" className="block text-[10px] font-semibold text-primary/70 mb-1">ชื่อปุ่ม</label>
                       <input
                         type="text"
                         id="contact_btn_text"
-                        value={settings.contact_btn_text || "เปิด Google Maps นำทางมาร้าน"}
+                        value={settings.contact_btn_text || "เปิดเส้นทางใน Google Maps"}
                         onChange={e => setSettings(prev => ({ ...prev, contact_btn_text: e.target.value }))}
                         className="block w-full px-2 py-1.5 bg-white border border-primary/10 rounded-xl text-xs focus:outline-none"
                       />
@@ -4726,15 +4726,15 @@ export default function AdminDashboard({
               <div className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-4">
                 <h3 className="font-bold text-primary text-sm flex items-center gap-2">
                   <span className="w-2.5 h-2.5 bg-accent rounded-full"></span>
-                  ปรับแต่งโทนสีและพื้นหลังของเว็บไซต์ (Theme Colors)
+                  ปรับแต่งโทนสีและพื้นหลังของเว็บไซต์
                 </h3>
                 <p className="text-xs text-primary/70 leading-relaxed">
-                  คุณพี่สามารถเลือกโทนสีหลักและสีพื้นหลังของร้านได้ตามที่ต้องการครับ ระบบจะปรับเฉดสีเข้ม/อ่อนที่เข้ากันให้อัตโนมัติและแสดงผลแบบไดนามิกทั่วทั้งเว็บไซต์
+                  เลือกสีหลักและสีพื้นหลังของเว็บไซต์ ระบบจะปรับเฉดสีเข้มและอ่อนให้เข้ากันโดยอัตโนมัติ
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
                     <label htmlFor="theme_primary_color" className="block text-[10px] font-semibold text-primary mb-1">
-                      สีหลักเรือนไม้ (Primary Color)
+                      สีหลัก
                     </label>
                     <div className="flex items-center gap-1.5">
                       <input
@@ -4774,7 +4774,7 @@ export default function AdminDashboard({
                   </div>
                   <div>
                     <label htmlFor="theme_warm_bg" className="block text-[10px] font-semibold text-primary mb-1">
-                      สีพื้นหลังหลัก (Background Color)
+                      สีพื้นหลังหลัก
                     </label>
                     <div className="flex items-center gap-1.5">
                       <input
@@ -4817,7 +4817,7 @@ export default function AdminDashboard({
                   {/* Homepage Settings */}
               <div className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-4">
                 <h3 className="font-bold text-primary text-sm">
-                  ปรับแต่งหน้าแรก & รูปภาพร้าน (Customize Homepage)
+                  ปรับแต่งหน้าแรกและรูปภาพร้าน
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2 border-b border-primary/5 pb-4 mb-2">
@@ -4888,7 +4888,7 @@ export default function AdminDashboard({
                   </div>
                   <div>
                     <label htmlFor="home_hero_image" className="block text-xs font-semibold text-primary mb-1">
-                      รูปภาพปกด้านบนสุด (Main Banner / Hero Image)
+                      รูปภาพปกด้านบน
                     </label>
                     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                       <div className="flex-1 w-full">
@@ -5020,7 +5020,7 @@ export default function AdminDashboard({
                   </div>
                   <div className="sm:col-span-2">
                     <label htmlFor="restaurant_desc" className="block text-xs font-semibold text-primary mb-1">
-                      คำอธิบายร้านสั้นๆ หน้าแรก (Restaurant Description)
+                      คำอธิบายร้านแบบสั้นบนหน้าแรก
                     </label>
                     <textarea
                       id="restaurant_desc"
@@ -5051,7 +5051,7 @@ export default function AdminDashboard({
                   {/* Social Links Settings */}
               <div className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-4">
                 <h3 className="font-bold text-primary text-sm">
-                  ลิงก์โซเชียลมีเดีย & รีวิวร้าน (Social Links)
+                  ลิงก์โซเชียลมีเดียและรีวิวร้าน
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
@@ -5137,17 +5137,17 @@ export default function AdminDashboard({
               <div className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-6">
                 <h3 className="font-bold text-primary text-sm flex items-center gap-2 font-thai">
                   <Layout className="w-4.5 h-4.5 text-accent" />
-                  ปรับแต่งโครงสร้างเลย์เอาต์หน้าเว็บ (Web Layout & Page Builder)
+                  จัดลำดับและรูปแบบหน้าเว็บไซต์
                 </h3>
                 <p className="text-xs text-primary/70 leading-relaxed font-thai">
-                  คุณพี่สามารถจัดลำดับเนื้อหาก่อน-หลัง เปิด/ปิดส่วนเนื้อหาต่างๆ และเลือกรูปแบบการจัดวางสำหรับหน้าร้านและหน้าเมนูอาหารได้ตามใจชอบเลยครับ
+                  จัดลำดับเนื้อหา เปิดหรือซ่อนแต่ละส่วน และเลือกรูปแบบการแสดงผลของหน้าแรกกับหน้าเมนูอาหาร
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Homepage Layout Builder */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-4">
                     <h4 className="font-semibold text-xs text-primary flex items-center gap-1.5 border-b border-primary/5 pb-2 font-thai">
-                      <span>1. ลำดับเนื้อหาหน้าแรก (Homepage Section Order)</span>
+                      <span>1. ลำดับเนื้อหาหน้าแรก</span>
                     </h4>
                     <p className="text-[10px] text-primary/60 font-thai">กดปุ่มขึ้น/ลงเพื่อย้ายตำแหน่ง และสลับไอคอนดวงตาเพื่อแสดงหรือซ่อนส่วนนั้นๆ ครับ</p>
                     
@@ -5156,11 +5156,11 @@ export default function AdminDashboard({
                         const orderStr = settings.homepage_sections_order || "intro,featured,seasonal,social,contact";
                         const arr = orderStr.split(",").map(s => s.trim()).filter(Boolean);
                         const sectionNames: Record<string, string> = {
-                          intro: "เรื่องราวและประวัติร้าน (Story / About)",
-                          featured: "เมนูเด่นแนะนำประจำร้าน (Featured Dishes)",
-                          seasonal: "เมนูพิเศษตามฤดูกาล (Seasonal Specialties)",
-                          social: "กิจกรรมและรีวิวโซเชียลมีเดีย (Social Updates)",
-                          contact: "แผนที่และการติดต่อร้าน (Map & Contact)"
+                          intro: "เรื่องราวและประวัติร้าน",
+                          featured: "เมนูแนะนำประจำร้าน",
+                          seasonal: "เมนูพิเศษตามฤดูกาล",
+                          social: "กิจกรรมและรีวิวบนโซเชียลมีเดีย",
+                          contact: "แผนที่และช่องทางติดต่อร้าน"
                         };
 
                         return arr.map((key, idx) => {
@@ -5224,7 +5224,7 @@ export default function AdminDashboard({
                   {/* Menu Page Layout Builder */}
                   <div className="border border-primary/5 p-4 rounded-xl bg-white space-y-4 font-thai">
                     <h4 className="font-semibold text-xs text-primary border-b border-primary/5 pb-2 font-thai">
-                      2. ตั้งค่าหน้าเมนูอาหาร (Menu Page Layout Settings)
+                      2. ตั้งค่ารูปแบบหน้าเมนูอาหาร
                     </h4>
                     
                     <div className="space-y-3.5">
@@ -5239,8 +5239,8 @@ export default function AdminDashboard({
                           onChange={e => setSettings(prev => ({ ...prev, menu_page_layout: e.target.value }))}
                           className="block w-full px-2.5 py-1.5 bg-white border border-primary/10 rounded-lg text-xs focus:outline-none"
                         >
-                          <option value="grid">ตารางรูปภาพทันสมัย (Modern Image Grid)</option>
-                          <option value="classic">สมุดรายการข้อความคลาสสิก (Classic Text Booklet)</option>
+                          <option value="grid">ตารางเมนูพร้อมรูปภาพ</option>
+                          <option value="classic">รายการเมนูแบบข้อความ</option>
                         </select>
                       </div>
 
@@ -5322,10 +5322,10 @@ export default function AdminDashboard({
                 <div>
                   <h3 className="font-bold text-primary text-sm flex items-center gap-2 font-thai">
                     <Sparkles className="w-4.5 h-4.5 text-accent" />
-                    <span>หัวข้อและข้อความประจำส่วนของหน้าแรก (Homepage Section Headers & Teasers)</span>
+                    <span>หัวข้อและข้อความของแต่ละส่วนบนหน้าแรก</span>
                   </h3>
                   <p className="text-xs text-primary/70 leading-relaxed font-thai">
-                    กำหนดป้ายข้อความ (Badge), ชื่อหัวข้อหลัก และคำบรรยายของแต่ละหมวดหมู่บนหน้าแรกได้อย่างอิสระ
+                    กำหนดป้ายข้อความ หัวข้อ และคำบรรยายของแต่ละส่วนบนหน้าแรก
                   </p>
                 </div>
 
@@ -5334,12 +5334,12 @@ export default function AdminDashboard({
                   <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4">
                     <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
                       <Utensils className="w-4 h-4 text-accent" />
-                      <h4 className="font-bold text-xs text-primary">ส่วนเมนูเด่นประจำร้าน (Featured Dishes)</h4>
+                      <h4 className="font-bold text-xs text-primary">ส่วนเมนูแนะนำประจำร้าน</h4>
                     </div>
                     <div className="space-y-3 text-xs">
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          ป้ายกำกับด้านบน (Badge)
+                          ป้ายกำกับด้านบน
                         </label>
                         <input
                           type="text"
@@ -5351,7 +5351,7 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          หัวข้อหลัก (Section Title)
+                          หัวข้อหลัก
                         </label>
                         <input
                           type="text"
@@ -5363,12 +5363,12 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          ข้อความบนปุ่มลิงก์ดูทั้งหมด (Button Text)
+                          ข้อความบนปุ่มดูทั้งหมด
                         </label>
                         <input
                           type="text"
-                          placeholder="ดูเมนูอร่อยทั้งหมดเพิ่มเติม →"
-                          value={settings.featured_btn_text ?? "ดูเมนูอร่อยทั้งหมดเพิ่มเติม →"}
+                          placeholder="ดูเมนูแนะนำทั้งหมด →"
+                          value={settings.featured_btn_text ?? "ดูเมนูแนะนำทั้งหมด →"}
                           onChange={(e) => setSettings(prev => ({ ...prev, featured_btn_text: e.target.value }))}
                           className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                         />
@@ -5380,12 +5380,12 @@ export default function AdminDashboard({
                   <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4">
                     <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
                       <Leaf className="w-4 h-4 text-accent" />
-                      <h4 className="font-bold text-xs text-primary">ส่วนเมนูตามฤดูกาล (Seasonal Specialties)</h4>
+                      <h4 className="font-bold text-xs text-primary">ส่วนเมนูตามฤดูกาล</h4>
                     </div>
                     <div className="space-y-3 text-xs">
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          ป้ายกำกับด้านบน (Badge)
+                          ป้ายกำกับด้านบน
                         </label>
                         <input
                           type="text"
@@ -5397,7 +5397,7 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          หัวข้อหลัก (Section Title)
+                          หัวข้อหลัก
                         </label>
                         <input
                           type="text"
@@ -5409,12 +5409,12 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          ข้อความบนปุ่มลิงก์ดูทั้งหมด (Button Text)
+                          ข้อความบนปุ่มดูทั้งหมด
                         </label>
                         <input
                           type="text"
-                          placeholder="ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →"
-                          value={settings.seasonal_btn_text ?? "ดูเมนูพิเศษตามฤดูกาลเพิ่มเติม →"}
+                          placeholder="ดูเมนูตามฤดูกาลทั้งหมด →"
+                          value={settings.seasonal_btn_text ?? "ดูเมนูตามฤดูกาลทั้งหมด →"}
                           onChange={(e) => setSettings(prev => ({ ...prev, seasonal_btn_text: e.target.value }))}
                           className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                         />
@@ -5426,12 +5426,12 @@ export default function AdminDashboard({
                   <div className="border border-primary/10 p-4 rounded-xl bg-white space-y-4 md:col-span-2">
                     <div className="flex items-center gap-2 border-b border-primary/5 pb-2">
                       <BookOpen className="w-4 h-4 text-accent" />
-                      <h4 className="font-bold text-xs text-primary">ส่วนตำราลับแลง ๓๒ ตอน (Heritage Book Teaser)</h4>
+                      <h4 className="font-bold text-xs text-primary">ส่วนแนะนำตำราลับแลง ๓๒ ตอน</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          ป้ายกำกับด้านบน (Badge)
+                          ป้ายกำกับด้านบน
                         </label>
                         <input
                           type="text"
@@ -5443,7 +5443,7 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          หัวข้อหลัก (Section Title)
+                          หัวข้อหลัก
                         </label>
                         <input
                           type="text"
@@ -5455,7 +5455,7 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          ข้อความบนปุ่มอ่านบทความ (Button Text)
+                          ข้อความบนปุ่มอ่านบทความ
                         </label>
                         <input
                           type="text"
@@ -5467,7 +5467,7 @@ export default function AdminDashboard({
                       </div>
                       <div>
                         <label className="block font-semibold text-primary mb-1">
-                          คำบรรยายสรุป (Description)
+                          คำบรรยายสรุป
                         </label>
                         <textarea
                           rows={2}
@@ -5487,7 +5487,7 @@ export default function AdminDashboard({
                 <div>
                   <h3 className="font-bold text-primary text-sm flex items-center gap-2">
                     <Quote className="w-4.5 h-4.5 text-accent" />
-                    <span>การ์ดรีวิวและเสียงตอบรับจากลูกค้า (Customer Testimonial & Review Card)</span>
+                    <span>รีวิวและเสียงตอบรับจากลูกค้า</span>
                   </h3>
                   <p className="text-xs text-primary/70 leading-relaxed">
                     ปรับแต่งการ์ดรีวิวความประทับใจที่แสดงบนหน้าแรก ลิงก์ตรงไปยังหน้า Google Maps Reviews ของร้าน
@@ -5497,7 +5497,7 @@ export default function AdminDashboard({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                   <div>
                     <label className="block font-semibold text-primary mb-1">
-                      ป้ายคะแนน / แพลตฟอร์ม (Badge)
+                      ป้ายคะแนนหรือแพลตฟอร์ม
                     </label>
                     <input
                       type="text"
@@ -5510,7 +5510,7 @@ export default function AdminDashboard({
 
                   <div>
                     <label className="block font-semibold text-primary mb-1">
-                      ป้ายประเภท (Sub-Badge)
+                      ป้ายประเภท
                     </label>
                     <input
                       type="text"
@@ -5549,7 +5549,7 @@ export default function AdminDashboard({
 
                   <div>
                     <label className="block font-semibold text-primary mb-1">
-                      ข้อความบนปุ่มลิงก์ (Button Text)
+                      ข้อความบนปุ่ม
                     </label>
                     <input
                       type="text"
@@ -5583,10 +5583,10 @@ export default function AdminDashboard({
                   <div className="p-5 bg-primary-dark/5 border border-primary/10 rounded-2xl space-y-4">
                     <h3 className="font-bold text-primary text-sm flex items-center gap-2">
                       <ShieldCheck className="w-4.5 h-4.5 text-accent" />
-                      ความปลอดภัยและรหัสผ่านเข้าแดชบอร์ด (Admin Password)
+                      ความปลอดภัยและรหัสผ่านหลังบ้าน
                     </h3>
                     <p className="text-xs text-primary/70 leading-relaxed">
-                      คุณพี่สามารถเปลี่ยนรหัสผ่านสำหรับเข้าสู่ระบบหลังบ้านได้ที่ช่องนี้ครับ (หากต้องการเปลี่ยน ให้พิมพ์รหัสใหม่แล้วกดบันทึกด้านล่างได้เลยครับ)
+                      หากต้องการเปลี่ยนรหัสผ่าน ให้กรอกรหัสใหม่แล้วกดบันทึก ระบบจะไม่แสดงรหัสเดิม
                     </p>
                     <div className="max-w-md">
                       <label htmlFor="admin_password_sec" className="block text-xs font-semibold text-primary mb-1">
@@ -5637,7 +5637,7 @@ export default function AdminDashboard({
                       <div className="space-y-1">
                         <h3 className="font-bold text-primary text-sm flex items-center gap-2">
                           <Download className="w-4.5 h-4.5 text-accent" />
-                          สำรองข้อมูลระบบทั้งหมด (Full JSON Data Backup)
+                          สำรองข้อมูลทั้งหมด
                         </h3>
                         <p className="text-xs text-primary/70 leading-relaxed">
                           ดาวน์โหลดข้อมูลทั้งหมดของร้าน (การตั้งค่าร้าน, เมนูอาหารทั้งหมด, บทความตำราลับแลง ๓๒ ตอน, และประวัติการจองโต๊ะ) บันทึกเก็บไว้ในเครื่องของคุณได้ตลอดเวลาเพื่อความปลอดภัยสูงสุด
@@ -5676,8 +5676,8 @@ export default function AdminDashboard({
         {activeTab === "preview" && (
           <div className="space-y-6 font-thai">
             <div>
-              <h2 className="text-xl font-bold text-primary">พรีวิวหน้าร้าน (Live Website Preview)</h2>
-              <p className="text-xs text-primary/70">เลือกดูการแสดงผลของหน้าจอคอมพิวเตอร์และมือถือหลังจากกดบันทึกการตั้งค่าแล้วครับ</p>
+              <h2 className="text-xl font-bold text-primary">ตัวอย่างหน้าเว็บไซต์</h2>
+              <p className="text-xs text-primary/70">ตรวจดูหน้าเว็บไซต์บนคอมพิวเตอร์และมือถือหลังจากบันทึกการตั้งค่า</p>
             </div>
 
             <div className="p-5 bg-white border border-primary/10 rounded-2xl space-y-6">
@@ -5685,10 +5685,10 @@ export default function AdminDashboard({
                 <div>
                   <h3 className="font-bold text-primary text-sm sm:text-base flex items-center gap-2">
                     <Eye className="w-4.5 h-4.5 text-accent" />
-                    จำลองหน้าร้านจริง
+                    ตัวอย่างหน้าเว็บไซต์
                   </h3>
                   <p className="text-[10px] text-primary/70 leading-relaxed font-thai">
-                    คุณพี่สามารถสลับหน้าต่างๆ เพื่อพรีวิวการจัดลำดับเลย์เอาต์ ความเข้ากันของโทนสี และความสมบูรณ์บนมือถือได้ตรงนี้ครับ
+                    สลับหน้าและขนาดหน้าจอเพื่อตรวจลำดับเนื้อหา โทนสี และการแสดงผลบนมือถือ
                   </p>
                 </div>
                 
@@ -5700,10 +5700,10 @@ export default function AdminDashboard({
                     onChange={(e) => setPreviewUrl(e.target.value)}
                     className="px-2.5 py-1.5 bg-cream border border-primary/10 rounded-lg text-xs font-semibold focus:outline-none cursor-pointer text-primary"
                   >
-                    <option value="/">หน้าแรก (Home)</option>
-                    <option value="/menu">หน้าเมนูอาหาร (Menu)</option>
-                    <option value="/about">หน้ารู้จักเรา (About)</option>
-                    <option value="/blog">หน้าบทความ (Blog)</option>
+                    <option value="/">หน้าแรก</option>
+                    <option value="/menu">หน้าเมนูอาหาร</option>
+                    <option value="/about">หน้ารู้จักเรา</option>
+                    <option value="/blog">หน้าบทความ</option>
                   </select>
 
                   {/* Size Toggler */}
@@ -5717,7 +5717,7 @@ export default function AdminDashboard({
                           : "text-primary/70 hover:text-accent"
                       }`}
                     >
-                      หน้าจอคอมฯ (Desktop)
+                      คอมพิวเตอร์
                     </button>
                     <button
                       type="button"
@@ -5728,7 +5728,7 @@ export default function AdminDashboard({
                           : "text-primary/70 hover:text-accent"
                       }`}
                     >
-                      หน้าจอมือถือ (Mobile)
+                      มือถือ
                     </button>
                   </div>
 
@@ -5737,9 +5737,9 @@ export default function AdminDashboard({
                     type="button"
                     onClick={() => setIframeKey((prev) => prev + 1)}
                     className="px-3 py-1.5 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 rounded-lg text-[10px] font-bold transition-all cursor-pointer shrink-0"
-                    title="รีเฟรชหน้าพรีวิว"
+                    title="โหลดตัวอย่างหน้าเว็บไซต์ใหม่"
                   >
-                    รีเฟรชพรีวิว
+                    โหลดตัวอย่างใหม่
                   </button>
                 </div>
               </div>
@@ -5758,7 +5758,7 @@ export default function AdminDashboard({
                       <iframe
                         key={`${previewUrl}-${previewMode}-${iframeKey}`}
                         src={previewUrl}
-                        title={`พรีวิวมือถือ ${previewUrl}`}
+                        title={`ตัวอย่างบนมือถือ ${previewUrl}`}
                         className="w-full h-full border-none"
                       />
                     </div>
@@ -5773,7 +5773,7 @@ export default function AdminDashboard({
                     <iframe
                       key={`${previewUrl}-${previewMode}-${iframeKey}`}
                       src={previewUrl}
-                      title={`พรีวิวเดสก์ท็อป ${previewUrl}`}
+                      title={`ตัวอย่างบนคอมพิวเตอร์ ${previewUrl}`}
                       className="w-[1280px] h-[720px] max-w-none border-none bg-white"
                     />
                   </div>

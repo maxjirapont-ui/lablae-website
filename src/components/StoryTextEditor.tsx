@@ -348,7 +348,7 @@ export default function StoryTextEditor({
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-primary flex items-center gap-1.5">
             <Type className="w-3.5 h-3.5 text-accent" />
-            <span>ชื่อหัวข้อเรื่องหลัก (Title)</span>
+            <span>ชื่อหัวข้อเรื่องหลัก</span>
             <span className="text-red-500">*</span>
           </label>
           <input
@@ -365,7 +365,7 @@ export default function StoryTextEditor({
         <div className="space-y-1.5">
           <label className="text-xs font-bold text-primary flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-accent" />
-            <span>คำโปรยใต้หัวข้อ (Subtitle)</span>
+            <span>คำโปรยใต้หัวข้อ</span>
           </label>
           <input
             type="text"
@@ -381,13 +381,13 @@ export default function StoryTextEditor({
           <div className="sm:col-span-2 space-y-1.5">
             <label className="text-xs font-bold text-primary flex items-center gap-1.5">
               <Quote className="w-3.5 h-3.5 text-accent" />
-              <span>คำคมหรือคำพูดประจำเรื่อง (Quote)</span>
+              <span>คำคมหรือคำพูดประจำเรื่อง</span>
             </label>
             <input
               type="text"
               value={quote}
               onChange={(e) => handleFieldChange(setQuote, e.target.value)}
-              placeholder="เช่น “นี่ไม่ใช่แค่ร้านอาหาร แต่คือบ้านจริงๆ ของครอบครัวเรา...”"
+              placeholder="เช่น “ที่นี่ไม่ใช่แค่ร้านอาหาร แต่คือบ้านของครอบครัวเรา...”"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             />
           </div>
@@ -395,7 +395,7 @@ export default function StoryTextEditor({
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-primary flex items-center gap-1.5">
               <Type className="w-3.5 h-3.5 text-accent" />
-              <span>ผู้กล่าวคำคม (Quote Author)</span>
+              <span>ผู้กล่าวคำคม</span>
             </label>
             <input
               type="text"

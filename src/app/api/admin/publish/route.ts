@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "ยังไม่ได้เชื่อมพื้นที่เก็บข้อมูลถาวร จึงหยุดเผยแพร่เพื่อป้องกันข้อมูลหายหลังรีสตาร์ต",
+          error: "ยังไม่ได้เชื่อมพื้นที่เก็บข้อมูลถาวร จึงหยุดอัปเดตเพื่อป้องกันข้อมูลหายหลังรีสตาร์ต",
           persistent: false,
         },
         { status: 503 },
@@ -77,15 +77,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       message: persistent
-        ? "บันทึกข้อมูลลงพื้นที่ถาวรและอัปเดตหน้าเว็บจริงเรียบร้อยแล้ว"
-        : "บันทึกข้อมูลและอัปเดตหน้าพรีวิวในเครื่องเรียบร้อยแล้ว",
+        ? "บันทึกข้อมูลและอัปเดตเว็บไซต์เรียบร้อยแล้ว"
+        : "บันทึกข้อมูลและอัปเดตตัวอย่างเว็บไซต์ในเครื่องเรียบร้อยแล้ว",
       published_at: nowIso,
       persistent,
     });
   } catch (error: unknown) {
     console.error("Publish All API Error:", error);
     return NextResponse.json(
-      { error: "เกิดข้อผิดพลาดในการเผยแพร่ข้อมูล กรุณาลองใหม่อีกครั้ง" },
+      { error: "อัปเดตเว็บไซต์ไม่สำเร็จ กรุณาลองอีกครั้ง" },
       { status: 500 }
     );
   }

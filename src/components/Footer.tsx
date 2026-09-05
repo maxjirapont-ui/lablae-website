@@ -31,7 +31,7 @@ export default async function Footer() {
             
             {/* Social Icons Container */}
             <div className="space-y-2">
-              <p className="font-thai text-xs font-semibold text-accent/80">ช่องทางการติดต่อ & รีวิว</p>
+              <p className="font-thai text-xs font-semibold text-accent/80">ช่องทางติดต่อและรีวิว</p>
               <div className="flex flex-wrap gap-3.5">
                 <a
                   href={facebookUrl}

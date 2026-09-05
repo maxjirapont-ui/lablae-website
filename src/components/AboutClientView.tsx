@@ -260,7 +260,7 @@ export default function AboutClientView({
           </div>
           <div>
             <h3 className="font-thai font-bold text-xl sm:text-2xl text-primary">
-              เส้นทางมาร้าน & แผนที่การเดินทาง
+              เส้นทางมาร้านและแผนที่
             </h3>
             <p className="font-thai text-xs sm:text-sm text-primary/70">
               เดินทางสะดวก มีที่จอดรถใต้ถุนและลานจอดกว้างขวาง

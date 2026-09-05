@@ -47,11 +47,14 @@ export async function POST(request: NextRequest) {
       console.warn("LINE Notify token is not configured in settings.");
     }
 
-    return NextResponse.json({ success: true, message: "จองโต๊ะสำเร็จแล้ว ระบบจะแจ้งเตือนร้านทาง LINE" });
+    return NextResponse.json({
+      success: true,
+      message: "ได้รับข้อมูลการจองแล้ว ทางร้านจะตรวจสอบและติดต่อกลับเพื่อยืนยันโต๊ะ",
+    });
   } catch (error: unknown) {
     console.error("Reservation API Error:", error);
     return NextResponse.json(
-      { error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง" },
+      { error: "ส่งข้อมูลการจองไม่สำเร็จ กรุณาลองอีกครั้ง" },
       { status: 500 }
     );
   }

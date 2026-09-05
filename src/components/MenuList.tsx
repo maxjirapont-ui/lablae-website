@@ -350,8 +350,17 @@ export default function MenuList({
           </div>
         )
       ) : (
-        <div className="text-center py-16 bg-[#261810]/60 rounded-2xl border border-dashed border-accent/20">
-          <p className="text-accent/80 font-semibold text-sm">ไม่พบรายการอาหารที่ตรงกับการค้นหา</p>
+        <div
+          className="text-center py-16 bg-[#261810]/60 rounded-2xl border border-dashed border-accent/20"
+          aria-live="polite"
+        >
+          <p className="text-accent/80 font-semibold text-sm">
+            {searchQuery.trim()
+              ? `ไม่พบเมนูที่ตรงกับ “${searchQuery.trim()}”`
+              : selectedCategory === "ทั้งหมด"
+                ? "ขณะนี้ยังไม่มีรายการอาหาร"
+                : `หมวด “${selectedCategory}” ยังไม่มีรายการอาหาร`}
+          </p>
         </div>
       )}
     </div>

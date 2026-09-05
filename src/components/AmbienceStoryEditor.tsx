@@ -45,7 +45,7 @@ interface AmbienceStoryEditorProps {
 const DEFAULT_STORY_VALUES = {
   home_about_image_caption: "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง ๑๐๐ ปี",
   about_badge: "เรื่องเล่าจากบ้าน ๑๐๐ ปี",
-  about_title: "บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา",
+  about_title: "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ",
   about_quote:
     "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”",
   about_quote_author: "— คำของตาเงิน–ยายจัน และคนทำครัวบ้าน ๑๐๐ ปี",
@@ -322,7 +322,7 @@ export default function AmbienceStoryEditor({
             <div className="pt-2 space-y-1">
               <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-accent" />
-                <span>คำอธิบายใต้รูปภาพนี้ (Image Caption)</span>
+                <span>คำอธิบายใต้รูปภาพ</span>
               </label>
               <input
                 type="text"
@@ -344,7 +344,7 @@ export default function AmbienceStoryEditor({
               <div className="space-y-1">
                 <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Tag className="w-3.5 h-3.5 text-accent" />
-                  <span>ป้ายหัวข้อ (Badge)</span>
+                  <span>ป้ายหัวข้อ</span>
                 </label>
                 <input
                   type="text"
@@ -358,14 +358,14 @@ export default function AmbienceStoryEditor({
               <div className="sm:col-span-2 space-y-1">
                 <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Type className="w-3.5 h-3.5 text-accent" />
-                  <span>ชื่อหัวข้อเรื่องเล่า (Title)</span>
+                  <span>ชื่อหัวข้อเรื่องเล่า</span>
                   <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => handleFieldChange(setTitle, e.target.value)}
-                  placeholder="เช่น บ้านหลังนี้เป็นบ้านจริงๆ ของครอบครัวเรา"
+                  placeholder="เช่น บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ"
                   className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
                   required
                 />
@@ -377,7 +377,7 @@ export default function AmbienceStoryEditor({
               <div className="space-y-1">
                 <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Quote className="w-3.5 h-3.5 text-accent" />
-                  <span>คำคมประจำบ้าน ๑๐๐ ปี (Quote)</span>
+                  <span>คำคมประจำบ้าน ๑๐๐ ปี</span>
                 </label>
                 <input
                   type="text"
@@ -391,7 +391,7 @@ export default function AmbienceStoryEditor({
               <div className="space-y-1">
                 <label className="text-xs font-bold text-primary flex items-center gap-1.5">
                   <Type className="w-3.5 h-3.5 text-accent" />
-                  <span>ผู้กล่าวคำคม (Quote Author)</span>
+                  <span>ผู้กล่าวคำคม</span>
                 </label>
                 <input
                   type="text"

@@ -299,7 +299,7 @@ export default function AmbienceGalleryEditor({
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary flex items-center gap-1.5">
               <Tag className="w-3.5 h-3.5 text-accent" />
-              <span>ป้ายกำกับอัลบั้ม (Badge)</span>
+              <span>ป้ายกำกับอัลบั้ม</span>
             </label>
             <input
               type="text"
@@ -317,7 +317,7 @@ export default function AmbienceGalleryEditor({
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary flex items-center gap-1.5">
               <Type className="w-3.5 h-3.5 text-accent" />
-              <span>ชื่อหัวข้ออัลบั้ม (Title)</span>
+              <span>ชื่อหัวข้ออัลบั้ม</span>
               <span className="text-red-500">*</span>
             </label>
             <input
@@ -337,7 +337,7 @@ export default function AmbienceGalleryEditor({
           <div className="space-y-1">
             <label className="text-xs font-bold text-primary flex items-center gap-1.5">
               <FileText className="w-3.5 h-3.5 text-accent" />
-              <span>คำโปรย/คำอธิบายอัลบั้ม (Subtitle)</span>
+              <span>คำโปรยหรือคำอธิบายอัลบั้ม</span>
             </label>
             <input
               type="text"
