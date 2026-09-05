@@ -1188,7 +1188,7 @@ export default function AdminDashboard({
       const payload = {
         menu_page_badge: settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน 100 ปี",
         menu_page_title: settings.menu_page_title ?? "กับข้าวและสำรับอาหาร",
-        menu_page_subtitle: settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล",
+        menu_page_subtitle: settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงทำเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล",
         menu_page_notice: settings.menu_page_notice ?? "",
         menu_pdf_url: settings.menu_pdf_url ?? "/menu-2026.pdf",
         menu_pdf_btn_text: settings.menu_pdf_btn_text ?? "เปิดดูเล่มเมนูฉบับเต็ม (PDF)",
@@ -2662,7 +2662,7 @@ export default function AdminDashboard({
                   6. จัดการรูปภาพและเรื่องเล่า 4 จุดเด่น (Quick Facts Stories)
                 </h3>
                 <p className="text-xs text-primary/70 leading-relaxed">
-                  จุดเด่นทั้ง 4 ข้อบนหน้าแรก (เรือนไม้ 100+ ปี, 0 ตัว ไร้ตะปู, คน 4 รุ่น และพริกแกงตำมือ) ใช้ภาพถ่ายจริงเป็นภาพหน้าการ์ดและกดเข้าไปดูอัลบั้มได้ คุณสามารถอัปโหลดรูปและเลือก “ใช้เป็นภาพหน้าการ์ด” ได้ที่นี่
+                  จุดเด่นทั้ง 4 ข้อบนหน้าแรก (บ้านไม้ 100 ปี, 0 ตัว ไร้ตะปู, คน 4 รุ่น และพริกแกงทำเองโดยป้า ๆ) ใช้ภาพถ่ายจริงเป็นภาพหน้าการ์ดและกดเข้าไปดูอัลบั้มได้ คุณสามารถอัปโหลดรูปและเลือก “ใช้เป็นภาพหน้าการ์ด” ได้ที่นี่
                 </p>
               </div>
 
@@ -2672,7 +2672,7 @@ export default function AdminDashboard({
                   { id: "house" as const, title: "1. บ้านไม้ 100 ปี" },
                   { id: "wood" as const, title: "2. 0 ตัว ไร้ตะปู" },
                   { id: "family" as const, title: "3. คน 4 รุ่น" },
-                  { id: "kitchen" as const, title: "4. พริกแกงตำมือและป้า ๆ ในครัว" },
+                  { id: "kitchen" as const, title: "4. พริกแกงทำเองโดยป้า ๆ" },
                 ].map(tab => (
                   <button
                     key={tab.id}
@@ -2713,7 +2713,7 @@ export default function AdminDashboard({
                           {adminStoryTab === "house" && "คลังรูปภาพบ้านไม้ 100 ปี"}
                           {adminStoryTab === "wood" && "คลังรูปภาพข้อต่อไม้ / เข้าเดือยไร้ตะปู"}
                           {adminStoryTab === "family" && "คลังรูปภาพครอบครัว 4 รุ่น / หม่อนน้อย / ตายาย"}
-                          {adminStoryTab === "kitchen" && "คลังรูปป้า ๆ ในครัวและพริกแกงตำมือ"}
+                          {adminStoryTab === "kitchen" && "คลังรูปป้า ๆ ในครัวและพริกแกงทำเอง"}
                         </h4>
                         <p className="text-xs text-primary/60">
                           มีรูปภาพที่อัปโหลดเพิ่มในหมวดนี้แล้ว {photos.length} รูป (อัปโหลดเพิ่มได้ไม่จำกัด)
@@ -2886,7 +2886,7 @@ export default function AdminDashboard({
                           ยังไม่มีรูปภาพที่อัปโหลดเพิ่มเติมในหมวดนี้ (ระบบกำลังใช้รูปภาพเริ่มต้นที่สวยงามให้โดยอัตโนมัติ)
                         </p>
                         <p className="text-[11px] text-primary/50">
-                          เมื่อคุณมีรูปถ่ายจริง (เช่น ถ่ายข้อต่อไม้, ถ่ายคุณป้าตำพริกแกง) สามารถแตะปุ่ม “+ อัปโหลดรูปภาพเพิ่มในหมวดนี้” ได้ทันที
+                          เมื่อคุณมีรูปถ่ายจริง (เช่น ถ่ายข้อต่อไม้ หรือถ่ายคุณป้าทำพริกแกง) สามารถแตะปุ่ม “+ อัปโหลดรูปภาพเพิ่มในหมวดนี้” ได้ทันที
                         </p>
                       </div>
                     )}
@@ -2903,7 +2903,7 @@ export default function AdminDashboard({
                           ? "2. 0 ตัว ไร้ตะปู"
                           : adminStoryTab === "family"
                           ? "3. คน 4 รุ่น"
-                          : "4. พริกแกงตำมือและป้า ๆ ในครัว"
+                          : "4. พริกแกงทำเองโดยป้า ๆ"
                       }
                       currentCustomData={currentData}
                       onSave={async (fields) => {
@@ -3095,8 +3095,8 @@ export default function AdminDashboard({
                     </label>
                     <input
                       type="text"
-                      placeholder="เช่น ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล"
-                      value={settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล"}
+                      placeholder="เช่น ปรุงสดใหม่ทุกจาน พริกแกงทำเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล"
+                      value={settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงทำเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล"}
                       onChange={(e) => setSettings(prev => ({ ...prev, menu_page_subtitle: e.target.value }))}
                       className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                     />
@@ -5549,7 +5549,7 @@ export default function AdminDashboard({
                         <textarea
                           rows={2}
                           placeholder="เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ..."
-                          value={settings.home_book_description ?? "เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ"}
+                          value={settings.home_book_description ?? "เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงทำเอง และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ"}
                           onChange={(e) => setSettings(prev => ({ ...prev, home_book_description: e.target.value }))}
                           className="w-full px-3 py-2 bg-cream/15 border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent resize-y"
                         />

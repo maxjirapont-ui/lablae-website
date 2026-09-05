@@ -22,7 +22,7 @@ export default async function MenuPage() {
   // Dynamic texts and PDF URL
   const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน 100 ปี";
   const title = (await getSetting("menu_page_title")) || "กับข้าวและสำรับอาหาร";
-  const subtitle = (await getSetting("menu_page_subtitle")) || "ปรุงสดใหม่ทุกจาน พริกแกงโขลกเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล";
+  const subtitle = (await getSetting("menu_page_subtitle")) || "ปรุงสดใหม่ทุกจาน พริกแกงทำเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล";
   const notice = (await getSetting("menu_page_notice")) || "";
   const pdfUrl = (await getSetting("menu_pdf_url")) || "/menu-2026.pdf";
   const pdfBtnText = (await getSetting("menu_pdf_btn_text")) || "เปิดดูเล่มเมนูฉบับเต็ม (PDF)";

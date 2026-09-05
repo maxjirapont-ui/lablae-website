@@ -125,7 +125,7 @@ export default async function Home() {
 
   const bookBadge = (await getSetting("home_book_badge")) || "บันทึกเรื่องเล่าเมืองลับแล";
   const bookTitle = (await getSetting("home_book_title")) || "ตำราลับแลง (32 ตอน)";
-  const bookDescription = (await getSetting("home_book_description")) || "เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงตำมือ และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ";
+  const bookDescription = (await getSetting("home_book_description")) || "เรื่องเล่าของคน 4 รุ่น บันทึกครัวโบราณ ที่มาของข้าวพันผัก พริกแกงทำเอง และวิถีชีวิตคนเมืองลับแลที่เขียนส่งต่อจากใจ";
   const bookBtnText = (await getSetting("home_book_btn_text")) || "เปิดอ่านตำราลับแลง (32 ตอน)";
 
   // Testimonial Card
@@ -139,7 +139,7 @@ export default async function Home() {
   const heroBadge = (await getSetting("hero_badge")) || "บ้านไม้ 100 ปีไร้ตะปู · อ.ลับแล จ.อุตรดิตถ์";
   const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน 100 ปี";
   const heroSubtitle = (await getSetting("hero_subtitle")) || "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู";
-  const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ";
+  const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงทำเอง ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ";
 
   // About / Story Ambience Section Customizable Texts
   const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนบ้านไม้ 100 ปี";

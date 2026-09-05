@@ -51,6 +51,29 @@ const HOUSE_COPY_REPLACEMENTS = [
   ["เรือนไม้โบราณ 100+ ปี (เรือนหม่อนน้อย)", "บ้านไม้ 100 ปี (เรือนหม่อนน้อย)"],
 ] as const;
 
+const HOMEMADE_CURRY_PASTE_COPY_REPLACEMENTS = [
+  ["ตำมือ 100% – พริกแกงสดจากป้า ๆ ในครัวลับแล", "พริกแกงทำเองโดยป้า ๆ ในครัวลับแล"],
+  ["ครัวสดมือ 100%", "รสมือครอบครัว"],
+  ["ตำมือ 100%", "พริกแกงทำเอง"],
+  ["พริกแกงสดไม่สำเร็จรูป", "โดยป้า ๆ ในครัว"],
+  ["พริกแกงโขลกสดด้วยครกหินทุกเช้า", "ป้า ๆ ทำเองตามสูตรของครอบครัวทุกวัน"],
+  ["พริกแกงป้าชุมกับป้าชิดยังทำเองทุกวัน เสียงสากกระทบครกหินคือสัญญาณว่าครัวบ้านเราเปิดแล้ว", "พริกแกงป้าชุมกับป้าชิดทำเองทุกวัน เป็นรสมือที่ครอบครัวเราดูแลกันมาตลอด"],
+  ["หัวใจที่ทำให้อาหารร้านลำลำลับแลมีรสชาติเฉพาะตัว คือ 'เครื่องในครก' ที่ไม่มีทางหาได้จากพริกแกงสำเร็จรูปในท้องตลาด", "หัวใจที่ทำให้อาหารร้านลำลำลับแลมีรสชาติเฉพาะตัว คือพริกแกงสูตรของบ้านที่ป้า ๆ ทำเอง ไม่ใช้พริกแกงสำเร็จรูปจากท้องตลาด"],
+  ["จากนั้นจะช่วยกันโขลกในครกหินด้วยมือจนเนื้อเนียนละเอียด น้ำมันหอมระเหยจากสมุนไพรสดจึงแตกตัวออกมาเต็มที่ ให้รสชาติเผ็ดลึก หอมละมุน กลมกล่อม และมีมิติที่พริกแกงเครื่องปั่นไม่สามารถทำได้", "จากนั้นป้า ๆ จะนำวัตถุดิบมาทำเป็นพริกแกงตามสูตรของครอบครัว เพื่อให้ได้รสเผ็ดลึก หอมละมุน กลมกล่อม และคงรสมือของบ้านเราไว้ในทุกจาน"],
+  ["จานเด็ดที่กำเนิดจากพริกแกงตำมือนี้", "จานเด็ดที่ใช้พริกแกงทำเองของบ้าน"],
+  ["พริกข่าตำมือหอมกรุ่น", "พริกข่าสูตรทำเองของบ้าน"],
+  ["พริกหนุ่มเผาเตาถ่านตำสดคู่", "พริกหนุ่มเผาเตาถ่าน ปรุงสดคู่"],
+  ["ตำสดทุกวัน", "ทำสดทุกวัน"],
+  ["โขลกครกหินสดใหม่ทุกเช้า", "พริกแกงทำเองโดยป้า ๆ"],
+  ["น้ำมันหอมระเหยจากสมุนไพรแตกตัว กลิ่นหอมฟุ้งยาวนาน", "คัดและเตรียมสมุนไพรตามสูตรของครอบครัว เพื่อรสชาติที่เป็นเอกลักษณ์"],
+  ["พริกแกงทุกครกตาเงินยายจันโขลกเอง", "พริกแกงตาเงินยายจันทำเองตามสูตรของครอบครัว"],
+  ["พริกแกงทุกครกโขลกเองด้วยมือ", "พริกแกงทำเองตามสูตรของครอบครัว"],
+  ["ระหว่างโขลกพริกแกง", "ระหว่างเตรียมพริกแกง"],
+  ["พริกแกงตำมือ", "พริกแกงทำเอง"],
+  ["พริกแกงโขลกมือ", "พริกแกงทำเอง"],
+  ["พริกแกงโขลกเอง", "พริกแกงทำเอง"],
+] as const;
+
 const ARABIC_DIGIT_SETTING_KEYS = [
   "about_badge",
   "about_page_custom_data",
@@ -357,6 +380,71 @@ export async function getDb(): Promise<Database> {
       ["\"statLabel\":\"อายุเรือนไม้\"", "\"statLabel\":\"อายุบ้านไม้\"", "เรือนไม้สองชั้นหลังนี้", "บ้านไม้สองชั้นหลังนี้", "custom_stories_data"],
     );
     await db.run("INSERT INTO app_migrations (name) VALUES (?)", [houseLabelMigrationName]);
+  }
+
+  const homemadeCurryPasteMigrationName = "accurate_homemade_curry_paste_copy_2026_09_06";
+  const homemadeCurryPasteMigration = await db.get<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [homemadeCurryPasteMigrationName],
+  );
+  if (!homemadeCurryPasteMigration) {
+    for (const [legacyValue, updatedValue] of HOMEMADE_CURRY_PASTE_COPY_REPLACEMENTS) {
+      await db.run(
+        "UPDATE settings SET value = REPLACE(value, ?, ?) WHERE INSTR(value, ?) > 0",
+        [legacyValue, updatedValue, legacyValue],
+      );
+    }
+    await db.run("INSERT INTO app_migrations (name) VALUES (?)", [homemadeCurryPasteMigrationName]);
+  }
+
+  const kitchenStoryCopyMigrationName = "normalize_homemade_curry_paste_story_v2_2026_09_06";
+  const kitchenStoryCopyMigration = await db.get<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [kitchenStoryCopyMigrationName],
+  );
+  if (!kitchenStoryCopyMigration) {
+    const customStoriesRow = await db.get<{ value: string }>(
+      "SELECT value FROM settings WHERE key = ?",
+      ["custom_stories_data"],
+    );
+
+    if (customStoriesRow?.value) {
+      try {
+        const customStories = JSON.parse(customStoriesRow.value) as Record<string, unknown>;
+        const currentKitchen =
+          customStories.kitchen &&
+          typeof customStories.kitchen === "object" &&
+          !Array.isArray(customStories.kitchen)
+            ? (customStories.kitchen as Record<string, unknown>)
+            : {};
+
+        customStories.kitchen = {
+          ...currentKitchen,
+          badge: "รสมือครอบครัว",
+          stat: "พริกแกงทำเอง",
+          statLabel: "โดยป้า ๆ ในครัว",
+          title: "พริกแกงทำเองโดยป้า ๆ ในครัวลับแล",
+          subtitle: "ไม่ใช้พริกแกงสำเร็จรูป ป้า ๆ ทำเองตามสูตรของครอบครัวทุกวัน",
+          quote: "“พริกแกงป้าชุมกับป้าชิดทำเองทุกวัน เป็นรสมือที่ครอบครัวเราดูแลกันมาตลอด”",
+          quoteAuthor: "ครัวบ้าน 100 ปี",
+          paragraphs: [
+            "หัวใจที่ทำให้อาหารร้านลำลำลับแลมีรสชาติเฉพาะตัว คือพริกแกงสูตรของบ้านที่ป้า ๆ ทำเอง ไม่ใช้พริกแกงสำเร็จรูปจากท้องตลาด",
+            "ทุกเช้าตรู่ในครัว ป้าชุม ป้าชิด และแม่ครัวประจำบ้าน 100 ปี จะเริ่มวันด้วยการเด็ดพริกแห้ง ปอกกระเทียมไทยพันธุ์ลับแล หั่นข่า ตะไคร้ ขมิ้นชัน และคั่วมะแขว่นจนกลิ่นหอมฟุ้งลอยไปทั่วใต้ถุนบ้าน",
+            "จากนั้นป้า ๆ จะนำวัตถุดิบมาทำเป็นพริกแกงตามสูตรของครอบครัว เพื่อให้ได้รสเผ็ดลึก หอมละมุน กลมกล่อม และคงรสมือของบ้านเราไว้ในทุกจาน",
+            "จานเด็ดที่ใช้พริกแกงทำเองของบ้าน ได้แก่ 'หมูทอดลับแลพริกข่า' สามชั้นทอดคลุกพริกข่าคั่วหอม, 'แกงอ่อมหมู/ไก่' ตุ๋นเตาถ่านข้ามวันจนนุ่มละลายในปาก, 'น้ำพริกหนุ่ม-น้ำพริกอ่อง' ทำสดใหม่ทุกวัน และ 'ชุดขันโตกบ้าน 100 ปี' สำรับรวมรอยต่อวัฒนธรรมล้านนา-สุโขทัย",
+          ],
+        };
+
+        await db.run("UPDATE settings SET value = ? WHERE key = ?", [
+          JSON.stringify(customStories),
+          "custom_stories_data",
+        ]);
+      } catch {
+        // Keep the existing value intact if an owner-entered JSON value is malformed.
+      }
+    }
+
+    await db.run("INSERT INTO app_migrations (name) VALUES (?)", [kitchenStoryCopyMigrationName]);
   }
 
   globalDb = db;
