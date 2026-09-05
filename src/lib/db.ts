@@ -188,6 +188,21 @@ export async function getDb(): Promise<Database> {
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS booking_blocks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      date TEXT NOT NULL,
+      time TEXT NOT NULL,
+      reason TEXT DEFAULT '',
+      created_by TEXT DEFAULT '',
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(date, time)
+    );
+
+    CREATE TABLE IF NOT EXISTS line_webhook_events (
+      event_id TEXT PRIMARY KEY,
+      processed_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE TABLE IF NOT EXISTS app_migrations (
       name TEXT PRIMARY KEY,
       applied_at TEXT DEFAULT CURRENT_TIMESTAMP
@@ -218,6 +233,37 @@ export async function getDb(): Promise<Database> {
   } catch {}
   try {
     await db.exec("ALTER TABLE articles ADD COLUMN excerpt TEXT DEFAULT ''");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN booking_code TEXT");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN notes TEXT DEFAULT ''");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN tables_required INTEGER DEFAULT 1");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN duration_minutes INTEGER DEFAULT 60");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN source TEXT DEFAULT 'web'");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN customer_line_user_id TEXT");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN line_delivery_status TEXT DEFAULT 'not_configured'");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN status_updated_at TEXT");
+  } catch {}
+  try {
+    await db.exec("ALTER TABLE reservations ADD COLUMN status_updated_by TEXT DEFAULT ''");
+  } catch {}
+  try {
+    await db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_reservations_booking_code ON reservations(booking_code) WHERE booking_code IS NOT NULL");
+    await db.exec("CREATE INDEX IF NOT EXISTS idx_reservations_date_status ON reservations(date, status)");
   } catch {}
 
   const copyMigrationName = "polish_thai_copy_2026_09_06";

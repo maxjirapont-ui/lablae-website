@@ -26,6 +26,9 @@ async function getDashboardData() {
   );
   
   const settingsMap = redactSettings(settingsRows);
+  settingsMap.line_messaging_configured = process.env.LINE_CHANNEL_ACCESS_TOKEN?.trim() && process.env.LINE_CHANNEL_SECRET?.trim() ? "1" : "0";
+  settingsMap.line_group_connected = settingsMap.line_group_id || process.env.LINE_GROUP_ID?.trim() ? "1" : "0";
+  delete settingsMap.line_group_id;
 
   return { menus, reservations, articles, settingsMap };
 }

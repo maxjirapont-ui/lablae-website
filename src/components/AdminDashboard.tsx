@@ -71,11 +71,17 @@ interface AdminDashboardProps {
 
 interface Reservation {
   id: number;
+  booking_code?: string;
   name: string;
   phone: string;
   date: string;
   time: string;
   guests: number;
+  notes?: string;
+  tables_required?: number;
+  duration_minutes?: number;
+  source?: string;
+  status_updated_by?: string;
   status: "pending" | "confirmed" | "completed" | "cancelled" | string;
   created_at: string;
 }
@@ -2312,6 +2318,11 @@ export default function AdminDashboard({
                         <div className="space-y-2.5">
                           {/* Top Badges */}
                           <div className="flex flex-wrap items-center gap-2">
+                            {res.booking_code && (
+                              <span className="inline-flex items-center px-2.5 py-1 bg-primary text-white rounded-lg text-xs font-mono font-bold">
+                                {res.booking_code}
+                              </span>
+                            )}
                             {/* Date */}
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/5 text-primary rounded-lg text-xs font-bold">
                               <Calendar className="w-3.5 h-3.5 text-accent-dark" />
@@ -2324,7 +2335,7 @@ export default function AdminDashboard({
                             </span>
                             {/* Guests */}
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-accent/15 text-accent-dark rounded-lg text-xs font-bold">
-                              👥 {res.guests} ท่าน
+                              👥 {res.guests} คน · {res.tables_required || Math.ceil(res.guests / 4)} โต๊ะ
                             </span>
 
                             {/* Status Badge */}
@@ -2372,6 +2383,14 @@ export default function AdminDashboard({
                             <p className="text-[11px] text-primary/50">
                               ทำรายการจองเมื่อ: {res.created_at}
                             </p>
+                          )}
+                          {res.notes && (
+                            <p className="text-xs text-primary/70 bg-primary/5 rounded-lg px-3 py-2">
+                              หมายเหตุ: {res.notes}
+                            </p>
+                          )}
+                          {res.status_updated_by && (
+                            <p className="text-[11px] text-primary/50">อัปเดตล่าสุดโดย: {res.status_updated_by}</p>
                           )}
                         </div>
 
@@ -5663,29 +5682,28 @@ export default function AdminDashboard({
                     </div>
                   </div>
 
-                  {/* LINE Notify Setting */}
+                  {/* LINE Messaging API status */}
                   <div className="p-5 bg-accent/5 border border-accent/20 rounded-2xl space-y-4">
                     <h3 className="font-bold text-primary text-sm flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 bg-green-600 rounded-full animate-pulse"></span>
-                      การเชื่อมต่อระบบแจ้งเตือนไลน์กลุ่ม (LINE Notify Token)
+                      <span className={`w-2.5 h-2.5 rounded-full ${settings.line_messaging_configured === "1" ? "bg-green-600" : "bg-amber-500"}`}></span>
+                      ระบบจองโต๊ะผ่าน LINE Official Account
                     </h3>
                     <p className="text-xs text-primary/70 leading-relaxed">
-                      เชื่อมต่อเพื่อให้เมื่อลูกค้ากดจองโต๊ะอาหารจากหน้าเว็บ ระบบจะส่งข้อความรายละเอียดการจองตรงเข้ากลุ่มไลน์ของร้านทันที 
-                      (คุณสามารถนำ Token มาใส่ที่ช่องด้านล่างเพื่อเปิดใช้งานการแจ้งเตือนได้เลยครับ)
+                      เมื่อลูกค้าส่งคำขอจอง บอตจะแจ้งในกลุ่มพนักงาน พร้อมปุ่มยืนยันหรือไม่รับการจอง ลูกค้าสามารถรับผลยืนยันผ่าน LINE และเช็กสถานะจากเลขที่การจองได้
                     </p>
-                    <div>
-                      <label htmlFor="line_notify_token" className="block text-xs font-semibold text-primary mb-1">
-                        LINE Notify Access Token
-                      </label>
-                      <input
-                        type="password"
-                        id="line_notify_token"
-                        value={settings.line_notify_token || ""}
-                        onChange={e => setSettings(prev => ({ ...prev, line_notify_token: e.target.value }))}
-                        autoComplete="off"
-                        placeholder={settings.line_notify_token_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "กรอก Access Token"}
-                        className="block w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm focus:outline-none"
-                      />
+                    <div className="grid sm:grid-cols-2 gap-3 text-xs">
+                      <div className="rounded-xl bg-white border border-primary/10 px-4 py-3">
+                        <p className="text-primary/55">Messaging API</p>
+                        <p className={`mt-1 font-bold ${settings.line_messaging_configured === "1" ? "text-emerald-700" : "text-amber-700"}`}>
+                          {settings.line_messaging_configured === "1" ? "เชื่อมต่อแล้ว" : "รอตั้งค่าระบบ"}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-white border border-primary/10 px-4 py-3">
+                        <p className="text-primary/55">กลุ่ม LINE พนักงาน</p>
+                        <p className={`mt-1 font-bold ${settings.line_group_connected === "1" ? "text-emerald-700" : "text-amber-700"}`}>
+                          {settings.line_group_connected === "1" ? "เชื่อมกลุ่มแล้ว" : "รอเชิญบัญชีร้านเข้ากลุ่ม"}
+                        </p>
+                      </div>
                     </div>
                   </div>
 

@@ -6,6 +6,9 @@ const CLIENT_BLOCKED_KEYS = new Set([
   "admin_password_hash",
   "admin_password_configured",
   "line_notify_token_configured",
+  "line_messaging_configured",
+  "line_group_connected",
+  "line_group_id",
   "last_published_at",
 ]);
 
@@ -42,8 +45,8 @@ export async function saveAdminSettings(
       continue;
     }
 
-    // A blank field means "keep the existing token"; the stored token is never sent to the browser.
-    if (key === "line_notify_token" && !String(value ?? "").trim()) continue;
+    // Legacy LINE Notify values are kept out of new settings writes.
+    if (key === "line_notify_token") continue;
 
     const rawStringValue =
       typeof value === "object" ? JSON.stringify(value) : String(value ?? "");
