@@ -229,12 +229,24 @@ export async function getAvailability(days?: number, requestedStartDate?: string
   return { config, days: availabilityDays };
 }
 
-function generateBookingCode(date: string): string {
+function generateBookingCode(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const bytes = randomBytes(8);
+  const bytes = randomBytes(6);
   let suffix = "";
   for (const byte of bytes) suffix += alphabet[byte % alphabet.length];
-  return `LL-${date.replaceAll("-", "")}-${suffix}`;
+  return `LL-${suffix}`;
+}
+
+async function generateUniqueBookingCode(db: Database): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const bookingCode = generateBookingCode();
+    const existing = await db.get<{ id: number }>(
+      "SELECT id FROM reservations WHERE booking_code = ? LIMIT 1",
+      [bookingCode],
+    );
+    if (!existing) return bookingCode;
+  }
+  throw new Error("สร้างเลขที่การจองไม่สำเร็จ กรุณาลองอีกครั้ง");
 }
 
 export async function createReservation(input: {
@@ -289,7 +301,7 @@ export async function createReservation(input: {
       throw new Error("ช่วงเวลานี้มีที่นั่งไม่พอสำหรับจำนวนที่เลือก กรุณาเลือกเวลาอื่น");
     }
 
-    const bookingCode = generateBookingCode(input.date);
+    const bookingCode = await generateUniqueBookingCode(db);
     const result = await db.run(
       `INSERT INTO reservations
        (booking_code, name, phone, date, time, guests, notes, tables_required, duration_minutes, status, source, line_delivery_status)
