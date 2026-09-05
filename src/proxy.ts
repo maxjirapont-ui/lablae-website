@@ -13,25 +13,15 @@ export function proxy(request: NextRequest) {
   }
 
   // 1. Google Sites Menu URLs
-  // Matches: /เมนอาหาร/ชดขนโตก, /เมนูอาหาร/ชุดขันโตก, /เมนอาหาร/ขาวพนผก, etc.
+  // Send every shared Google Sites menu URL to the recommended dishes first.
   if (
     decodedPath.includes('เมนอาหาร') ||
     decodedPath.includes('เมนูอาหาร') ||
     rawPath.includes('%E0%B9%80%E0%B8%A1%E0%B8%99%E0%B8%AD%E0%B8%B2%E0%B8%AB%E0%B8%B2%E0%B8%A3') ||
     rawPath.includes('%E0%B9%80%E0%B8%A1%E0%B8%99%E0%B8%B9%E0%B8%AD%E0%B8%B2%E0%B8%AB%E0%B8%B2%E0%B8%A3')
   ) {
-    if (decodedPath.includes('ขนโตก') || decodedPath.includes('ขันโตก')) {
-      url.pathname = '/menu';
-      url.search = '?category=' + encodeURIComponent('เซทขันโตก');
-      return NextResponse.redirect(url, 301);
-    }
-    if (decodedPath.includes('ขาวพน') || decodedPath.includes('ข้าวพัน')) {
-      url.pathname = '/menu';
-      url.search = '?category=' + encodeURIComponent('ข้าวพันผัก');
-      return NextResponse.redirect(url, 301);
-    }
     url.pathname = '/menu';
-    url.search = '';
+    url.search = '?category=' + encodeURIComponent('เมนูแนะนำ');
     return NextResponse.redirect(url, 301);
   }
 
