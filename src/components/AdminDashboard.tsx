@@ -508,14 +508,20 @@ export default function AdminDashboard({
       });
 
       if (res.ok) {
-        setSettingsMsg("บันทึกข้อมูลการตั้งค่าเรียบร้อยแล้ว");
+        setSettingsMsg("✅ บันทึกข้อมูลการตั้งค่าเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
         setIframeKey(prev => prev + 1); // Reload preview iframe
         router.refresh();
       } else {
-        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
+        if (res.status === 401) {
+          alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+          window.location.href = "/admin/login";
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        setSettingsMsg(errData.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูล");
       }
     } catch (err) {
-      setSettingsMsg("ไม่สามารถเชื่อมต่อเครือข่ายได้");
+      setSettingsMsg("ไม่สามารถเชื่อมต่อเครือข่ายได้ กรุณาตรวจสอบการเชื่อมต่อ");
     } finally {
       setSettingsLoading(false);
     }
@@ -546,10 +552,19 @@ export default function AdminDashboard({
         setSettingsMsg("✅ บันทึกรูปภาพปกและข้อความฮีโร่สำเร็จแล้ว! หน้าร้านอัปเดตทันที");
         router.refresh();
       } else {
-        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลฮีโร่");
+        if (res.status === 401) {
+          alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+          window.location.href = "/admin/login";
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูลฮีโร่";
+        setSettingsMsg(errMsg);
+        throw new Error(errMsg);
       }
-    } catch {
+    } catch (err: any) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+      throw err;
     } finally {
       setSettingsLoading(false);
     }
@@ -578,10 +593,19 @@ export default function AdminDashboard({
         setSettingsMsg("✅ บันทึกรูปภาพบรรยากาศและคำอธิบายเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
         router.refresh();
       } else {
-        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลเรื่องเล่า");
+        if (res.status === 401) {
+          alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+          window.location.href = "/admin/login";
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูลเรื่องเล่า";
+        setSettingsMsg(errMsg);
+        throw new Error(errMsg);
       }
-    } catch {
+    } catch (err: any) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+      throw err;
     } finally {
       setSettingsLoading(false);
     }
@@ -607,10 +631,19 @@ export default function AdminDashboard({
         setSettingsMsg("✅ บันทึกอัลบั้มและคำอธิบายภาพบรรยากาศสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
         router.refresh();
       } else {
-        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกอัลบั้ม");
+        if (res.status === 401) {
+          alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+          window.location.href = "/admin/login";
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || "เกิดข้อผิดพลาดในการบันทึกอัลบั้ม";
+        setSettingsMsg(errMsg);
+        throw new Error(errMsg);
       }
-    } catch {
+    } catch (err: any) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+      throw err;
     } finally {
       setSettingsLoading(false);
     }
@@ -647,10 +680,19 @@ export default function AdminDashboard({
         setSettingsMsg("✅ บันทึกข้อความเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
         router.refresh();
       } else {
-        setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลเรื่องเล่า");
+        if (res.status === 401) {
+          alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+          window.location.href = "/admin/login";
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || "เกิดข้อผิดพลาดในการบันทึกข้อมูลเรื่องเล่า";
+        setSettingsMsg(errMsg);
+        throw new Error(errMsg);
       }
-    } catch {
+    } catch (err: any) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+      throw err;
     } finally {
       setSettingsLoading(false);
     }
@@ -683,10 +725,19 @@ export default function AdminDashboard({
         setSettingsMsg("✅ คืนค่าข้อความเริ่มต้นสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
         router.refresh();
       } else {
-        setSettingsMsg("เกิดข้อผิดพลาดในการคืนค่าข้อความ");
+        if (res.status === 401) {
+          alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+          window.location.href = "/admin/login";
+          return;
+        }
+        const errData = await res.json().catch(() => ({}));
+        const errMsg = errData.error || "เกิดข้อผิดพลาดในการคืนค่าข้อความ";
+        setSettingsMsg(errMsg);
+        throw new Error(errMsg);
       }
-    } catch {
+    } catch (err: any) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+      throw err;
     } finally {
       setSettingsLoading(false);
     }
@@ -1965,10 +2016,19 @@ export default function AdminDashboard({
                     setSettingsMsg("✅ บันทึกเนื้อหาหน้ารู้จักเราเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
                     router.refresh();
                   } else {
-                    setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกเนื้อหา");
+                    if (res.status === 401) {
+                      alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
+                      window.location.href = "/admin/login";
+                      return;
+                    }
+                    const errData = await res.json().catch(() => ({}));
+                    const errMsg = errData.error || "เกิดข้อผิดพลาดในการบันทึกเนื้อหา";
+                    setSettingsMsg(errMsg);
+                    throw new Error(errMsg);
                   }
-                } catch {
+                } catch (err: any) {
                   setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
+                  throw err;
                 } finally {
                   setSettingsLoading(false);
                 }

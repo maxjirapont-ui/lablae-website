@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 
 // Auth helper
@@ -7,6 +8,18 @@ async function checkAuth() {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session")?.value;
   return session === "authenticated";
+}
+
+function revalidateArticlePages() {
+  try {
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/about");
+    revalidatePath("/articles");
+    revalidatePath("/admin");
+  } catch (e) {
+    console.error("Revalidation error:", e);
+  }
 }
 
 // 0. Fetch Articles (Admin)
@@ -53,6 +66,7 @@ export async function POST(request: NextRequest) {
       throw dbErr;
     }
 
+    revalidateArticlePages();
     return NextResponse.json({ success: true, message: "สร้างบทความใหม่สำเร็จ" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" }, { status: 500 });
@@ -87,6 +101,7 @@ export async function PUT(request: NextRequest) {
       throw dbErr;
     }
 
+    revalidateArticlePages();
     return NextResponse.json({ success: true, message: "แก้ไขบทความสำเร็จ" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการแก้ไขข้อมูล" }, { status: 500 });
@@ -110,6 +125,7 @@ export async function DELETE(request: NextRequest) {
     const db = await getDb();
     await db.run("DELETE FROM articles WHERE id = ?", [id]);
 
+    revalidateArticlePages();
     return NextResponse.json({ success: true, message: "ลบบทความเรียบร้อยแล้ว" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการลบข้อมูล" }, { status: 500 });

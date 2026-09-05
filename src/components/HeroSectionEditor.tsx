@@ -86,6 +86,7 @@ export default function HeroSectionEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     setHeroImage(currentHeroImage || "");
@@ -98,6 +99,7 @@ export default function HeroSectionEditor({
     setBtn2Text(currentBtn2Text || DEFAULT_HERO_VALUES.hero_btn2_text);
     setBtn2Link(currentBtn2Link || DEFAULT_HERO_VALUES.hero_btn2_link);
     setIsDirty(false);
+    setErrorMessage("");
   }, [
     currentHeroImage,
     currentBadge,
@@ -114,24 +116,30 @@ export default function HeroSectionEditor({
     setter(value);
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave({
-      home_hero_image: heroImage,
-      hero_badge: badge.trim(),
-      hero_title: title.trim(),
-      hero_subtitle: subtitle.trim(),
-      hero_description: description.trim(),
-      hero_btn1_text: btn1Text.trim(),
-      hero_btn1_link: btn1Link.trim(),
-      hero_btn2_text: btn2Text.trim(),
-      hero_btn2_link: btn2Link.trim(),
-    });
-    setIsDirty(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+    setErrorMessage("");
+    try {
+      await onSave({
+        home_hero_image: heroImage,
+        hero_badge: badge.trim(),
+        hero_title: title.trim(),
+        hero_subtitle: subtitle.trim(),
+        hero_description: description.trim(),
+        hero_btn1_text: btn1Text.trim(),
+        hero_btn1_link: btn1Link.trim(),
+        hero_btn2_text: btn2Text.trim(),
+        hero_btn2_link: btn2Link.trim(),
+      });
+      setIsDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
   };
 
   const handleResetDefaults = () => {
@@ -433,7 +441,13 @@ export default function HeroSectionEditor({
                 <span>บันทึกรูปภาพและข้อความปกฮีโร่สำเร็จแล้ว!</span>
               </span>
             )}
-            {isDirty && !saveSuccess && (
+            {errorMessage && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{errorMessage}</span>
+              </span>
+            )}
+            {isDirty && !saveSuccess && !errorMessage && (
               <span className="text-xs text-amber-700 font-medium">
                 ⚠️ มีการแก้ไขที่ยังไม่ได้กดบันทึก
               </span>

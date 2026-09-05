@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -33,9 +34,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/menu");
+      revalidatePath("/admin");
+    } catch (e) {
+      console.error("Revalidation error:", e);
+    }
+
     return NextResponse.json({ success: true, message: "อัปเดตสถานะหมวดหมู่สำเร็จ" });
   } catch (error) {
     console.error("Bulk toggle error:", error);
     return NextResponse.json({ error: "เกิดข้อผิดพลาดบนเซิร์ฟเวอร์" }, { status: 500 });
   }
 }
+

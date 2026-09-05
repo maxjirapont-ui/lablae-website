@@ -82,6 +82,7 @@ export default function AmbienceStoryEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     setAboutImage(currentAboutImage || "");
@@ -92,6 +93,7 @@ export default function AmbienceStoryEditor({
     setQuoteAuthor(currentQuoteAuthor || DEFAULT_STORY_VALUES.about_quote_author);
     setStoryText(currentStoryText || DEFAULT_STORY_VALUES.about_story_text);
     setIsDirty(false);
+    setErrorMessage("");
   }, [
     currentAboutImage,
     currentImageCaption,
@@ -106,22 +108,28 @@ export default function AmbienceStoryEditor({
     setter(value);
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave({
-      home_about_image: aboutImage,
-      home_about_image_caption: imageCaption.trim(),
-      about_badge: badge.trim(),
-      about_title: title.trim(),
-      about_quote: quote.trim(),
-      about_quote_author: quoteAuthor.trim(),
-      about_story_text: storyText.trim(),
-    });
-    setIsDirty(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+    setErrorMessage("");
+    try {
+      await onSave({
+        home_about_image: aboutImage,
+        home_about_image_caption: imageCaption.trim(),
+        about_badge: badge.trim(),
+        about_title: title.trim(),
+        about_quote: quote.trim(),
+        about_quote_author: quoteAuthor.trim(),
+        about_story_text: storyText.trim(),
+      });
+      setIsDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
   };
 
   const handleResetDefaults = () => {
@@ -432,7 +440,13 @@ export default function AmbienceStoryEditor({
                 <span>บันทึกรูปภาพและคำอธิบายเรื่องเล่าสำเร็จแล้ว!</span>
               </span>
             )}
-            {isDirty && !saveSuccess && (
+            {errorMessage && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{errorMessage}</span>
+              </span>
+            )}
+            {isDirty && !saveSuccess && !errorMessage && (
               <span className="text-xs text-amber-700 font-medium">
                 ⚠️ มีการแก้ไขที่ยังไม่ได้กดบันทึก
               </span>

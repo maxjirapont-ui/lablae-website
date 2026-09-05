@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 
 // Auth helper
@@ -7,6 +8,17 @@ async function checkAuth() {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session")?.value;
   return session === "authenticated";
+}
+
+function revalidateMenuPages() {
+  try {
+    revalidatePath("/", "layout");
+    revalidatePath("/");
+    revalidatePath("/menu");
+    revalidatePath("/admin");
+  } catch (e) {
+    console.error("Revalidation error:", e);
+  }
 }
 
 // 0. Fetch Menu Items (Admin)
@@ -51,6 +63,7 @@ export async function POST(request: NextRequest) {
       ]
     );
 
+    revalidateMenuPages();
     return NextResponse.json({ success: true, message: "เพิ่มเมนูอาหารเรียบร้อยแล้ว" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" }, { status: 500 });
@@ -87,6 +100,7 @@ export async function PUT(request: NextRequest) {
       ]
     );
 
+    revalidateMenuPages();
     return NextResponse.json({ success: true, message: "แก้ไขเมนูอาหารสำเร็จ" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการแก้ไขข้อมูล" }, { status: 500 });
@@ -110,6 +124,7 @@ export async function DELETE(request: NextRequest) {
     const db = await getDb();
     await db.run("DELETE FROM menus WHERE id = ?", [id]);
 
+    revalidateMenuPages();
     return NextResponse.json({ success: true, message: "ลบเมนูอาหารเรียบร้อยแล้ว" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการลบข้อมูล" }, { status: 500 });

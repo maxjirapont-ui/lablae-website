@@ -80,6 +80,7 @@ export default function StoryTextEditor({
 
   const [isDirty, setIsDirty] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
   // Check if any custom text is stored in database
@@ -107,6 +108,7 @@ export default function StoryTextEditor({
     setParagraphsText(getInitialParagraphs());
     setIsDirty(false);
     setSaveSuccess(false);
+    setErrorMessage("");
   }, [storyId, currentCustomData]);
 
   // Compute paragraph count
@@ -119,10 +121,12 @@ export default function StoryTextEditor({
     setter(value);
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
     const finalParagraphs =
       parsedParagraphs.length > 0
         ? parsedParagraphs
@@ -130,20 +134,24 @@ export default function StoryTextEditor({
         ? [paragraphsText.trim()]
         : [];
 
-    await onSave({
-      stat: stat.trim(),
-      statLabel: statLabel.trim(),
-      badge: badge.trim(),
-      title: title.trim(),
-      subtitle: subtitle.trim(),
-      quote: quote.trim(),
-      quoteAuthor: quoteAuthor.trim(),
-      paragraphs: finalParagraphs,
-    });
+    try {
+      await onSave({
+        stat: stat.trim(),
+        statLabel: statLabel.trim(),
+        badge: badge.trim(),
+        title: title.trim(),
+        subtitle: subtitle.trim(),
+        quote: quote.trim(),
+        quoteAuthor: quoteAuthor.trim(),
+        paragraphs: finalParagraphs,
+      });
 
-    setIsDirty(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+      setIsDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
   };
 
   const handleReset = async () => {
@@ -442,7 +450,13 @@ export default function StoryTextEditor({
                 <span>บันทึกข้อความเรื่องเล่าสำเร็จแล้ว!</span>
               </span>
             )}
-            {isDirty && !saveSuccess && (
+            {errorMessage && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{errorMessage}</span>
+              </span>
+            )}
+            {isDirty && !saveSuccess && !errorMessage && (
               <span className="text-xs text-amber-700 font-medium">
                 ⚠️ มีการแก้ไขที่ยังไม่ได้กดบันทึก
               </span>

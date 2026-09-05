@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
@@ -35,8 +36,18 @@ export async function POST(request: NextRequest) {
       await db.run("UPDATE menus SET image_url = ? WHERE id = ?", [image_url || "", id]);
     }
 
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/menu");
+      revalidatePath("/admin");
+    } catch (e) {
+      console.error("Revalidation error:", e);
+    }
+
     return NextResponse.json({ success: true, message: "อัปเดตสถานะเมนูสำเร็จ" });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดบนเซิร์ฟเวอร์" }, { status: 500 });
   }
 }
+

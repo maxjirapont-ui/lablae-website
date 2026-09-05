@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 
 // Auth helper
@@ -19,16 +20,28 @@ export async function POST(request: NextRequest) {
     const db = await getDb();
 
     for (const [key, value] of Object.entries(settingsObj)) {
-      if (typeof value === "string") {
-        await db.run(
-          "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-          [key, value]
-        );
-      }
+      const strValue = typeof value === "object" ? JSON.stringify(value) : String(value ?? "");
+      await db.run(
+        "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
+        [key, strValue]
+      );
     }
 
-    return NextResponse.json({ success: true, message: "บันทึกตั้งค่าสำเร็จ" });
+    // Bust cache instantly across the entire application
+    try {
+      revalidatePath("/", "layout");
+      revalidatePath("/");
+      revalidatePath("/about");
+      revalidatePath("/menu");
+      revalidatePath("/admin");
+    } catch (revalErr) {
+      console.error("Revalidation notice:", revalErr);
+    }
+
+    return NextResponse.json({ success: true, message: "บันทึกตั้งค่าสำเร็จ", revalidated: true });
   } catch (error) {
+    console.error("Settings POST error:", error);
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" }, { status: 500 });
   }
 }
+

@@ -11,6 +11,7 @@ import {
   UtensilsCrossed,
   Quote,
   CheckCircle2,
+  AlertCircle,
   Users,
   Scroll,
 } from "lucide-react";
@@ -136,6 +137,7 @@ export default function AboutPageEditor({
   const [activeTab, setActiveTab] = useState<"header" | "tab1" | "tab2" | "tab3">("tab1");
   const [isDirty, setIsDirty] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
@@ -145,20 +147,28 @@ export default function AboutPageEditor({
         setData({ ...DEFAULT_ABOUT_DATA, ...parsed });
       }
     } catch {}
+    setIsDirty(false);
+    setErrorMessage("");
   }, [currentJson]);
 
   const handleChange = (field: keyof AboutCustomData, val: string) => {
     setData((prev) => ({ ...prev, [field]: val }));
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSave(JSON.stringify(data));
-    setIsDirty(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+    setErrorMessage("");
+    try {
+      await onSave(JSON.stringify(data));
+      setIsDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
   };
 
   const handleResetDefaults = () => {
@@ -722,7 +732,13 @@ export default function AboutPageEditor({
                 <span>บันทึกเนื้อหาหน้าเกี่ยวกับเราสำเร็จแล้ว!</span>
               </span>
             )}
-            {isDirty && !saveSuccess && (
+            {errorMessage && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{errorMessage}</span>
+              </span>
+            )}
+            {isDirty && !saveSuccess && !errorMessage && (
               <span className="text-xs text-amber-700 font-medium">
                 ⚠️ มีการแก้ไขที่ยังไม่ได้กดบันทึก
               </span>

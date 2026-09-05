@@ -14,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CheckCircle2,
+  AlertCircle,
   Tag,
   Plus,
 } from "lucide-react";
@@ -64,6 +65,7 @@ export default function AmbienceGalleryEditor({
   const [showPreview, setShowPreview] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [uploadingCount, setUploadingCount] = useState(0);
 
   useEffect(() => {
@@ -72,6 +74,7 @@ export default function AmbienceGalleryEditor({
     setTitle(currentTitle || DEFAULT_GALLERY_VALUES.gallery_title);
     setSubtitle(currentSubtitle || DEFAULT_GALLERY_VALUES.gallery_subtitle);
     setIsDirty(false);
+    setErrorMessage("");
   }, [currentItems, currentBadge, currentTitle, currentSubtitle]);
 
   const handleCaptionChange = (index: number, caption: string) => {
@@ -82,6 +85,7 @@ export default function AmbienceGalleryEditor({
     });
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleDeletePhoto = (index: number) => {
@@ -89,6 +93,7 @@ export default function AmbienceGalleryEditor({
     setItems((prev) => prev.filter((_, i) => i !== index));
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleMovePhoto = (index: number, direction: "left" | "right") => {
@@ -102,6 +107,7 @@ export default function AmbienceGalleryEditor({
       });
       setIsDirty(true);
       setSaveSuccess(false);
+      setErrorMessage("");
     } else if (direction === "right" && index < items.length - 1) {
       setItems((prev) => {
         const next = [...prev];
@@ -112,6 +118,7 @@ export default function AmbienceGalleryEditor({
       });
       setIsDirty(true);
       setSaveSuccess(false);
+      setErrorMessage("");
     }
   };
 
@@ -142,20 +149,26 @@ export default function AmbienceGalleryEditor({
     setUploadingCount(0);
     setIsDirty(true);
     setSaveSuccess(false);
+    setErrorMessage("");
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage("");
     const cleanItems = items.filter((i) => Boolean(i.url));
-    await onSave({
-      restaurant_gallery: JSON.stringify(cleanItems),
-      gallery_badge: badge.trim(),
-      gallery_title: title.trim(),
-      gallery_subtitle: subtitle.trim(),
-    });
-    setIsDirty(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 4000);
+    try {
+      await onSave({
+        restaurant_gallery: JSON.stringify(cleanItems),
+        gallery_badge: badge.trim(),
+        gallery_title: title.trim(),
+        gallery_subtitle: subtitle.trim(),
+      });
+      setIsDirty(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 4000);
+    } catch (err: any) {
+      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    }
   };
 
   const handleResetDefaults = () => {
@@ -440,7 +453,13 @@ export default function AmbienceGalleryEditor({
                 <span>บันทึกอัลบั้มและคำอธิบายภาพบรรยากาศสำเร็จแล้ว!</span>
               </span>
             )}
-            {isDirty && !saveSuccess && (
+            {errorMessage && (
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-xl border border-red-200 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{errorMessage}</span>
+              </span>
+            )}
+            {isDirty && !saveSuccess && !errorMessage && (
               <span className="text-xs text-amber-700 font-medium">
                 ⚠️ มีการแก้ไขที่ยังไม่ได้กดบันทึก
               </span>
