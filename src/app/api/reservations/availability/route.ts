@@ -5,8 +5,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
-    const requestedDays = Number(new URL(request.url).searchParams.get("days") || 21);
-    const availability = await getAvailability(requestedDays);
+    const params = new URL(request.url).searchParams;
+    const requestedDays = Number(params.get("days") || 21);
+    const availability = await getAvailability(requestedDays, params.get("date") || undefined);
     return NextResponse.json(availability, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Availability API Error:", error);

@@ -180,26 +180,29 @@ function slotCapacity(
   };
 }
 
-export async function getAvailability(days?: number): Promise<{ config: BookingConfig; days: AvailabilityDay[] }> {
+export async function getAvailability(days?: number, requestedStartDate?: string): Promise<{ config: BookingConfig; days: AvailabilityDay[] }> {
   const db = await getDb();
   const config = await getBookingConfig(db);
   const today = bangkokNow().date;
-  const dayCount = Math.min(config.advanceDays + 1, Math.max(1, days || 21));
-  const lastDate = addDays(today, dayCount - 1);
+  const startDate = requestedStartDate && isIsoDate(requestedStartDate) && requestedStartDate >= today
+    ? requestedStartDate
+    : today;
+  const dayCount = Math.min(31, Math.max(1, days || 21));
+  const lastDate = addDays(startDate, dayCount - 1);
   const reservations = await db.all<ReservationRecord[]>(
     `SELECT * FROM reservations
      WHERE date BETWEEN ? AND ? AND status IN ('pending', 'confirmed')`,
-    [today, lastDate],
+    [startDate, lastDate],
   );
   const blocks = await db.all<Array<{ date: string; time: string }>>(
     "SELECT date, time FROM booking_blocks WHERE date BETWEEN ? AND ?",
-    [today, lastDate],
+    [startDate, lastDate],
   );
   const slots = buildBookingSlots(config);
   const now = bangkokNow();
 
   const availabilityDays = Array.from({ length: dayCount }, (_, index) => {
-    const date = addDays(today, index);
+    const date = addDays(startDate, index);
     const dayReservations = reservations.filter((reservation) => reservation.date === date);
     const dayBlocks = new Set(blocks.filter((block) => block.date === date).map((block) => block.time));
     const daySlots = slots.map<AvailabilitySlot>((time) => {
@@ -251,11 +254,10 @@ export async function createReservation(input: {
   const guests = Number(input.guests);
   const maximumGuests = input.source === "web" ? config.maxOnlineGuests : config.guestCapacity;
   const now = bangkokNow();
-  const lastDate = addDays(now.date, config.advanceDays);
 
   if (name.length < 2) throw new Error("กรุณากรอกชื่อผู้จอง");
   if (!/^\+?\d{9,15}$/.test(phone)) throw new Error("กรุณาตรวจสอบเบอร์โทรศัพท์");
-  if (!isIsoDate(input.date) || input.date < now.date || input.date > lastDate) throw new Error("วันที่จองไม่อยู่ในช่วงที่เปิดรับ");
+  if (!isIsoDate(input.date) || input.date < now.date) throw new Error("กรุณาเลือกวันที่ตั้งแต่วันนี้เป็นต้นไป");
   if (!Number.isInteger(guests) || guests < 1 || guests > maximumGuests) {
     throw new Error(input.source === "web"
       ? `ระบบออนไลน์รับจองไม่เกิน ${config.maxOnlineGuests} คน กรุณาโทรสอบถามร้านสำหรับกลุ่มใหญ่`

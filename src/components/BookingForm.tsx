@@ -57,21 +57,30 @@ export default function BookingForm() {
   const [availability, setAvailability] = useState<AvailabilityResponse | null>(null);
   const [availabilityError, setAvailabilityError] = useState("");
   const [loadingAvailability, setLoadingAvailability] = useState(true);
+  const [minimumDate, setMinimumDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<SubmitResult | null>(null);
 
-  const loadAvailability = useCallback(async () => {
+  const loadAvailability = useCallback(async (startDate?: string) => {
     setLoadingAvailability(true);
     setAvailabilityError("");
     try {
-      const response = await fetch("/api/reservations/availability?days=21", { cache: "no-store" });
+      const query = startDate
+        ? `/api/reservations/availability?days=1&date=${encodeURIComponent(startDate)}`
+        : "/api/reservations/availability?days=21";
+      const response = await fetch(query, { cache: "no-store" });
       const data = await response.json() as AvailabilityResponse & { error?: string };
       if (!response.ok) throw new Error(data.error || "โหลดเวลาว่างไม่สำเร็จ");
       setAvailability(data);
+      if (!startDate && data.days[0]?.date) setMinimumDate(data.days[0].date);
       setFormData((previous) => {
         const selectedStillOpen = data.days.some((day) => day.date === previous.date && day.status !== "full");
-        const nextDate = selectedStillOpen ? previous.date : data.days.find((day) => day.status !== "full")?.date || "";
+        const nextDate = startDate
+          ? data.days[0]?.date || startDate
+          : selectedStillOpen
+            ? previous.date
+            : data.days.find((day) => day.status !== "full")?.date || "";
         const selectedDay = data.days.find((day) => day.date === nextDate);
         const selectedSlotStillOpen = selectedDay?.slots.some((slot) => slot.time === previous.time && slot.status !== "full");
         return {
@@ -119,7 +128,7 @@ export default function BookingForm() {
       if (!response.ok) throw new Error(data.error || "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
       setResult(data);
       setFormData((previous) => ({ ...previous, name: "", phone: "", time: "", guests: "2", notes: "" }));
-      await loadAvailability();
+      await loadAvailability(formData.date);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
     } finally {
@@ -179,28 +188,51 @@ export default function BookingForm() {
               {Array.from({ length: 7 }, (_, index) => <div key={index} className="h-20 rounded-xl bg-white/5 animate-pulse" />)}
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
-              {availability?.days.map((day) => {
-                const label = formatDateLabel(day.date);
-                const selected = formData.date === day.date;
-                return (
-                  <button
-                    key={day.date}
-                    type="button"
-                    disabled={day.status === "full"}
-                    onClick={() => setFormData((previous) => ({ ...previous, date: day.date, time: "" }))}
-                    aria-pressed={selected}
-                    className={`min-h-20 rounded-xl border px-2 py-2.5 text-center transition-colors disabled:opacity-45 disabled:cursor-not-allowed ${selected ? "border-accent bg-accent/20 text-cream" : "border-white/10 bg-black/15 text-cream/80 hover:border-accent/50"}`}
-                  >
-                    <span className="block text-xs">{label.weekday}</span>
-                    <span className="block text-lg font-bold leading-tight">{label.day}</span>
-                    <span className="block text-xs">{label.month}</span>
-                    <span className="mt-1 flex items-center justify-center gap-1 text-[11px]">
-                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[day.status]}`} /> {STATUS_LABEL[day.status]}
-                    </span>
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 sm:grid-cols-7 gap-2">
+                {availability?.days.map((day) => {
+                  const label = formatDateLabel(day.date);
+                  const selected = formData.date === day.date;
+                  return (
+                    <button
+                      key={day.date}
+                      type="button"
+                      disabled={day.status === "full"}
+                      onClick={() => setFormData((previous) => ({ ...previous, date: day.date, time: "" }))}
+                      aria-pressed={selected}
+                      className={`min-h-20 rounded-xl border px-2 py-2.5 text-center transition-colors disabled:opacity-45 disabled:cursor-not-allowed ${selected ? "border-accent bg-accent/20 text-cream" : "border-white/10 bg-black/15 text-cream/80 hover:border-accent/50"}`}
+                    >
+                      <span className="block text-xs">{label.weekday}</span>
+                      <span className="block text-lg font-bold leading-tight">{label.day}</span>
+                      <span className="block text-xs">{label.month}</span>
+                      <span className="mt-1 flex items-center justify-center gap-1 text-[11px]">
+                        <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[day.status]}`} /> {STATUS_LABEL[day.status]}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-end gap-2 rounded-xl border border-white/10 bg-black/15 p-3">
+                <label className="flex-1 text-xs font-bold text-cream">
+                  เลือกวันอื่น
+                  <input
+                    type="date"
+                    min={minimumDate || undefined}
+                    value={formData.date}
+                    onChange={(event) => {
+                      const date = event.target.value;
+                      setFormData((previous) => ({ ...previous, date, time: "" }));
+                      if (date) void loadAvailability(date);
+                    }}
+                    className="mt-1 block w-full rounded-lg border border-accent/30 bg-[#1a100a] px-3 py-2 text-sm text-cream focus:outline-none focus:ring-2 focus:ring-accent/40"
+                  />
+                </label>
+                {availability?.days.length === 1 && (
+                  <button type="button" onClick={() => void loadAvailability()} className="rounded-lg border border-accent/30 px-3 py-2 text-xs font-bold text-accent hover:bg-accent/10">
+                    ดู 21 วันข้างหน้า
                   </button>
-                );
-              })}
+                )}
+              </div>
             </div>
           )}
         </fieldset>
