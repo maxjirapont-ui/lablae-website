@@ -50,8 +50,8 @@ export function proxy(request: NextRequest) {
       decodedPath.includes('มาราน') ||
       decodedPath.includes('มาร้าน')
     ) {
-      url.pathname = '/about';
-      url.search = 'section=directions';
+      url.pathname = '/directions';
+      url.search = '';
       return NextResponse.redirect(url, 301);
     }
     url.pathname = '/about';
