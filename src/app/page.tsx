@@ -7,25 +7,28 @@ import AtmosphereGallery from "@/components/AtmosphereGallery";
 import QuickFactsStoryModal from "@/components/QuickFactsStoryModal";
 import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight } from "lucide-react";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
 
 // Server component fetching featured dishes
 async function getFeaturedDishes(): Promise<MenuItem[]> {
   try {
     const db = await getDb();
-    // First, try to fetch user-defined recommended dishes
+    // First, try to fetch user-defined recommended dishes ordered by sort_order
     let dishes = await db.all<MenuItem[]>(
       `SELECT * FROM menus 
        WHERE is_recommended = 1 AND is_visible = 1
-       LIMIT 4`
+       ORDER BY sort_order ASC, id ASC
+       LIMIT 12`
     );
     // If none are flagged, fallback to default recommended ones
     if (dishes.length === 0) {
       dishes = await db.all<MenuItem[]>(
         `SELECT * FROM menus 
-         WHERE name IN ('ข้าวพันผัก', 'ขันโตกบ้าน 100 ปี โตกหมูฮังเล', 'ไข่ป่าม', 'ไส้อั่วลับแล')
+         WHERE name IN ('หมูทอดลับแลพริกข่า', 'อ่องมันปู', 'ไส้อั่วสมุนไพรย่าง', 'น้ำพริกหนุ่ม', 'น้ำพริกอ่อง', 'ข้าวพันผัก', 'ขันโตกบ้าน 100 ปี โตกหมูฮังเล', 'ไข่ป่าม', 'ไส้อั่วลับแล')
          AND is_visible = 1
-         LIMIT 4`
+         ORDER BY sort_order ASC, id ASC
+         LIMIT 8`
       );
     }
     return dishes;
@@ -39,11 +42,12 @@ async function getFeaturedDishes(): Promise<MenuItem[]> {
 async function getSeasonalDishes(): Promise<MenuItem[]> {
   try {
     const db = await getDb();
-    // Try to fetch user-defined seasonal dishes
+    // Try to fetch user-defined seasonal dishes ordered by sort_order
     let dishes = await db.all<MenuItem[]>(
       `SELECT * FROM menus 
        WHERE is_seasonal = 1 AND is_visible = 1
-       LIMIT 4`
+       ORDER BY sort_order ASC, id ASC
+       LIMIT 12`
     );
     // If none are flagged, fallback to other common items
     if (dishes.length === 0) {
@@ -51,7 +55,8 @@ async function getSeasonalDishes(): Promise<MenuItem[]> {
         `SELECT * FROM menus 
          WHERE category IN ('อาหารพื้นบ้าน', 'เซทขันโตก')
          AND is_visible = 1
-         LIMIT 4`
+         ORDER BY sort_order ASC, id ASC
+         LIMIT 8`
       );
     }
     return dishes;
@@ -137,6 +142,15 @@ export default async function Home() {
   const galleryTitle = (await getSetting("gallery_title")) || "ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี";
   const gallerySubtitle = (await getSetting("gallery_subtitle")) || "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ";
 
+  // Custom Stories Data for 4 Quick Facts
+  const rawCustomStories = await getSetting("custom_stories_data");
+  let customStoriesData = undefined;
+  try {
+    if (rawCustomStories) {
+      customStoriesData = JSON.parse(rawCustomStories);
+    }
+  } catch {}
+
   const rawGallery = await getSetting("restaurant_gallery");
   let galleryItems: { url: string; caption?: string }[] = [];
   try {
@@ -152,6 +166,25 @@ export default async function Home() {
   } catch {
     galleryItems = [];
   }
+
+  // Seamlessly merge all uploaded photos from custom stories so any photos added in admin appear in the homepage gallery!
+  if (customStoriesData) {
+    const storyKeys = ["house", "wood", "family", "kitchen"] as const;
+    storyKeys.forEach((k) => {
+      const pList = (customStoriesData as any)?.[k]?.photos;
+      if (Array.isArray(pList)) {
+        pList.forEach((p: any) => {
+          if (p?.url && !galleryItems.some((g) => g.url === p.url)) {
+            galleryItems.push({
+              url: p.url,
+              caption: p.caption ? `${p.caption} (${p.tag || "บรรยากาศ"})` : (p.tag || "บรรยากาศร้านลำลำลับแล"),
+            });
+          }
+        });
+      }
+    });
+  }
+
   if (galleryItems.length === 0) {
     if (aboutImage) galleryItems.push({ url: aboutImage, caption: "บรรยากาศเรือนไม้สักโบราณ ๑๐๐ ปี" });
     if (heroImage) galleryItems.push({ url: heroImage, caption: "หน้าร้านลำลำลับแลบ้าน ๑๐๐ ปี" });
@@ -184,15 +217,6 @@ export default async function Home() {
       sections.push("gallery");
     }
   }
-
-  // Custom Stories Data for 4 Quick Facts
-  const rawCustomStories = await getSetting("custom_stories_data");
-  let customStoriesData = undefined;
-  try {
-    if (rawCustomStories) {
-      customStoriesData = JSON.parse(rawCustomStories);
-    }
-  } catch {}
 
   return (
     <div className="flex flex-col space-y-20 pb-20">

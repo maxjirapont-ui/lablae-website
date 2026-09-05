@@ -6,6 +6,9 @@ import Footer from "@/components/Footer";
 import MobileQuickBar from "@/components/MobileQuickBar";
 import { getSetting } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
