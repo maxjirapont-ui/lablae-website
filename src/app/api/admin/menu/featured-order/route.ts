@@ -85,6 +85,25 @@ export async function POST(request: NextRequest) {
 
     revalidateMenuPages();
 
+    // Auto-commit & push to GitHub so Railway automatically receives updated database
+    try {
+      const { exec } = await import("child_process");
+      const fs = await import("fs");
+      const path = await import("path");
+      if (fs.existsSync(path.join(process.cwd(), ".git"))) {
+        exec(
+          'git add database/restaurant.db && git commit -m "chore(cms): update featured menu order" && git push origin main',
+          { cwd: process.cwd() },
+          (err, stdout) => {
+            if (err) console.log("Auto-git push:", err.message);
+            else console.log("Auto-git push complete:", stdout);
+          }
+        );
+      }
+    } catch (gitErr) {
+      console.error("Git auto-push notice:", gitErr);
+    }
+
     return NextResponse.json({
       success: true,
       message: "บันทึกลำดับเมนูแนะนำหน้าแรกสำเร็จ",

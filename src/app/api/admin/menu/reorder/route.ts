@@ -105,6 +105,32 @@ export async function POST(request: NextRequest) {
       for (let i = 0; i < categoryMenus.length; i++) {
         await db.run("UPDATE menus SET sort_order = ? WHERE id = ?", [i + 1, categoryMenus[i].id]);
       }
+
+      // Also sync with homepage_featured_menu_ids so homepage updates when clicking reorder buttons!
+      const featuredRow = await db.get<{ value: string }>("SELECT value FROM settings WHERE key = 'homepage_featured_menu_ids'");
+      let fIds: number[] = [];
+      if (featuredRow?.value) {
+        try { fIds = JSON.parse(featuredRow.value); } catch {}
+      }
+      const fIndex = fIds.indexOf(id);
+      if (action === "top") {
+        if (fIndex !== -1) fIds.splice(fIndex, 1);
+        fIds.unshift(id);
+        await db.run("INSERT INTO settings (key, value) VALUES ('homepage_featured_menu_ids', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", [JSON.stringify(fIds)]);
+      } else if (fIndex !== -1) {
+        if (action === "up" && fIndex > 0) {
+          const prev = fIds[fIndex - 1];
+          fIds[fIndex - 1] = id;
+          fIds[fIndex] = prev;
+          await db.run("INSERT INTO settings (key, value) VALUES ('homepage_featured_menu_ids', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", [JSON.stringify(fIds)]);
+        } else if (action === "down" && fIndex < fIds.length - 1) {
+          const next = fIds[fIndex + 1];
+          fIds[fIndex + 1] = id;
+          fIds[fIndex] = next;
+          await db.run("INSERT INTO settings (key, value) VALUES ('homepage_featured_menu_ids', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value", [JSON.stringify(fIds)]);
+        }
+      }
+
       await db.run("COMMIT");
     } catch (err) {
       await db.run("ROLLBACK");
@@ -112,6 +138,26 @@ export async function POST(request: NextRequest) {
     }
 
     revalidateMenuPages();
+
+    // Auto-commit & push to GitHub so Railway automatically receives updated database
+    try {
+      const { exec } = await import("child_process");
+      const fs = await import("fs");
+      const path = await import("path");
+      if (fs.existsSync(path.join(process.cwd(), ".git"))) {
+        exec(
+          'git add database/restaurant.db && git commit -m "chore(cms): reorder menu" && git push origin main',
+          { cwd: process.cwd() },
+          (err, stdout) => {
+            if (err) console.log("Auto-git push:", err.message);
+            else console.log("Auto-git push complete:", stdout);
+          }
+        );
+      }
+    } catch (gitErr) {
+      console.error("Git auto-push notice:", gitErr);
+    }
+
     return NextResponse.json({ success: true, message: "ปรับลำดับเมนูสำเร็จ" });
   } catch (error: any) {
     console.error("Reorder Menu API Error:", error);

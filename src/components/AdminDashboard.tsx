@@ -267,11 +267,15 @@ export default function AdminDashboard({
   const handlePublishAll = async () => {
     setIsPublishing(true);
     setPublishSuccessMsg("");
+    const updatedSettings = {
+      ...settings,
+      homepage_featured_menu_ids: JSON.stringify(featuredMenuIds),
+    };
     try {
       const res = await fetch("/api/admin/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ settings }),
+        body: JSON.stringify({ settings: updatedSettings }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -294,6 +298,33 @@ export default function AdminDashboard({
 
   // --- MENU REORDER HANDLER ---
   const handleReorderMenu = async (id: number, action: "top" | "up" | "down") => {
+    // 1. Also update featuredMenuIds so homepage updates immediately when clicking reorder on menu cards!
+    let newFIds = [...featuredMenuIds];
+    const fIdx = newFIds.indexOf(id);
+    let changedFeatured = false;
+    if (action === "top") {
+      if (fIdx !== -1) newFIds.splice(fIdx, 1);
+      newFIds.unshift(id);
+      changedFeatured = true;
+    } else if (fIdx !== -1) {
+      if (action === "up" && fIdx > 0) {
+        const prev = newFIds[fIdx - 1];
+        newFIds[fIdx - 1] = id;
+        newFIds[fIdx] = prev;
+        changedFeatured = true;
+      } else if (action === "down" && fIdx < newFIds.length - 1) {
+        const next = newFIds[fIdx + 1];
+        newFIds[fIdx + 1] = id;
+        newFIds[fIdx] = next;
+        changedFeatured = true;
+      }
+    }
+
+    if (changedFeatured) {
+      setFeaturedMenuIds(newFIds);
+      setSettings(prev => ({ ...prev, homepage_featured_menu_ids: JSON.stringify(newFIds) }));
+    }
+
     setMenus(prevMenus => {
       const target = prevMenus.find(m => m.id === id);
       if (!target) return prevMenus;
