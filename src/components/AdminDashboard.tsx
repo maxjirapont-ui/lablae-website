@@ -1446,9 +1446,9 @@ export default function AdminDashboard({
         {activeTab === "overview" && (
           <div className="space-y-6 font-thai">
             {/* Top Welcome & Quick Summary */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-primary to-primary-light text-white p-6 rounded-2xl shadow-md">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-[#2c170c] via-[#3a2012] to-[#25140b] border border-accent/30 text-[#f5ece1] p-6 rounded-2xl shadow-md">
               <div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/15 rounded-full text-xs font-semibold mb-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold mb-2 text-accent border border-accent/20">
                   <Store className="w-3.5 h-3.5 text-accent" />
                   {settings.restaurant_name || "ร้านลำลำลับแลบ้าน 100 ปี"}
                 </span>
@@ -1591,7 +1591,7 @@ export default function AdminDashboard({
               <button
                 type="button"
                 onClick={() => { setActiveTab("articles"); }}
-                className="col-span-2 lg:col-span-4 p-4 bg-gradient-to-r from-primary via-primary-dark to-[#2b1809] text-cream border border-accent/40 rounded-2xl text-left hover:border-accent hover:shadow-lg transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
+                className="col-span-2 lg:col-span-4 p-4 bg-gradient-to-r from-[#2c170c] via-[#241309] to-[#1c0f07] text-[#f5ece1] border border-accent/40 rounded-2xl text-left hover:border-accent hover:shadow-lg transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center text-accent shrink-0 group-hover:scale-110 transition-transform">
@@ -1602,11 +1602,11 @@ export default function AdminDashboard({
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accent/20 text-accent border border-accent/30">
                         ๓๒ ตอนครบถ้วน
                       </span>
-                      <h3 className="font-bold text-sm sm:text-base text-cream">
+                      <h3 className="font-bold text-sm sm:text-base text-[#f5ece1]">
                         แก้ไขเนื้อหา “ตำราลับแลง” (ที่เป็นบท)
                       </h3>
                     </div>
-                    <p className="text-xs text-cream/75 mt-0.5">
+                    <p className="text-xs text-[#f5ece1]/75 mt-0.5">
                       แตะที่นี่เพื่อเปิดหน้าแก้ไขเนื้อหาแต่ละบท ทั้ง ๕ ภาค ๒๙ บท + คำนำ + บทส่งท้าย
                     </p>
                   </div>
@@ -3262,7 +3262,7 @@ export default function AdminDashboard({
                           )}
 
                           {/* Category Badge */}
-                          <span className="absolute top-2 left-2 px-2.5 py-1 bg-white/95 backdrop-blur-xs text-primary font-bold rounded-full text-[10px] shadow-xs pointer-events-none">
+                          <span className="absolute top-2 left-2 px-2.5 py-1 bg-[#180e08]/90 backdrop-blur-xs text-accent border border-accent/25 font-bold rounded-full text-[10px] shadow-xs pointer-events-none">
                             {menu.category}
                           </span>
 

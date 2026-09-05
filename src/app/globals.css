@@ -59,14 +59,220 @@ body {
 }
 
 .admin-scope {
-  --color-primary: #46260f;
-  --color-primary-dark: #2c1608;
-  --color-primary-light: #6d3d1a;
+  --color-primary: #f5ece1;
+  --color-primary-dark: #120904;
+  --color-primary-light: #fff8f0;
   --color-accent: #d4a373;
-  --color-accent-dark: #c58f55;
-  --color-warm-bg: #faf5f0;
-  --color-cream: #fefdf9;
-  --background: #faf5f0;
-  --foreground: #2c1608;
-  color: #2c1608;
+  --color-accent-dark: #dfa86c;
+  --color-warm-bg: #140b07;
+  --color-cream: #1e130b;
+  --background: #120904;
+  --foreground: #f5ece1;
+  background-color: #120904;
+  color: #f5ece1;
 }
+
+/* =========================================================
+   Admin Dark / Dim Teak Theme (Anti-Eye Strain)
+   ========================================================= */
+.admin-scope .bg-cream,
+.admin-scope .bg-cream\/50,
+.admin-scope .bg-cream\/70,
+.admin-scope .bg-cream\/80 {
+  background-color: #1a1008 !important;
+  border-color: rgba(212, 163, 115, 0.18) !important;
+}
+
+.admin-scope .bg-white,
+.admin-scope .bg-white\/50,
+.admin-scope .bg-white\/60,
+.admin-scope .bg-white\/70,
+.admin-scope .bg-white\/80,
+.admin-scope .bg-white\/90,
+.admin-scope .bg-white\/95 {
+  background-color: #22150d !important;
+  color: #f5ece1 !important;
+  border-color: rgba(212, 163, 115, 0.16) !important;
+}
+
+.admin-scope .bg-stone-50,
+.admin-scope .bg-gray-50,
+.admin-scope .bg-slate-50,
+.admin-scope .bg-neutral-50,
+.admin-scope .bg-amber-50\/40 {
+  background-color: #170d07 !important;
+  color: #f5ece1 !important;
+}
+
+.admin-scope .bg-stone-100,
+.admin-scope .bg-gray-100,
+.admin-scope .bg-slate-100,
+.admin-scope .bg-neutral-100 {
+  background-color: #2a1a10 !important;
+  color: #f5ece1 !important;
+}
+
+/* Typography & Contrast */
+.admin-scope .text-primary {
+  color: #f5ece1 !important;
+}
+
+.admin-scope .text-primary-dark {
+  color: #fff8f0 !important;
+}
+
+.admin-scope .text-cream,
+.admin-scope .text-cream\/90,
+.admin-scope .text-cream\/80,
+.admin-scope .text-cream\/75 {
+  color: #f5ece1 !important;
+}
+
+.admin-scope .text-primary\/90,
+.admin-scope .text-primary\/80,
+.admin-scope .text-primary\/75,
+.admin-scope .text-primary\/70 {
+  color: rgba(245, 236, 225, 0.78) !important;
+}
+
+.admin-scope .text-primary\/60,
+.admin-scope .text-primary\/50,
+.admin-scope .text-primary\/45 {
+  color: rgba(245, 236, 225, 0.55) !important;
+}
+
+.admin-scope .text-gray-900,
+.admin-scope .text-stone-900,
+.admin-scope .text-slate-900,
+.admin-scope .text-zinc-900,
+.admin-scope .text-gray-800,
+.admin-scope .text-stone-800,
+.admin-scope .text-slate-800,
+.admin-scope .text-gray-700,
+.admin-scope .text-stone-700 {
+  color: #f5ece1 !important;
+}
+
+.admin-scope .text-gray-600,
+.admin-scope .text-stone-600,
+.admin-scope .text-slate-600 {
+  color: #cbb9ab !important;
+}
+
+.admin-scope .text-gray-500,
+.admin-scope .text-stone-500,
+.admin-scope .text-slate-500 {
+  color: #9e8c80 !important;
+}
+
+.admin-scope .border-primary\/10,
+.admin-scope .border-primary\/15,
+.admin-scope .border-primary\/20,
+.admin-scope .border-gray-200,
+.admin-scope .border-stone-200,
+.admin-scope .border-slate-200 {
+  border-color: rgba(212, 163, 115, 0.18) !important;
+}
+
+/* Active tab & Primary dark buttons */
+.admin-scope button.bg-primary,
+.admin-scope a.bg-primary,
+.admin-scope .bg-primary {
+  background-color: #8c4e23 !important;
+  color: #ffffff !important;
+}
+
+.admin-scope button.bg-primary:hover,
+.admin-scope a.bg-primary:hover {
+  background-color: #9e5b2c !important;
+}
+
+/* Forms, Inputs, Selects & Textareas */
+.admin-scope input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]),
+.admin-scope select,
+.admin-scope textarea {
+  background-color: #140b06 !important;
+  color: #f5ece1 !important;
+  border: 1px solid rgba(212, 163, 115, 0.28) !important;
+}
+
+.admin-scope input::placeholder,
+.admin-scope textarea::placeholder {
+  color: rgba(245, 236, 225, 0.35) !important;
+}
+
+.admin-scope input:focus,
+.admin-scope select:focus,
+.admin-scope textarea:focus {
+  border-color: #d4a373 !important;
+  box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.25) !important;
+  outline: none !important;
+}
+
+/* Tables */
+.admin-scope table {
+  color: #f5ece1;
+}
+
+.admin-scope table thead th {
+  background-color: #170d07 !important;
+  color: #d4a373 !important;
+  border-color: rgba(212, 163, 115, 0.15) !important;
+}
+
+.admin-scope table tbody tr {
+  border-color: rgba(212, 163, 115, 0.1) !important;
+}
+
+.admin-scope table tbody tr:hover {
+  background-color: #27190f !important;
+}
+
+/* Notice & Alert Badges */
+.admin-scope .bg-emerald-50 {
+  background-color: rgba(6, 78, 42, 0.5) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #a7f3d0 !important;
+}
+.admin-scope .text-emerald-950,
+.admin-scope .text-emerald-900 {
+  color: #d1fae5 !important;
+}
+.admin-scope .text-emerald-800 {
+  color: #a7f3d0 !important;
+}
+
+.admin-scope .bg-amber-50 {
+  background-color: rgba(78, 42, 6, 0.5) !important;
+  border-color: rgba(245, 158, 11, 0.4) !important;
+  color: #fed7aa !important;
+}
+.admin-scope .text-amber-950,
+.admin-scope .text-amber-900 {
+  color: #fef3c7 !important;
+}
+.admin-scope .text-amber-800 {
+  color: #fed7aa !important;
+}
+
+.admin-scope .bg-red-50 {
+  background-color: rgba(127, 29, 29, 0.4) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  color: #fecaca !important;
+}
+.admin-scope .text-red-950,
+.admin-scope .text-red-900,
+.admin-scope .text-red-800 {
+  color: #fee2e2 !important;
+}
+
+.admin-scope .bg-blue-50 {
+  background-color: rgba(30, 58, 138, 0.45) !important;
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  color: #bfdbfe !important;
+}
+.admin-scope .text-blue-900,
+.admin-scope .text-blue-800 {
+  color: #dbeafe !important;
+}
+
