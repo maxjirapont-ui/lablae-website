@@ -8,6 +8,7 @@ import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
+const HOMEPAGE_FEATURED_LIMIT = 3;
 
 // Server component fetching featured dishes
 async function getFeaturedDishes(): Promise<MenuItem[]> {
@@ -27,7 +28,7 @@ async function getFeaturedDishes(): Promise<MenuItem[]> {
           );
           const dishMap = new Map(rows.map((r) => [r.id, r]));
           const sorted = ids.map((id) => dishMap.get(id)).filter((d): d is MenuItem => Boolean(d));
-          if (sorted.length > 0) return sorted;
+          if (sorted.length > 0) return sorted.slice(0, HOMEPAGE_FEATURED_LIMIT);
         }
       } catch (err) {
         console.error("Error parsing homepage_featured_menu_ids:", err);
@@ -39,7 +40,7 @@ async function getFeaturedDishes(): Promise<MenuItem[]> {
       `SELECT * FROM menus 
        WHERE is_recommended = 1 AND is_visible = 1
        ORDER BY sort_order ASC, id ASC
-       LIMIT 12`
+       LIMIT ${HOMEPAGE_FEATURED_LIMIT}`
     );
     // If none are flagged, fallback to default recommended ones
     if (dishes.length === 0) {
@@ -48,7 +49,7 @@ async function getFeaturedDishes(): Promise<MenuItem[]> {
          WHERE name IN ('หมูทอดลับแลพริกข่า', 'อ่องมันปู', 'ไส้อั่วสมุนไพรย่าง', 'น้ำพริกหนุ่ม', 'น้ำพริกอ่อง', 'ข้าวพันผัก', 'ขันโตกบ้าน 100 ปี โตกหมูฮังเล', 'ไข่ป่าม', 'ไส้อั่วลับแล')
          AND is_visible = 1
          ORDER BY sort_order ASC, id ASC
-         LIMIT 8`
+         LIMIT ${HOMEPAGE_FEATURED_LIMIT}`
       );
     }
     return dishes;
