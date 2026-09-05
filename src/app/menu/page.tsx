@@ -17,7 +17,7 @@ export default async function MenuPage() {
   const showHeader = (await getSetting("menu_page_header_show")) !== "0"; // default true
   const showSearch = (await getSetting("menu_page_search_show")) !== "0"; // default true
   const layoutStyle = (await getSetting("menu_page_layout")) || "grid"; // default grid
-  const categoriesOrder = (await getSetting("menu_categories_order")) || "เซทขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มดับแซ่บ & น้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม";
+  const categoriesOrder = (await getSetting("menu_categories_order")) || "เซตขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มและน้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม";
 
   // Dynamic texts and PDF URL
   const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน ๑๐๐ ปี";

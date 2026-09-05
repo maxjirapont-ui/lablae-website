@@ -1049,7 +1049,7 @@ export default function AdminDashboard({
 
   // Reordering Menu Categories
   const handleMoveCategory = (index: number, direction: "up" | "down") => {
-    const orderStr = settings.menu_categories_order || "เซทขันโตก,ข้าวพันผัก,อาหารพื้นบ้าน,จานเดียว,กับข้าว,ส้มตำ,ของหวาน & ทานเล่น,เครื่องดื่ม";
+    const orderStr = settings.menu_categories_order || "เซตขันโตก,ข้าวพันผัก,อาหารพื้นบ้าน,จานเดียว,กับข้าว,ส้มตำ,ของหวานและของกินเล่น,เครื่องดื่ม";
     const arr = orderStr.split(",").map(s => s.trim()).filter(Boolean);
     
     if (direction === "up" && index > 0) {
@@ -1112,7 +1112,7 @@ export default function AdminDashboard({
     e.preventDefault();
     if (draggedCatIndex === null || draggedCatIndex === index) return;
     
-    const orderStr = settings.menu_categories_order || "เซทขันโตก,ข้าวพันผัก,อาหารพื้นบ้าน,จานเดียว,กับข้าว,ส้มตำ,ของหวาน & ทานเล่น,เครื่องดื่ม";
+    const orderStr = settings.menu_categories_order || "เซตขันโตก,ข้าวพันผัก,อาหารพื้นบ้าน,จานเดียว,กับข้าว,ส้มตำ,ของหวานและของกินเล่น,เครื่องดื่ม";
     const arr = orderStr.split(",").map(s => s.trim()).filter(Boolean);
     
     const newArr = [...arr];
@@ -5273,7 +5273,7 @@ export default function AdminDashboard({
                         </label>
                         <div className="space-y-1 max-h-[140px] overflow-y-auto border border-primary/5 rounded-lg p-1.5 bg-cream/10">
                           {(() => {
-                            const catsOrderStr = settings.menu_categories_order || "เซทขันโตก,ข้าวพันผัก,อาหารพื้นบ้าน,จานเดียว,กับข้าว,ส้มตำ,ของหวาน & ทานเล่น,เครื่องดื่ม";
+                            const catsOrderStr = settings.menu_categories_order || "เซตขันโตก,ข้าวพันผัก,อาหารพื้นบ้าน,จานเดียว,กับข้าว,ส้มตำ,ของหวานและของกินเล่น,เครื่องดื่ม";
                             const cats = catsOrderStr.split(",").map(c => c.trim()).filter(Boolean);
 
                             return cats.map((cat, idx) => (

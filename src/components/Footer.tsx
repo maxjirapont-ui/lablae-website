@@ -104,7 +104,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link href="/about" className="hover:text-accent transition-colors">
-                  รู้จักเรา & ตำนานลับแล
+                  รู้จักบ้านและเรื่องเล่าลับแล
                 </Link>
               </li>
               <li>
@@ -114,7 +114,7 @@ export default async function Footer() {
               </li>
               <li>
                 <Link href="/blog" className="hover:text-accent transition-colors">
-                  บทความ/เรื่องราวจากครัวไฟ
+                  บทความและเรื่องราวจากครัวไฟ
                 </Link>
               </li>
             </ul>

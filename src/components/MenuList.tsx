@@ -15,7 +15,7 @@ export default function MenuList({
   initialItems,
   layoutStyle = "grid",
   showSearch = true,
-  categoriesOrder = "เซทขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มดับแซ่บ & น้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม",
+  categoriesOrder = "เซตขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มและน้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม",
 }: MenuListProps) {
   const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
@@ -29,34 +29,40 @@ export default function MenuList({
     const list = categoriesOrder
       .split(",")
       .map((c) => c.trim())
+      .map((c) => {
+        if (c === "เซทขันโตก") return "เซตขันโตก";
+        if (c === "เครื่องดื่มดับแซ่บ & น้ำสมุนไพร") return "เครื่องดื่มและน้ำสมุนไพร";
+        if (c === "ของหวาน & ทานเล่น") return "ของหวานและของกินเล่น";
+        return c;
+      })
       .filter(Boolean);
     return ["ทั้งหมด", "เมนูแนะนำ", "อาหารตามฤดูกาล", ...list];
   }, [categoriesOrder]);
 
   const getGroupForCategory = (dbCategory: string): string => {
     const cat = dbCategory.trim();
-    if (cat.includes("ขันโตก")) return "เซทขันโตก";
+    if (cat.includes("ขันโตก")) return "เซตขันโตก";
     if (cat.includes("ของทอด") || cat.includes("ย่าง")) return "ของทอด/ย่าง";
     if (cat.includes("ลาบ") || cat.includes("แกง")) return "ลาบ/แกง";
     if (cat.includes("น้ำพริก") || cat.includes("เครื่องเคียง")) return "น้ำพริก / เครื่องเคียง";
     if (cat.includes("ส้มตำ")) return "ส้มตำบ้าน 100 ปี";
     if (cat.includes("ข้าวพันผัก") || cat.includes("ข้าวแคบ")) return "ข้าวพันผัก";
-    if (cat.includes("ดับแซ่บ") || cat.includes("สมุนไพร")) return "เครื่องดื่มดับแซ่บ & น้ำสมุนไพร";
+    if (cat.includes("ดับแซ่บ") || cat.includes("สมุนไพร")) return "เครื่องดื่มและน้ำสมุนไพร";
     if (cat.includes("ข้าวและเส้น") || cat.includes("ท๊อปปิ้ง")) return "ข้าวและเส้น";
     if (cat.includes("อาหารพื้นบ้าน") || cat.includes("อาหารถิ่น")) return "อาหารพื้นบ้าน";
     if (cat.includes("จานเดียว") || cat.includes("จานยักษ์")) return "จานเดียว";
     if (cat.includes("กับข้าว") || cat.includes("เมนูต้ม")) return "กับข้าว";
-    if (cat.includes("ทานเล่น") || cat.includes("ของฝาก")) return "ของหวาน & ทานเล่น";
+    if (cat.includes("ทานเล่น") || cat.includes("ของกินเล่น") || cat.includes("ของฝาก")) return "ของหวานและของกินเล่น";
     if (cat.includes("เครื่องดื่ม") || cat.includes("น้ำชง")) return "เครื่องดื่ม";
     
     // Direct matches
-    if (cat === "เซทขันโตก") return "เซทขันโตก";
+    if (cat === "เซทขันโตก" || cat === "เซตขันโตก") return "เซตขันโตก";
     if (cat === "ของทอด/ย่าง") return "ของทอด/ย่าง";
     if (cat === "ลาบ/แกง") return "ลาบ/แกง";
     if (cat === "น้ำพริก / เครื่องเคียง") return "น้ำพริก / เครื่องเคียง";
     if (cat === "ส้มตำบ้าน 100 ปี") return "ส้มตำบ้าน 100 ปี";
     if (cat === "ข้าวพันผัก") return "ข้าวพันผัก";
-    if (cat === "เครื่องดื่มดับแซ่บ & น้ำสมุนไพร") return "เครื่องดื่มดับแซ่บ & น้ำสมุนไพร";
+    if (cat === "เครื่องดื่มดับแซ่บ & น้ำสมุนไพร" || cat === "เครื่องดื่มและน้ำสมุนไพร") return "เครื่องดื่มและน้ำสมุนไพร";
     if (cat === "ข้าวและเส้น") return "ข้าวและเส้น";
     return "กับข้าว"; // Fallback default
   };
