@@ -31,13 +31,12 @@ export async function POST(request: NextRequest) {
     // 1. If settings were passed in, persist them
     if (settings && typeof settings === "object") {
       for (const [key, value] of Object.entries(settings)) {
-        if (typeof value === "string") {
-          await db.run(
-            `INSERT INTO settings (key, value) VALUES (?, ?)
-             ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
-            [key, value]
-          );
-        }
+        const strVal = typeof value === "object" ? JSON.stringify(value) : String(value ?? "");
+        await db.run(
+          `INSERT INTO settings (key, value) VALUES (?, ?)
+           ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+          [key, strVal]
+        );
       }
     }
 
@@ -49,7 +48,7 @@ export async function POST(request: NextRequest) {
       ["last_published_at", nowIso]
     );
 
-    // 3. Revalidate all site paths
+    // 3. Revalidate all site paths locally
     try {
       revalidatePath("/", "layout");
       revalidatePath("/");
@@ -59,6 +58,30 @@ export async function POST(request: NextRequest) {
       revalidatePath("/admin");
     } catch (revalErr) {
       console.error("Revalidation notice:", revalErr);
+    }
+
+    // 4. Auto-commit & push to GitHub so Railway automatically receives database and uploaded photos
+    let gitSynced = false;
+    try {
+      const { exec } = await import("child_process");
+      const fs = await import("fs");
+      const path = await import("path");
+      if (fs.existsSync(path.join(process.cwd(), ".git"))) {
+        exec(
+          'git add database/restaurant.db public/uploads/ && git commit -m "chore(cms): publish all content and media from admin" && git push origin main',
+          { cwd: process.cwd() },
+          (err, stdout, stderr) => {
+            if (err) {
+              console.log("Auto-git background sync:", err.message);
+            } else {
+              console.log("Auto-git background sync complete:", stdout);
+            }
+          }
+        );
+        gitSynced = true;
+      }
+    } catch (gitErr) {
+      console.error("Git auto-push notice:", gitErr);
     }
 
     return NextResponse.json({
