@@ -325,7 +325,7 @@ export default function StoryTextEditor({
               type="text"
               value={statLabel}
               onChange={(e) => handleFieldChange(setStatLabel, e.target.value)}
-              placeholder="เช่น อายุเรือนไม้สักทอง, ไร้ตะปู เข้าเดือยไม้"
+              placeholder="เช่น บ้านไม้ 100 ปี, ไร้ตะปู เข้าเดือยไม้"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               required
             />
@@ -359,7 +359,7 @@ export default function StoryTextEditor({
             type="text"
             value={title}
             onChange={(e) => handleFieldChange(setTitle, e.target.value)}
-            placeholder="เช่น เรือนไม้สักทองโบราณ 100+ ปี (เรือนหม่อนน้อย)"
+              placeholder="เช่น บ้านไม้ 100 ปี (เรือนหม่อนน้อย)"
             className="w-full px-3.5 py-2.5 rounded-xl border border-primary/20 bg-cream/30 text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             required
           />

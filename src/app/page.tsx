@@ -135,13 +135,13 @@ export default async function Home() {
   const testimonialBtnText = (await getSetting("home_testimonial_btn_text")) || "อ่านรีวิวบน Google Maps →";
 
   // Hero Section Customizable Texts & Descriptions
-  const heroBadge = (await getSetting("hero_badge")) || "เรือนไม้สักโบราณไร้ตะปู 100 ปี · อ.ลับแล จ.อุตรดิตถ์";
+  const heroBadge = (await getSetting("hero_badge")) || "บ้านไม้ 100 ปีไร้ตะปู · อ.ลับแล จ.อุตรดิตถ์";
   const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน 100 ปี";
   const heroSubtitle = (await getSetting("hero_subtitle")) || "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู";
   const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงโขลกมือ ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ";
 
   // About / Story Ambience Section Customizable Texts
-  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง 100 ปี";
+  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนบ้านไม้ 100 ปี";
   const aboutBadge = (await getSetting("about_badge")) || "เรื่องเล่าจากบ้าน 100 ปี";
   const aboutTitle = (await getSetting("about_title")) || "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ";
   const aboutQuote = (await getSetting("about_quote")) || "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”";

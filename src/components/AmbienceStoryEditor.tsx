@@ -43,7 +43,7 @@ interface AmbienceStoryEditorProps {
 }
 
 const DEFAULT_STORY_VALUES = {
-  home_about_image_caption: "บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง 100 ปี",
+  home_about_image_caption: "บรรยากาศร้านลำลำลับแล ใต้ถุนบ้านไม้ 100 ปี",
   about_badge: "เรื่องเล่าจากบ้าน 100 ปี",
   about_title: "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ",
   about_quote:
@@ -268,7 +268,7 @@ export default function AmbienceStoryEditor({
           {/* Image Column */}
           <div className="md:col-span-5 space-y-2">
             <label className="block text-xs font-bold text-primary">
-              รูปภาพบรรยากาศเรือนไม้ (About Image)
+              รูปภาพบรรยากาศบ้านไม้ 100 ปี (About Image)
             </label>
             <div className="relative aspect-video rounded-2xl overflow-hidden border border-primary/15 bg-primary/5 group shadow-inner">
               {aboutImage ? (
@@ -328,7 +328,7 @@ export default function AmbienceStoryEditor({
                 type="text"
                 value={imageCaption}
                 onChange={(e) => handleFieldChange(setImageCaption, e.target.value)}
-                placeholder="เช่น บรรยากาศร้านลำลำลับแล ใต้ถุนเรือนไม้สักทอง 100 ปี"
+                placeholder="เช่น บรรยากาศร้านลำลำลับแล ใต้ถุนบ้านไม้ 100 ปี"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               />
               <p className="text-[10px] text-primary/50">

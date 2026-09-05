@@ -47,7 +47,7 @@ interface HeroSectionEditorProps {
 }
 
 const DEFAULT_HERO_VALUES = {
-  hero_badge: "เรือนไม้สักโบราณไร้ตะปู 100 ปี · อ.ลับแล จ.อุตรดิตถ์",
+  hero_badge: "บ้านไม้ 100 ปีไร้ตะปู · อ.ลับแล จ.อุตรดิตถ์",
   hero_title: "ร้านลำลำลับแลบ้าน 100 ปี",
   hero_subtitle: "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู",
   hero_description:
@@ -324,7 +324,7 @@ export default function HeroSectionEditor({
                 type="text"
                 value={badge}
                 onChange={(e) => handleFieldChange(setBadge, e.target.value)}
-                placeholder="เช่น เรือนไม้สักโบราณไร้ตะปู 100 ปี · อ.ลับแล จ.อุตรดิตถ์"
+                placeholder="เช่น บ้านไม้ 100 ปีไร้ตะปู · อ.ลับแล จ.อุตรดิตถ์"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs font-medium text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               />
             </div>

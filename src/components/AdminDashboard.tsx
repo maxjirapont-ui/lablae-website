@@ -2650,7 +2650,7 @@ export default function AdminDashboard({
               {/* 4 Tabs selector */}
               <div className="flex flex-wrap gap-2 border-b border-primary/10 pb-3">
                 {[
-                  { id: "house" as const, title: "1. เรือนไม้สัก 100+ ปี" },
+                  { id: "house" as const, title: "1. บ้านไม้ 100 ปี" },
                   { id: "wood" as const, title: "2. 0 ตัว ไร้ตะปู" },
                   { id: "family" as const, title: "3. คน 4 รุ่น" },
                   { id: "kitchen" as const, title: "4. พริกแกงตำมือและป้า ๆ ในครัว" },
@@ -2691,7 +2691,7 @@ export default function AdminDashboard({
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 bg-cream/40 rounded-2xl border border-primary/10">
                       <div>
                         <h4 className="font-bold text-sm text-primary">
-                          {adminStoryTab === "house" && "คลังรูปภาพเรือนไม้สัก 100+ ปี"}
+                          {adminStoryTab === "house" && "คลังรูปภาพบ้านไม้ 100 ปี"}
                           {adminStoryTab === "wood" && "คลังรูปภาพข้อต่อไม้ / เข้าเดือยไร้ตะปู"}
                           {adminStoryTab === "family" && "คลังรูปภาพครอบครัว 4 รุ่น / หม่อนน้อย / ตายาย"}
                           {adminStoryTab === "kitchen" && "คลังรูปป้า ๆ ในครัวและพริกแกงตำมือ"}
@@ -2879,7 +2879,7 @@ export default function AdminDashboard({
                       storyImageUrl={getStoryCoverImage(adminStoryTab)}
                       storyTabName={
                         adminStoryTab === "house"
-                          ? "1. เรือนไม้สัก 100+ ปี"
+                          ? "1. บ้านไม้ 100 ปี"
                           : adminStoryTab === "wood"
                           ? "2. 0 ตัว ไร้ตะปู"
                           : adminStoryTab === "family"

@@ -44,6 +44,13 @@ const LEGACY_CATEGORY_UPDATES = [
   ["ของหวาน & ทานเล่น", "ของหวานและของกินเล่น"],
 ] as const;
 
+const HOUSE_COPY_REPLACEMENTS = [
+  ["เรือนไม้สักโบราณไร้ตะปู 100 ปี", "บ้านไม้ 100 ปีไร้ตะปู"],
+  ["ใต้ถุนเรือนไม้สักทอง 100 ปี", "ใต้ถุนบ้านไม้ 100 ปี"],
+  ["ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า 100 ปี", "ใต้ถุนบ้านไม้ 100 ปีไร้ตะปู"],
+  ["เรือนไม้โบราณ 100+ ปี (เรือนหม่อนน้อย)", "บ้านไม้ 100 ปี (เรือนหม่อนน้อย)"],
+] as const;
+
 const ARABIC_DIGIT_SETTING_KEYS = [
   "about_badge",
   "about_page_custom_data",
@@ -258,6 +265,52 @@ export async function getDb(): Promise<Database> {
   if (!arabicDigitMigration) {
     await migrateContentDigitsToArabic(db);
     await db.run("INSERT INTO app_migrations (name) VALUES (?)", [arabicDigitMigrationName]);
+  }
+
+  const houseCopyMigrationName = "rename_teak_house_to_100_year_house_2026_09_06";
+  const houseCopyMigration = await db.get<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [houseCopyMigrationName],
+  );
+  if (!houseCopyMigration) {
+    for (const [legacyValue, updatedValue] of HOUSE_COPY_REPLACEMENTS) {
+      await db.run(
+        "UPDATE settings SET value = REPLACE(value, ?, ?) WHERE INSTR(value, ?) > 0",
+        [legacyValue, updatedValue, legacyValue],
+      );
+    }
+
+    // The four-story editor stores its copy as JSON. Remove the old teak framing
+    // there too while preserving the rest of the owner-approved story text.
+    await db.run(
+      "UPDATE settings SET value = REPLACE(REPLACE(value, ?, ?), ?, ?) WHERE key = ?",
+      ["ไม้สักทอง", "ไม้", "ไม้สัก", "ไม้", "custom_stories_data"],
+    );
+
+    await db.run("INSERT INTO app_migrations (name) VALUES (?)", [houseCopyMigrationName]);
+  }
+
+  const houseLabelMigrationName = "normalize_100_year_house_labels_2026_09_06";
+  const houseLabelMigration = await db.get<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [houseLabelMigrationName],
+  );
+  if (!houseLabelMigration) {
+    const labelReplacements = [
+      ["ไม้โบราณไร้ตะปู 100 ปี", "บ้านไม้ 100 ปีไร้ตะปู"],
+      ["ใต้ถุนเรือนไม้ 100 ปี", "ใต้ถุนบ้านไม้ 100 ปี"],
+    ] as const;
+    for (const [legacyValue, updatedValue] of labelReplacements) {
+      await db.run(
+        "UPDATE settings SET value = REPLACE(value, ?, ?) WHERE INSTR(value, ?) > 0",
+        [legacyValue, updatedValue, legacyValue],
+      );
+    }
+    await db.run(
+      "UPDATE settings SET value = REPLACE(REPLACE(value, ?, ?), ?, ?) WHERE key = ?",
+      ["\"statLabel\":\"อายุเรือนไม้\"", "\"statLabel\":\"อายุบ้านไม้\"", "เรือนไม้สองชั้นหลังนี้", "บ้านไม้สองชั้นหลังนี้", "custom_stories_data"],
+    );
+    await db.run("INSERT INTO app_migrations (name) VALUES (?)", [houseLabelMigrationName]);
   }
 
   globalDb = db;

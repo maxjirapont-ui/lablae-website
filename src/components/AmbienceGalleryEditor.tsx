@@ -43,7 +43,7 @@ const DEFAULT_GALLERY_VALUES = {
   gallery_badge: "บรรยากาศบ้าน 100 ปี",
   gallery_title: "ภาพบรรยากาศร้านลำลำลับแลบ้าน 100 ปี",
   gallery_subtitle:
-    "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า 100 ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ",
+    "ใต้ถุนบ้านไม้ 100 ปีไร้ตะปู อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ ๆ",
 };
 
 export default function AmbienceGalleryEditor({
@@ -200,7 +200,7 @@ export default function AmbienceGalleryEditor({
             5. คลังภาพบรรยากาศร้านและคำอธิบายภาพ (Atmosphere Gallery Album)
           </h3>
           <p className="text-xs text-primary/70 leading-relaxed">
-            เพิ่มรูปภาพบรรยากาศร้าน (เช่น มุมโต๊ะอาหาร, ใต้ถุนเรือนไม้สัก, โคมไฟ, มุมสวน) พร้อมใส่คำอธิบายภาพแต่ละรูปได้
+            เพิ่มรูปภาพบรรยากาศร้าน (เช่น มุมโต๊ะอาหาร, ใต้ถุนบ้านไม้ 100 ปี, โคมไฟ, มุมสวน) พร้อมใส่คำอธิบายภาพแต่ละรูปได้
           </p>
         </div>
 
@@ -347,7 +347,7 @@ export default function AmbienceGalleryEditor({
                 setIsDirty(true);
                 setSaveSuccess(false);
               }}
-              placeholder="เช่น ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า 100 ปี..."
+              placeholder="เช่น ใต้ถุนบ้านไม้ 100 ปีไร้ตะปู..."
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-white text-xs text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
             />
           </div>
