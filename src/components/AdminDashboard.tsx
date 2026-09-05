@@ -55,7 +55,8 @@ import {
   RefreshCw,
   Palette,
   Quote,
-  Download
+  Download,
+  Globe
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -78,6 +79,10 @@ export default function AdminDashboard({
   const [resStatusFilter, setResStatusFilter] = useState<string>("ทั้งหมด");
   const [showFloatingPreview, setShowFloatingPreview] = useState(false);
   const router = useRouter();
+
+  // Publishing State
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishSuccessMsg, setPublishSuccessMsg] = useState("");
 
   // State caches
   const [menus, setMenus] = useState<MenuItem[]>(initialMenus);
@@ -237,6 +242,35 @@ export default function AdminDashboard({
     } catch (err) {
       console.error("Backup failed:", err);
       alert("เกิดข้อผิดพลาดในการสำรองข้อมูล");
+    }
+  };
+
+  // --- PUBLISH ALL / SYNC LIVE WEBSITE HANDLER ---
+  const handlePublishAll = async () => {
+    setIsPublishing(true);
+    setPublishSuccessMsg("");
+    try {
+      const res = await fetch("/api/admin/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setPublishSuccessMsg("✅ เผยแพร่สู่หน้าเว็บจริงเรียบร้อยแล้ว! ทุกคนที่เข้าชมเว็บจะเห็นข้อมูลล่าสุดทันที");
+        if (data.published_at) {
+          setSettings(prev => ({ ...prev, last_published_at: data.published_at }));
+        }
+        router.refresh();
+        setTimeout(() => setPublishSuccessMsg(""), 6000);
+      } else {
+        alert(data.error || "เกิดข้อผิดพลาดในการเผยแพร่ข้อมูล");
+      }
+    } catch (err) {
+      console.error("Publish error:", err);
+      alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -1111,13 +1145,92 @@ export default function AdminDashboard({
     <div className={`mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 transition-all duration-300 ${
       showFloatingPreview ? "max-w-[1500px]" : "max-w-6xl"
     }`}>
-      {/* Dashboard Header */}
-      <div>
-        <h1 className="text-3xl font-bold font-thai text-primary">ระบบการจัดการร้านอาหาร</h1>
-        <p className="text-sm font-thai text-primary/70">
-          ยินดีต้อนรับผู้ดูแลระบบ คุณสามารถจัดการความเคลื่อนไหว ข้อมูลร้าน เมนูอาหาร และการแจ้งเตือนได้จากแดชบอร์ดนี้
-        </p>
+      {/* Dashboard Header with Master Publish Button */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-cream border border-primary/15 p-5 sm:p-6 rounded-3xl shadow-sm">
+        <div>
+          <div className="flex flex-wrap items-center gap-2.5 mb-1.5">
+            <h1 className="text-2xl sm:text-3xl font-bold font-thai text-primary">ระบบการจัดการร้านอาหาร</h1>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-xs font-bold">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              ออนไลน์ (Live)
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm font-thai text-primary/70">
+            ยินดีต้อนรับผู้ดูแลระบบ จัดการข้อมูลร้าน เมนูอาหาร และเนื้อหาเว็บไซต์ แล้วกดเผยแพร่สู่หน้าเว็บจริงได้ทันที
+          </p>
+          {settings.last_published_at && (
+            <p className="text-[11px] font-thai text-accent-dark mt-1">
+              🕒 เผยแพร่ครั้งล่าสุด: {new Date(settings.last_published_at).toLocaleString("th-TH")}
+            </p>
+          )}
+        </div>
+
+        {/* Action Buttons: Publish All & View Live Website */}
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0">
+          <button
+            type="button"
+            id="admin-btn-publish-all"
+            onClick={handlePublishAll}
+            disabled={isPublishing}
+            className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-800 hover:from-emerald-700 hover:to-green-900 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer transform active:scale-98"
+            title="บันทึกข้อมูลทั้งหมดและอัปเดตหน้าเว็บจริงทันที"
+          >
+            <Sparkles className={`w-4 h-4 text-amber-300 ${isPublishing ? "animate-spin" : ""}`} />
+            <span>{isPublishing ? "กำลังเผยแพร่ขึ้นเว็บ..." : "🚀 เผยแพร่ทั้งหมดสู่หน้าเว็บ"}</span>
+          </button>
+
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-primary/20 hover:border-accent text-primary rounded-2xl text-xs sm:text-sm font-bold shadow-xs hover:shadow-sm transition-all cursor-pointer"
+            title="เปิดหน้าเว็บจริงในแท็บใหม่"
+          >
+            <Globe className="w-4 h-4 text-accent" />
+            <span>ดูหน้าเว็บจริง</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+          </a>
+        </div>
       </div>
+
+      {/* Global Publish Success Toast Notification */}
+      {publishSuccessMsg && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-emerald-50 border-2 border-emerald-400 text-emerald-900 rounded-2xl shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-xs sm:text-sm text-emerald-950">
+                {publishSuccessMsg}
+              </h4>
+              <p className="text-[11px] text-emerald-800">
+                ระบบได้เคลียร์แคชและส่งข้อมูลใหม่ขึ้นหน้าเว็บจริงแล้ว ผู้เข้าชมทุกคนจะเห็นการเปลี่ยนแปลงทันทีครับ
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+            >
+              เปิดดูหน้าเว็บจริง ↗
+            </a>
+            <button
+              type="button"
+              onClick={() => setPublishSuccessMsg("")}
+              className="p-1.5 text-emerald-700 hover:text-emerald-950 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col lg:flex-row gap-6 font-thai min-h-[75vh] items-stretch">
         {/* Sidebar Navigation */}
@@ -1254,13 +1367,25 @@ export default function AdminDashboard({
           </div>
         </div>
 
-        <button
-          onClick={handleLogout}
-          className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-red-200 text-red-700 bg-red-50 hover:bg-red-100 rounded-xl text-sm font-semibold transition-colors cursor-pointer"
-        >
-          <LogOut className="w-4 h-4" />
-          ออกจากระบบ
-        </button>
+        <div className="space-y-2">
+          <button
+            type="button"
+            onClick={handlePublishAll}
+            disabled={isPublishing}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+          >
+            <Sparkles className={`w-3.5 h-3.5 text-amber-300 ${isPublishing ? "animate-spin" : ""}`} />
+            <span>{isPublishing ? "กำลังเผยแพร่..." : "🚀 เผยแพร่ทั้งหมด"}</span>
+          </button>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-red-200 text-red-700 bg-red-50 hover:bg-red-100 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            ออกจากระบบ
+          </button>
+        </div>
       </div>
 
       {/* Main Tab Panel & Inline Preview Panel Container */}
