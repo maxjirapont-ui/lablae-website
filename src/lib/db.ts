@@ -1,15 +1,9 @@
 import sqlite3 from 'sqlite3';
 import { open, Database } from 'sqlite';
-import path from 'path';
-import fs from 'fs';
+import { ensureRuntimeStorage, getDatabasePath } from './storage';
 
-// Ensure the database directory exists
-const dbDirectory = path.join(process.cwd(), 'database');
-if (!fs.existsSync(dbDirectory)) {
-  fs.mkdirSync(dbDirectory, { recursive: true });
-}
-
-const dbPath = path.join(dbDirectory, 'restaurant.db');
+ensureRuntimeStorage();
+const dbPath = getDatabasePath();
 
 // Global database connection cache to prevent multiple connections in dev hot-reloads
 let globalDb: Database | null = null;
@@ -71,16 +65,16 @@ export async function getDb(): Promise<Database> {
   // Run dynamic migrations to add new columns if they do not exist
   try {
     await db.exec("ALTER TABLE menus ADD COLUMN is_recommended INTEGER DEFAULT 0");
-  } catch (err) {}
+  } catch {}
   try {
     await db.exec("ALTER TABLE menus ADD COLUMN is_seasonal INTEGER DEFAULT 0");
-  } catch (err) {}
+  } catch {}
   try {
     await db.exec("ALTER TABLE menus ADD COLUMN is_visible INTEGER DEFAULT 1");
-  } catch (err) {}
+  } catch {}
   try {
     await db.exec("ALTER TABLE menus ADD COLUMN sort_order INTEGER DEFAULT 0");
-  } catch (err) {}
+  } catch {}
 
   globalDb = db;
   return db;

@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { MenuItem } from "@/lib/data";
 import { Search, Info, Sparkles, Utensils, UtensilsCrossed } from "lucide-react";
 
@@ -16,19 +17,12 @@ export default function MenuList({
   showSearch = true,
   categoriesOrder = "เซทขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มดับแซ่บ & น้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม",
 }: MenuListProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>("ทั้งหมด");
+  const searchParams = useSearchParams();
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => {
+    const category = searchParams.get("category");
+    return category ? decodeURIComponent(category) : "ทั้งหมด";
+  });
   const [searchQuery, setSearchQuery] = useState<string>("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const cat = params.get("category");
-      if (cat) {
-        const decoded = decodeURIComponent(cat);
-        setSelectedCategory(decoded);
-      }
-    }
-  }, []);
 
   // Map database categories into user-friendly grouped categories based on user customization order
   const categoryGroups = useMemo(() => {

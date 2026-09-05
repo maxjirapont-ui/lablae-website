@@ -63,10 +63,24 @@ import {
 
 interface AdminDashboardProps {
   initialMenus: MenuItem[];
-  initialReservations: any[];
+  initialReservations: Reservation[];
   initialArticles: Article[];
   initialSettings: Record<string, string>;
 }
+
+interface Reservation {
+  id: number;
+  name: string;
+  phone: string;
+  date: string;
+  time: string;
+  guests: number;
+  status: "pending" | "confirmed" | "completed" | "cancelled" | string;
+  created_at: string;
+}
+
+type CustomStoryPhoto = GalleryImageItem & { tag?: string };
+type CustomStoryEntry = Partial<StoryTextFields> & { photos?: CustomStoryPhoto[] };
 
 export default function AdminDashboard({
   initialMenus,
@@ -100,11 +114,14 @@ export default function AdminDashboard({
 
   // Publishing State
   const [isPublishing, setIsPublishing] = useState(false);
-  const [publishSuccessMsg, setPublishSuccessMsg] = useState("");
+  const [publishNotice, setPublishNotice] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // State caches
   const [menus, setMenus] = useState<MenuItem[]>(initialMenus);
-  const [reservations, setReservations] = useState<any[]>(initialReservations);
+  const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
   const [articles, setArticles] = useState<Article[]>(initialArticles);
   
   // Settings Form States
@@ -126,6 +143,11 @@ export default function AdminDashboard({
   const [previewUrl, setPreviewUrl] = useState<string>("/");
   const [iframeKey, setIframeKey] = useState<number>(0);
   const [previewZoom, setPreviewZoom] = useState<number>(1.0);
+
+  const refreshPublicContent = () => {
+    setIframeKey((prev) => prev + 1);
+    router.refresh();
+  };
 
   // Edit/Add Menu modal or inline form state
   const [showMenuForm, setShowMenuForm] = useState(false);
@@ -150,9 +172,11 @@ export default function AdminDashboard({
       const parsed = JSON.parse(settings.restaurant_gallery);
       if (Array.isArray(parsed)) {
         galleryItems = parsed
-          .map((item: any) => {
+          .map((item: unknown) => {
             if (typeof item === "string") return { url: item, caption: "" };
-            return { url: item?.url || "", caption: item?.caption || "" };
+            if (!item || typeof item !== "object") return { url: "", caption: "" };
+            const galleryItem = item as Partial<GalleryImageItem>;
+            return { url: galleryItem.url || "", caption: galleryItem.caption || "" };
           })
           .filter((item) => Boolean(item.url));
       }
@@ -164,7 +188,7 @@ export default function AdminDashboard({
 
   // Quick Facts Stories Manager state
   const [adminStoryTab, setAdminStoryTab] = useState<"house" | "wood" | "family" | "kitchen">("house");
-  let customStoriesData: Record<string, any> = {};
+  let customStoriesData: Record<string, CustomStoryEntry> = {};
   try {
     if (settings.custom_stories_data) {
       customStoriesData = JSON.parse(settings.custom_stories_data);
@@ -184,7 +208,7 @@ export default function AdminDashboard({
   const handleFileUpload = async (
     file: File,
     onSuccess: (url: string) => void,
-    onError: (errorMsg: string) => void
+    onError?: (errorMsg: string) => void
   ) => {
     try {
       const formData = new FormData();
@@ -197,11 +221,11 @@ export default function AdminDashboard({
       if (res.ok && data.success) {
         onSuccess(data.url);
       } else {
-        onError(data.error || "เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
+        onError?.(data.error || "เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ");
       }
     } catch (err) {
       console.error(err);
-      onError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่ออัปโหลดไฟล์ได้");
+      onError?.("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์เพื่ออัปโหลดไฟล์ได้");
     }
   };
 
@@ -266,7 +290,7 @@ export default function AdminDashboard({
   // --- PUBLISH ALL / SYNC LIVE WEBSITE HANDLER ---
   const handlePublishAll = async () => {
     setIsPublishing(true);
-    setPublishSuccessMsg("");
+    setPublishNotice(null);
     const updatedSettings = {
       ...settings,
       homepage_featured_menu_ids: JSON.stringify(featuredMenuIds),
@@ -279,18 +303,26 @@ export default function AdminDashboard({
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        setPublishSuccessMsg("✅ เผยแพร่สู่หน้าเว็บจริงเรียบร้อยแล้ว! ทุกคนที่เข้าชมเว็บจะเห็นข้อมูลล่าสุดทันที");
+        setPublishNotice({
+          type: "success",
+          message: data.message || "ส่งข้อมูลขึ้นระบบเว็บไซต์จริงสำเร็จแล้ว",
+        });
         if (data.published_at) {
           setSettings(prev => ({ ...prev, last_published_at: data.published_at }));
         }
-        router.refresh();
-        setTimeout(() => setPublishSuccessMsg(""), 6000);
+        refreshPublicContent();
       } else {
-        alert(data.error || "เกิดข้อผิดพลาดในการเผยแพร่ข้อมูล");
+        setPublishNotice({
+          type: "error",
+          message: data.error || "เกิดข้อผิดพลาดในการเผยแพร่ข้อมูล",
+        });
       }
     } catch (err) {
       console.error("Publish error:", err);
-      alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
+      setPublishNotice({
+        type: "error",
+        message: "เชื่อมต่อระบบเผยแพร่ไม่ได้ ข้อมูลยังไม่ได้ถูกส่งขึ้นเว็บไซต์จริง",
+      });
     } finally {
       setIsPublishing(false);
     }
@@ -299,7 +331,7 @@ export default function AdminDashboard({
   // --- MENU REORDER HANDLER ---
   const handleReorderMenu = async (id: number, action: "top" | "up" | "down") => {
     // 1. Also update featuredMenuIds so homepage updates immediately when clicking reorder on menu cards!
-    let newFIds = [...featuredMenuIds];
+    const newFIds = [...featuredMenuIds];
     const fIdx = newFIds.indexOf(id);
     let changedFeatured = false;
     if (action === "top") {
@@ -361,11 +393,14 @@ export default function AdminDashboard({
     });
 
     try {
-      await fetch("/api/admin/menu/reorder", {
+      const res = await fetch("/api/admin/menu/reorder", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action }),
       });
+      if (res.ok) {
+        refreshPublicContent();
+      }
     } catch (err) {
       console.error("Reorder failed:", err);
     }
@@ -384,6 +419,7 @@ export default function AdminDashboard({
         setMenus(prev =>
           prev.map(m => (m.id === id ? { ...m, available: nextAvailable } : m))
         );
+        refreshPublicContent();
       }
     } catch (err) {
       console.error(err);
@@ -402,6 +438,7 @@ export default function AdminDashboard({
         setMenus(prev =>
           prev.map(m => (m.id === id ? { ...m, is_visible: nextVisible } : m))
         );
+        refreshPublicContent();
       }
     } catch (err) {
       console.error(err);
@@ -430,6 +467,7 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setFeaturedSaveSuccess(true);
+        refreshPublicContent();
         setTimeout(() => setFeaturedSaveSuccess(false), 3000);
       }
     } catch (err) {
@@ -520,6 +558,7 @@ export default function AdminDashboard({
         setMenus(prev =>
           prev.map(m => (m.id === id ? { ...m, is_seasonal: nextSeasonal } : m))
         );
+        refreshPublicContent();
       }
     } catch (err) {
       console.error(err);
@@ -537,6 +576,7 @@ export default function AdminDashboard({
         setMenus(prev =>
           prev.map(m => (m.id === id ? { ...m, image_url: imageUrl } : m))
         );
+        refreshPublicContent();
       }
     } catch (err) {
       console.error(err);
@@ -553,7 +593,7 @@ export default function AdminDashboard({
     if (!confirm(confirmMsg)) return;
 
     try {
-      let payload: Record<string, any> = { category: categoryName };
+      const payload: Record<string, string | boolean> = { category: categoryName };
       if (actionType === "unavailable") payload.available = false;
       if (actionType === "available") payload.available = true;
       if (actionType === "hide") payload.is_visible = false;
@@ -579,6 +619,7 @@ export default function AdminDashboard({
             return m;
           })
         );
+        refreshPublicContent();
       } else {
         alert("เกิดข้อผิดพลาดในการดำเนินการ");
       }
@@ -596,6 +637,7 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setMenus(prev => prev.filter(m => m.id !== id));
+        refreshPublicContent();
       }
     } catch (err) {
       console.error(err);
@@ -655,7 +697,7 @@ export default function AdminDashboard({
             setMenus(latestData.menus);
           }
         }
-        router.refresh();
+        refreshPublicContent();
       } else {
         setMenuFormError(data.error || "เกิดข้อผิดพลาด");
       }
@@ -710,7 +752,7 @@ export default function AdminDashboard({
             setArticles(latestData.articles);
           }
         }
-        router.refresh();
+        refreshPublicContent();
       } else {
         setArticleFormError(data.error || "เกิดข้อผิดพลาด");
       }
@@ -729,6 +771,7 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setArticles(prev => prev.filter(a => a.id !== id));
+        refreshPublicContent();
       }
     } catch (err) {
       console.error(err);
@@ -750,12 +793,11 @@ export default function AdminDashboard({
 
       if (res.ok) {
         setSettingsMsg("✅ บันทึกข้อมูลการตั้งค่าเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
-        setIframeKey(prev => prev + 1); // Reload preview iframe
-        router.refresh();
+        refreshPublicContent();
       } else {
         if (res.status === 401) {
           alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-          window.location.href = "/admin/login";
+          router.replace("/admin/login");
           return;
         }
         const errData = await res.json().catch(() => ({}));
@@ -791,11 +833,11 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setSettingsMsg("✅ บันทึกรูปภาพปกและข้อความฮีโร่สำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-        router.refresh();
+        refreshPublicContent();
       } else {
         if (res.status === 401) {
           alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-          window.location.href = "/admin/login";
+          router.replace("/admin/login");
           return;
         }
         const errData = await res.json().catch(() => ({}));
@@ -803,7 +845,7 @@ export default function AdminDashboard({
         setSettingsMsg(errMsg);
         throw new Error(errMsg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
       throw err;
     } finally {
@@ -832,11 +874,11 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setSettingsMsg("✅ บันทึกรูปภาพบรรยากาศและคำอธิบายเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-        router.refresh();
+        refreshPublicContent();
       } else {
         if (res.status === 401) {
           alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-          window.location.href = "/admin/login";
+          router.replace("/admin/login");
           return;
         }
         const errData = await res.json().catch(() => ({}));
@@ -844,7 +886,7 @@ export default function AdminDashboard({
         setSettingsMsg(errMsg);
         throw new Error(errMsg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
       throw err;
     } finally {
@@ -870,11 +912,11 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setSettingsMsg("✅ บันทึกอัลบั้มและคำอธิบายภาพบรรยากาศสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-        router.refresh();
+        refreshPublicContent();
       } else {
         if (res.status === 401) {
           alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-          window.location.href = "/admin/login";
+          router.replace("/admin/login");
           return;
         }
         const errData = await res.json().catch(() => ({}));
@@ -882,7 +924,7 @@ export default function AdminDashboard({
         setSettingsMsg(errMsg);
         throw new Error(errMsg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
       throw err;
     } finally {
@@ -919,11 +961,11 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setSettingsMsg("✅ บันทึกข้อความเรื่องเล่าสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-        router.refresh();
+        refreshPublicContent();
       } else {
         if (res.status === 401) {
           alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-          window.location.href = "/admin/login";
+          router.replace("/admin/login");
           return;
         }
         const errData = await res.json().catch(() => ({}));
@@ -931,7 +973,7 @@ export default function AdminDashboard({
         setSettingsMsg(errMsg);
         throw new Error(errMsg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
       throw err;
     } finally {
@@ -964,11 +1006,11 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setSettingsMsg("✅ คืนค่าข้อความเริ่มต้นสำเร็จแล้ว! หน้าร้านอัปเดตทันที");
-        router.refresh();
+        refreshPublicContent();
       } else {
         if (res.status === 401) {
           alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-          window.location.href = "/admin/login";
+          router.replace("/admin/login");
           return;
         }
         const errData = await res.json().catch(() => ({}));
@@ -976,7 +1018,7 @@ export default function AdminDashboard({
         setSettingsMsg(errMsg);
         throw new Error(errMsg);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
       throw err;
     } finally {
@@ -1133,7 +1175,7 @@ export default function AdminDashboard({
       });
       if (res.ok) {
         setSettingsMsg("✅ บันทึกข้อมูลส่วนหัวหน้าเมนูและเล่ม PDF เรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
-        router.refresh();
+        refreshPublicContent();
       } else {
         setSettingsMsg("เกิดข้อผิดพลาดในการบันทึกข้อมูลหน้าเมนู");
       }
@@ -1296,6 +1338,7 @@ export default function AdminDashboard({
                   <iframe
                     key={`${previewUrl}-${previewMode}-${iframeKey}`}
                     src={previewUrl}
+                    title={`พรีวิวมือถือ ${previewUrl}`}
                     className="w-full h-full border-none bg-white"
                   />
                 </div>
@@ -1311,7 +1354,14 @@ export default function AdminDashboard({
               <iframe
                 key={`${previewUrl}-${previewMode}-${iframeKey}`}
                 src={previewUrl}
-                className="w-full h-full border-none"
+                title={`พรีวิวเดสก์ท็อป ${previewUrl}`}
+                className="border-none bg-white"
+                style={{
+                  width: 1280,
+                  height: 1800,
+                  transform: "scale(0.29)",
+                  transformOrigin: "top left",
+                }}
               />
             </div>
           )}
@@ -1355,7 +1405,7 @@ export default function AdminDashboard({
             onClick={handlePublishAll}
             disabled={isPublishing}
             className="flex-1 md:flex-initial flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-800 hover:from-emerald-700 hover:to-green-900 text-white rounded-2xl text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer transform active:scale-98"
-            title="บันทึกข้อมูลทั้งหมดและอัปเดตหน้าเว็บจริงทันที"
+            title="บันทึกข้อมูลทั้งหมดและส่งขึ้นระบบเว็บไซต์จริง"
           >
             <Sparkles className={`w-4 h-4 text-amber-300 ${isPublishing ? "animate-spin" : ""}`} />
             <span>{isPublishing ? "กำลังเผยแพร่ขึ้นเว็บ..." : "🚀 เผยแพร่ทั้งหมดสู่หน้าเว็บ"}</span>
@@ -1375,35 +1425,57 @@ export default function AdminDashboard({
         </div>
       </div>
 
-      {/* Global Publish Success Toast Notification */}
-      {publishSuccessMsg && (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-emerald-50 border-2 border-emerald-400 text-emerald-900 rounded-2xl shadow-sm animate-in fade-in duration-200">
+      {/* Global publish result notification */}
+      {publishNotice && (
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border-2 rounded-2xl shadow-sm animate-in fade-in duration-200 ${
+          publishNotice.type === "success"
+            ? "bg-emerald-50 border-emerald-400 text-emerald-900"
+            : "bg-red-50 border-red-400 text-red-900"
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <CheckCircle className="w-5 h-5" />
+            <div className={`w-9 h-9 rounded-xl text-white flex items-center justify-center shrink-0 shadow-xs ${
+              publishNotice.type === "success" ? "bg-emerald-600" : "bg-red-600"
+            }`}>
+              {publishNotice.type === "success" ? (
+                <CheckCircle className="w-5 h-5" />
+              ) : (
+                <AlertCircle className="w-5 h-5" />
+              )}
             </div>
             <div>
-              <h4 className="font-bold text-xs sm:text-sm text-emerald-950">
-                {publishSuccessMsg}
+              <h4 className={`font-bold text-xs sm:text-sm ${
+                publishNotice.type === "success" ? "text-emerald-950" : "text-red-950"
+              }`}>
+                {publishNotice.message}
               </h4>
-              <p className="text-[11px] text-emerald-800">
-                ระบบได้เคลียร์แคชและส่งข้อมูลใหม่ขึ้นหน้าเว็บจริงแล้ว ผู้เข้าชมทุกคนจะเห็นการเปลี่ยนแปลงทันทีครับ
+              <p className={`text-[11px] ${
+                publishNotice.type === "success" ? "text-emerald-800" : "text-red-800"
+              }`}>
+                {publishNotice.type === "success"
+                  ? "ระบบยืนยันการบันทึกแล้ว หน้าร้านและพรีวิวจะอ่านข้อมูลชุดเดียวกัน"
+                  : "ระบบจะไม่แสดงว่าสำเร็จจนกว่าจะยืนยันการส่งข้อมูลได้ กรุณาแก้ตามข้อความแล้วกดเผยแพร่อีกครั้ง"}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-            <a
-              href="/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
-            >
-              เปิดดูหน้าเว็บจริง ↗
-            </a>
+            {publishNotice.type === "success" && (
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+              >
+                เปิดดูหน้าเว็บจริง ↗
+              </a>
+            )}
             <button
               type="button"
-              onClick={() => setPublishSuccessMsg("")}
-              className="p-1.5 text-emerald-700 hover:text-emerald-950 rounded-lg"
+              onClick={() => setPublishNotice(null)}
+              className={`p-1.5 rounded-lg ${
+                publishNotice.type === "success"
+                  ? "text-emerald-700 hover:text-emerald-950"
+                  : "text-red-700 hover:text-red-950"
+              }`}
             >
               <X className="w-4 h-4" />
             </button>
@@ -1420,7 +1492,7 @@ export default function AdminDashboard({
             <p className="text-[10px] text-accent-dark">เข้าสู่ระบบ: แอดมิน</p>
           </div>
 
-          <nav id="admin-sidebar-nav" className="flex lg:flex-col gap-1.5 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+          <nav id="admin-sidebar-nav" className="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:flex-col gap-1.5 pb-2 lg:pb-0">
             <button
               id="admin-tab-overview"
               onClick={() => setActiveTab("overview")}
@@ -1507,7 +1579,10 @@ export default function AdminDashboard({
             </button>
 
             <button
-              onClick={() => setActiveTab("preview")}
+              onClick={() => {
+                setActiveTab("preview");
+                setShowFloatingPreview(false);
+              }}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
                 activeTab === "preview"
                   ? "bg-primary text-white"
@@ -1520,7 +1595,7 @@ export default function AdminDashboard({
           </nav>
 
           {/* Sidebar Live Preview Toggle Button */}
-          <div className="pt-4 border-t border-primary/10 mt-2">
+          {activeTab !== "preview" && <div className="pt-4 border-t border-primary/10 mt-2">
             <button
               type="button"
               onClick={() => setShowFloatingPreview(prev => !prev)}
@@ -1543,7 +1618,7 @@ export default function AdminDashboard({
                 {showFloatingPreview ? "เปิด" : "ปิด"}
               </span>
             </button>
-          </div>
+          </div>}
         </div>
 
         <div className="space-y-2">
@@ -1825,7 +1900,7 @@ export default function AdminDashboard({
                         </div>
                       ))
                     ) : (
-                      <p className="text-xs text-primary/50 text-center py-2">ไม่พบเมนูที่ตรงกับ "{quickSearch}"</p>
+                      <p className="text-xs text-primary/50 text-center py-2">ไม่พบเมนูที่ตรงกับ “{quickSearch}”</p>
                     )}
                   </div>
                 )}
@@ -2195,7 +2270,7 @@ export default function AdminDashboard({
               </div>
             ) : (
               <div className="space-y-3">
-                {filteredReservations.map((res: any) => {
+                {filteredReservations.map((res) => {
                   const isPending = res.status === "pending";
                   const isConfirmed = res.status === "confirmed";
                   const isCompleted = res.status === "completed";
@@ -2472,7 +2547,7 @@ export default function AdminDashboard({
                               body: JSON.stringify({ brand_logo: url }),
                             });
                             setSettingsMsg("✅ บันทึกโลโก้ร้านสำเร็จแล้ว!");
-                            router.refresh();
+                            refreshPublicContent();
                           } catch {
                             setSettingsMsg("เกิดข้อผิดพลาดในการบันทึก");
                           }
@@ -2579,7 +2654,10 @@ export default function AdminDashboard({
               {/* Tab Content */}
               {(() => {
                 const currentData = customStoriesData[adminStoryTab] || {};
-                const photos: { url: string; caption: string; tag?: string }[] = currentData.photos || [];
+                const photos: CustomStoryPhoto[] = (currentData.photos || []).map((photo) => ({
+                  ...photo,
+                  caption: photo.caption || "",
+                }));
 
                 return (
                   <div className="space-y-6 pt-2">
@@ -2611,7 +2689,7 @@ export default function AdminDashboard({
                             setSettingsLoading(true);
                             setSettingsMsg("กำลังอัปโหลดรูปภาพ...");
 
-                            let nextPhotos = [...photos];
+                            const nextPhotos = [...photos];
                             for (const file of files) {
                               await new Promise<void>((resolve) => {
                                 handleFileUpload(
@@ -2646,7 +2724,7 @@ export default function AdminDashboard({
                                 body: JSON.stringify({ custom_stories_data: jsonStr }),
                               });
                               setSettingsMsg(`✅ เพิ่มรูปภาพลงในเรื่องเล่าเรียบร้อยแล้ว!`);
-                              router.refresh();
+                              refreshPublicContent();
                             } catch {
                               setSettingsMsg("เกิดข้อผิดพลาดในการบันทึก");
                             }
@@ -2704,7 +2782,7 @@ export default function AdminDashboard({
                                     body: JSON.stringify({ custom_stories_data: jsonStr }),
                                   });
                                   setSettingsMsg("✅ ลบรูปภาพเรียบร้อยแล้ว");
-                                  router.refresh();
+                                  refreshPublicContent();
                                 } catch {
                                   setSettingsMsg("เกิดข้อผิดพลาดในการลบรูป");
                                 }
@@ -2723,7 +2801,7 @@ export default function AdminDashboard({
                           ยังไม่มีรูปภาพที่อัปโหลดเพิ่มเติมในหมวดนี้ (ระบบกำลังใช้รูปภาพเริ่มต้นที่สวยงามให้โดยอัตโนมัติ)
                         </p>
                         <p className="text-[11px] text-primary/50">
-                          เมื่อคุณมีรูปถ่ายจริง (เช่น ถ่ายข้อต่อไม้, ถ่ายคุณป้าตำพริกแกง) สามารถแตะปุ่ม "+ อัปโหลดรูปภาพเพิ่มในหมวดนี้" ได้ทันที
+                          เมื่อคุณมีรูปถ่ายจริง (เช่น ถ่ายข้อต่อไม้, ถ่ายคุณป้าตำพริกแกง) สามารถแตะปุ่ม “+ อัปโหลดรูปภาพเพิ่มในหมวดนี้” ได้ทันที
                         </p>
                       </div>
                     )}
@@ -2779,11 +2857,11 @@ export default function AdminDashboard({
                   });
                   if (res.ok) {
                     setSettingsMsg("✅ บันทึกเนื้อหาหน้ารู้จักเราเรียบร้อยแล้ว! หน้าร้านอัปเดตทันที");
-                    router.refresh();
+                    refreshPublicContent();
                   } else {
                     if (res.status === 401) {
                       alert("เซสชันผู้ดูแลระบบหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้งที่ /admin/login");
-                      window.location.href = "/admin/login";
+                      router.replace("/admin/login");
                       return;
                     }
                     const errData = await res.json().catch(() => ({}));
@@ -2791,7 +2869,7 @@ export default function AdminDashboard({
                     setSettingsMsg(errMsg);
                     throw new Error(errMsg);
                   }
-                } catch (err: any) {
+                } catch (err: unknown) {
                   setSettingsMsg("เกิดข้อผิดพลาดในการเชื่อมต่อเครือข่าย");
                   throw err;
                 } finally {
@@ -3093,7 +3171,7 @@ export default function AdminDashboard({
 
               {menuCatFilter !== "ทั้งหมด" && (
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-primary-dark/80 mr-1">จัดการทั้งหมวดหมู่ "{menuCatFilter}":</span>
+                  <span className="font-semibold text-primary-dark/80 mr-1">จัดการทั้งหมวดหมู่ “{menuCatFilter}”:</span>
                   
                   <button
                     type="button"
@@ -4248,7 +4326,7 @@ export default function AdminDashboard({
               </div>
             ) : (
               <div className="text-center py-12 bg-white/50 border border-dashed border-primary/10 rounded-xl">
-                <p className="text-primary/60 text-sm">ไม่พบบทหรือตอนที่ค้นหา (ลองเปลี่ยนคำค้นหา หรือเลือก "ทั้งหมด")</p>
+                <p className="text-primary/60 text-sm">ไม่พบบทหรือตอนที่ค้นหา (ลองเปลี่ยนคำค้นหา หรือเลือก “ทั้งหมด”)</p>
               </div>
             )}
           </div>
@@ -4476,12 +4554,13 @@ export default function AdminDashboard({
                     รหัสผ่านเข้าแดชบอร์ดหลังบ้าน (ต้องการเปลี่ยนรหัสผ่านให้กรอกตรงนี้)
                   </label>
                   <input
-                    type="text"
+                    type="password"
                     id="admin_password"
                     value={settings.admin_password || ""}
                     onChange={e => setSettings(prev => ({ ...prev, admin_password: e.target.value }))}
+                    autoComplete="new-password"
+                    placeholder={settings.admin_password_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "ตั้งรหัสผ่านใหม่อย่างน้อย 12 ตัวอักษร"}
                     className="block w-full px-3 py-2 bg-white border border-primary/10 rounded-xl text-xs sm:text-sm focus:outline-none"
-                    required
                   />
                 </div>
               </div>
@@ -4779,7 +4858,7 @@ export default function AdminDashboard({
                                     body: JSON.stringify({ brand_logo: url }),
                                   });
                                   setSettingsMsg("อัปโหลดและบันทึกโลโก้แบรนด์สำเร็จแล้ว! (รีเฟรชหน้าหลักของลูกค้าเพื่อดูผลได้ทันที)");
-                                  router.refresh();
+                                  refreshPublicContent();
                                 } catch (dbErr) {
                                   setSettingsMsg("อัปโหลดสำเร็จ แต่ไม่สามารถบันทึกลงฐานข้อมูลได้ กรุณากดปุ่มบันทึกการตั้งค่าที่ด้านล่าง");
                                 }
@@ -4845,7 +4924,7 @@ export default function AdminDashboard({
                                     body: JSON.stringify({ home_hero_image: url }),
                                   });
                                   setSettingsMsg("อัปโหลดและบันทึกรูปภาพปกด้านบนสุดสำเร็จแล้ว! (กรุณารีเฟรชหน้าเว็บลูกค้าเพื่อดูผลลัพธ์ใหม่)");
-                                  router.refresh();
+                                  refreshPublicContent();
                                 } catch (dbErr) {
                                   setSettingsMsg("อัปโหลดสำเร็จ แต่ไม่สามารถบันทึกลงฐานข้อมูลได้ กรุณากดปุ่มบันทึกการตั้งค่าที่ด้านล่าง");
                                 }
@@ -4911,7 +4990,7 @@ export default function AdminDashboard({
                                     body: JSON.stringify({ home_about_image: url }),
                                   });
                                   setSettingsMsg("อัปโหลดและบันทึกรูปภาพเรื่องราวข้างล่างสำเร็จแล้ว! (กรุณารีเฟรชหน้าเว็บลูกค้าเพื่อดูผลลัพธ์ใหม่)");
-                                  router.refresh();
+                                  refreshPublicContent();
                                 } catch (dbErr) {
                                   setSettingsMsg("อัปโหลดสำเร็จ แต่ไม่สามารถบันทึกลงฐานข้อมูลได้ กรุณากดปุ่มบันทึกการตั้งค่าที่ด้านล่าง");
                                 }
@@ -5514,13 +5593,15 @@ export default function AdminDashboard({
                         รหัสผ่านเข้าสู่ระบบหลังบ้าน
                       </label>
                       <input
-                        type="text"
+                        type="password"
                         id="admin_password_sec"
                         value={settings.admin_password || ""}
                         onChange={e => setSettings(prev => ({ ...prev, admin_password: e.target.value }))}
+                        autoComplete="new-password"
+                        placeholder={settings.admin_password_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "อย่างน้อย 12 ตัวอักษร"}
                         className="block w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-xs sm:text-sm focus:outline-none font-mono"
-                        required
                       />
+                      <p className="mt-1.5 text-[10px] text-primary/55">ระบบไม่แสดงรหัสเดิมและจะเก็บเฉพาะค่าที่เข้ารหัสแล้ว</p>
                     </div>
                   </div>
 
@@ -5539,11 +5620,12 @@ export default function AdminDashboard({
                         LINE Notify Access Token
                       </label>
                       <input
-                        type="text"
+                        type="password"
                         id="line_notify_token"
                         value={settings.line_notify_token || ""}
                         onChange={e => setSettings(prev => ({ ...prev, line_notify_token: e.target.value }))}
-                        placeholder="กรอก Access Token (ตัวอย่าง: G5sF8d...)"
+                        autoComplete="off"
+                        placeholder={settings.line_notify_token_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "กรอก Access Token"}
                         className="block w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm focus:outline-none"
                       />
                     </div>
@@ -5676,6 +5758,7 @@ export default function AdminDashboard({
                       <iframe
                         key={`${previewUrl}-${previewMode}-${iframeKey}`}
                         src={previewUrl}
+                        title={`พรีวิวมือถือ ${previewUrl}`}
                         className="w-full h-full border-none"
                       />
                     </div>
@@ -5686,11 +5769,12 @@ export default function AdminDashboard({
                   </div>
                 ) : (
                   /* Desktop Screen View */
-                  <div className="w-full h-[600px] border border-primary/10 rounded-xl overflow-hidden bg-white shadow-sm">
+                  <div className="w-full h-[600px] border border-primary/10 rounded-xl overflow-auto bg-white shadow-sm">
                     <iframe
                       key={`${previewUrl}-${previewMode}-${iframeKey}`}
                       src={previewUrl}
-                      className="w-full h-full border-none"
+                      title={`พรีวิวเดสก์ท็อป ${previewUrl}`}
+                      className="w-[1280px] h-[720px] max-w-none border-none bg-white"
                     />
                   </div>
                 )}

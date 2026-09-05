@@ -1,9 +1,10 @@
 import React from "react";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { MenuItem, Article } from "@/lib/data";
 import AdminDashboard from "@/components/AdminDashboard";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { redactSettings } from "@/lib/admin-settings";
 
 export const revalidate = 0; // Always fetch live data for dashboard
 
@@ -24,20 +25,14 @@ async function getDashboardData() {
     "SELECT key, value FROM settings"
   );
   
-  const settingsMap: Record<string, string> = {};
-  settingsRows.forEach((row: any) => {
-    settingsMap[row.key] = row.value;
-  });
+  const settingsMap = redactSettings(settingsRows);
 
   return { menus, reservations, articles, settingsMap };
 }
 
 export default async function AdminPage() {
   // Authorization check on server side
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-
-  if (session !== "authenticated") {
+  if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
 

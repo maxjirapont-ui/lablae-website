@@ -141,6 +141,7 @@ export default function AboutPageEditor({
   const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reset the draft when the selected database record changes. */
     try {
       if (currentJson) {
         const parsed = JSON.parse(currentJson);
@@ -149,6 +150,7 @@ export default function AboutPageEditor({
     } catch {}
     setIsDirty(false);
     setErrorMessage("");
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [currentJson]);
 
   const handleChange = (field: keyof AboutCustomData, val: string) => {
@@ -166,8 +168,8 @@ export default function AboutPageEditor({
       setIsDirty(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
-    } catch (err: any) {
-      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
   };
 

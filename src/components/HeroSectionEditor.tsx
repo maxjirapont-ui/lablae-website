@@ -13,6 +13,7 @@ import {
   Link as LinkIcon,
   Tag,
   CheckCircle2,
+  AlertCircle,
   Image as ImageIcon,
 } from "lucide-react";
 
@@ -89,6 +90,7 @@ export default function HeroSectionEditor({
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reset the draft after saved hero props change. */
     setHeroImage(currentHeroImage || "");
     setBadge(currentBadge || DEFAULT_HERO_VALUES.hero_badge);
     setTitle(currentTitle || DEFAULT_HERO_VALUES.hero_title);
@@ -100,6 +102,7 @@ export default function HeroSectionEditor({
     setBtn2Link(currentBtn2Link || DEFAULT_HERO_VALUES.hero_btn2_link);
     setIsDirty(false);
     setErrorMessage("");
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [
     currentHeroImage,
     currentBadge,
@@ -137,8 +140,8 @@ export default function HeroSectionEditor({
       setIsDirty(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
-    } catch (err: any) {
-      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
   };
 

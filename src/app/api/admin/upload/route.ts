@@ -1,19 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import path from "path";
 import fs from "fs/promises";
 import sharp from "sharp";
-
-// Ensure auth check
-async function checkAuth() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  return session === "authenticated";
-}
+import { getUploadsDirectory } from "@/lib/storage";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -26,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     const rawBuffer = Buffer.from(await file.arrayBuffer());
 
-    const originalName = (file as any).name || "";
+    const originalName = file instanceof File ? file.name : "";
     const ext = path.extname(originalName).toLowerCase();
     const isPdf = ext === ".pdf" || file.type === "application/pdf";
 
@@ -36,7 +30,7 @@ export async function POST(request: NextRequest) {
       : `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.jpg`;
 
     // Ensure uploads directory exists in public/
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    const uploadDir = getUploadsDirectory();
     try {
       await fs.access(uploadDir);
     } catch {

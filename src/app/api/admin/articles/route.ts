@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-
-// Auth helper
-async function checkAuth() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  return session === "authenticated";
-}
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 function revalidateArticlePages() {
   try {
     revalidatePath("/", "layout");
     revalidatePath("/");
     revalidatePath("/about");
-    revalidatePath("/articles");
+    revalidatePath("/blog");
+    revalidatePath("/blog/[slug]", "page");
     revalidatePath("/admin");
   } catch (e) {
     console.error("Revalidation error:", e);
@@ -23,15 +17,15 @@ function revalidateArticlePages() {
 }
 
 // 0. Fetch Articles (Admin)
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const db = await getDb();
     const articles = await db.all("SELECT * FROM articles ORDER BY part_number ASC, chapter_number ASC, id ASC");
     return NextResponse.json({ success: true, articles });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการดึงข้อมูล" }, { status: 500 });
   }
 }
@@ -39,7 +33,7 @@ export async function GET(request: NextRequest) {
 // 1. Create Article
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -59,8 +53,8 @@ export async function POST(request: NextRequest) {
         "INSERT INTO articles (title, slug, content, image_url, part_title, excerpt) VALUES (?, ?, ?, ?, ?, ?)",
         [title, cleanSlug, content, image_url || "", part_title || "", excerpt || ""]
       );
-    } catch (dbErr: any) {
-      if (dbErr.message.includes("UNIQUE")) {
+    } catch (dbErr: unknown) {
+      if (dbErr instanceof Error && dbErr.message.includes("UNIQUE")) {
         return NextResponse.json({ error: "ลิงก์บทความ (Slug) ซ้ำกับบทความอื่น" }, { status: 400 });
       }
       throw dbErr;
@@ -68,7 +62,7 @@ export async function POST(request: NextRequest) {
 
     revalidateArticlePages();
     return NextResponse.json({ success: true, message: "สร้างบทความใหม่สำเร็จ" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" }, { status: 500 });
   }
 }
@@ -76,7 +70,7 @@ export async function POST(request: NextRequest) {
 // 2. Edit Article
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -94,8 +88,8 @@ export async function PUT(request: NextRequest) {
         "UPDATE articles SET title = ?, slug = ?, content = ?, image_url = ?, part_title = COALESCE(?, part_title), excerpt = COALESCE(?, excerpt) WHERE id = ?",
         [title, cleanSlug, content, image_url || "", part_title ?? null, excerpt ?? null, id]
       );
-    } catch (dbErr: any) {
-      if (dbErr.message.includes("UNIQUE")) {
+    } catch (dbErr: unknown) {
+      if (dbErr instanceof Error && dbErr.message.includes("UNIQUE")) {
         return NextResponse.json({ error: "ลิงก์บทความ (Slug) ซ้ำกับบทความอื่น" }, { status: 400 });
       }
       throw dbErr;
@@ -103,7 +97,7 @@ export async function PUT(request: NextRequest) {
 
     revalidateArticlePages();
     return NextResponse.json({ success: true, message: "แก้ไขบทความสำเร็จ" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการแก้ไขข้อมูล" }, { status: 500 });
   }
 }
@@ -111,7 +105,7 @@ export async function PUT(request: NextRequest) {
 // 3. Delete Article
 export async function DELETE(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -127,7 +121,7 @@ export async function DELETE(request: NextRequest) {
 
     revalidateArticlePages();
     return NextResponse.json({ success: true, message: "ลบบทความเรียบร้อยแล้ว" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการลบข้อมูล" }, { status: 500 });
   }
 }

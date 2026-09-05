@@ -1,14 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-
-// Auth helper
-async function checkAuth() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  return session === "authenticated";
-}
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 function revalidateMenuPages() {
   try {
@@ -24,7 +17,7 @@ function revalidateMenuPages() {
 // 0. Fetch Menu Items (Admin)
 export async function GET(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const db = await getDb();
@@ -38,7 +31,7 @@ export async function GET(request: NextRequest) {
 // 1. Create Menu Item
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -73,7 +66,7 @@ export async function POST(request: NextRequest) {
 // 2. Edit Menu Item
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -110,7 +103,7 @@ export async function PUT(request: NextRequest) {
 // 3. Delete Menu Item
 export async function DELETE(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

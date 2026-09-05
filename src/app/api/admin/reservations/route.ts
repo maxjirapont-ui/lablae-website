@@ -1,19 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-
-// Auth helper
-async function checkAuth() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  return session === "authenticated";
-}
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 // Update reservation status
 export async function PUT(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -36,7 +29,7 @@ export async function PUT(request: NextRequest) {
 // Delete reservation history
 export async function DELETE(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

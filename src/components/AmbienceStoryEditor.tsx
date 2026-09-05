@@ -85,6 +85,7 @@ export default function AmbienceStoryEditor({
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reset the draft after saved story props change. */
     setAboutImage(currentAboutImage || "");
     setImageCaption(currentImageCaption || DEFAULT_STORY_VALUES.home_about_image_caption);
     setBadge(currentBadge || DEFAULT_STORY_VALUES.about_badge);
@@ -94,6 +95,7 @@ export default function AmbienceStoryEditor({
     setStoryText(currentStoryText || DEFAULT_STORY_VALUES.about_story_text);
     setIsDirty(false);
     setErrorMessage("");
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [
     currentAboutImage,
     currentImageCaption,
@@ -127,8 +129,8 @@ export default function AmbienceStoryEditor({
       setIsDirty(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
-    } catch (err: any) {
-      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
   };
 

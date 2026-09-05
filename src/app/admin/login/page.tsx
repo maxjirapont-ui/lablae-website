@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Lock, Eye, EyeOff, Sparkles, AlertCircle } from "lucide-react";
 
 export default function AdminLoginPage() {
@@ -9,7 +8,6 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +28,7 @@ export default function AdminLoginPage() {
       } else {
         setError(data.error || "รหัสผ่านไม่ถูกต้อง");
       }
-    } catch (err) {
+    } catch {
       setError("ไม่สามารถเชื่อมต่อระบบหลังบ้านได้");
     } finally {
       setLoading(false);
@@ -69,6 +67,7 @@ export default function AdminLoginPage() {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="กรอกรหัสผ่านหลังบ้าน"
@@ -77,13 +76,14 @@ export default function AdminLoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "ซ่อนรหัสผ่าน" : "แสดงรหัสผ่าน"}
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-[#f5ece1]/45 hover:text-accent cursor-pointer"
               >
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             <p className="text-[10px] text-[#f5ece1]/60 mt-1.5">
-              *รหัสผ่านเริ่มต้นตั้งไว้เป็น <strong className="text-accent font-semibold">admin1234</strong> สามารถแก้ไขได้ในแดชบอร์ดหลังบ้านครับ
+              ระบบจำกัดจำนวนครั้งที่ลองเข้าสู่ระบบและเก็บ session ไว้ไม่เกิน 8 ชั่วโมง
             </p>
           </div>
 

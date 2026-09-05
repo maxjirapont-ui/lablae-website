@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 export async function POST(request: NextRequest) {
   try {
     // Auth check
-    const cookieStore = await cookies();
-    const session = cookieStore.get("admin_session")?.value;
-    if (session !== "authenticated") {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -50,4 +48,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดบนเซิร์ฟเวอร์" }, { status: 500 });
   }
 }
-

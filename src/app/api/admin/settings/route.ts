@@ -1,31 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { getDb } from "@/lib/db";
-
-// Auth helper
-async function checkAuth() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  return session === "authenticated";
-}
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { saveAdminSettings } from "@/lib/admin-settings";
 
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const settingsObj = await request.json(); // format: { key: value, ... }
-    const db = await getDb();
-
-    for (const [key, value] of Object.entries(settingsObj)) {
-      const strValue = typeof value === "object" ? JSON.stringify(value) : String(value ?? "");
-      await db.run(
-        "INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)",
-        [key, strValue]
-      );
+    const settingsObj = (await request.json()) as unknown;
+    if (!settingsObj || typeof settingsObj !== "object" || Array.isArray(settingsObj)) {
+      return NextResponse.json({ error: "รูปแบบข้อมูลไม่ถูกต้อง" }, { status: 400 });
     }
+    const result = await saveAdminSettings(settingsObj as Record<string, unknown>);
 
     // Bust cache instantly across the entire application
     try {
@@ -33,15 +21,22 @@ export async function POST(request: NextRequest) {
       revalidatePath("/");
       revalidatePath("/about");
       revalidatePath("/menu");
+      revalidatePath("/blog");
+      revalidatePath("/blog/[slug]", "page");
       revalidatePath("/admin");
     } catch (revalErr) {
       console.error("Revalidation notice:", revalErr);
     }
 
-    return NextResponse.json({ success: true, message: "บันทึกตั้งค่าสำเร็จ", revalidated: true });
+    return NextResponse.json({
+      success: true,
+      message: "บันทึกตั้งค่าสำเร็จ",
+      revalidated: true,
+      password_changed: result.passwordChanged,
+    });
   } catch (error) {
     console.error("Settings POST error:", error);
-    return NextResponse.json({ error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการบันทึกข้อมูล";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
-

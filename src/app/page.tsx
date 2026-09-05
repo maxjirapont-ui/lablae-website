@@ -173,7 +173,7 @@ export default async function Home() {
   const showSocial = (await getSetting("home_section_social_show")) !== "0";
   const showContact = (await getSetting("home_section_contact_show")) !== "0";
   const rawOrder = (await getSetting("homepage_sections_order")) || "featured,seasonal,intro,book,booking,social,contact";
-  let sections = rawOrder.split(",").map(s => s.trim()).filter(s => s && s !== "gallery");
+  const sections = rawOrder.split(",").map(s => s.trim()).filter(s => s && s !== "gallery");
   if (!sections.includes("book")) {
     sections.push("book");
   }
@@ -628,7 +628,7 @@ export default async function Home() {
                           </div>
                           <div className="space-y-2">
                             <p className="text-xs italic text-[#f5ece1]/80 line-clamp-3 leading-relaxed">
-                              "{testimonialText}"
+                              &ldquo;{testimonialText}&rdquo;
                             </p>
                             <p className="text-[10px] text-accent font-semibold">{testimonialAuthor}</p>
                           </div>

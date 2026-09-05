@@ -69,12 +69,14 @@ export default function AmbienceGalleryEditor({
   const [uploadingCount, setUploadingCount] = useState(0);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reset the draft after saved gallery props change. */
     setItems(currentItems || []);
     setBadge(currentBadge || DEFAULT_GALLERY_VALUES.gallery_badge);
     setTitle(currentTitle || DEFAULT_GALLERY_VALUES.gallery_title);
     setSubtitle(currentSubtitle || DEFAULT_GALLERY_VALUES.gallery_subtitle);
     setIsDirty(false);
     setErrorMessage("");
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [currentItems, currentBadge, currentTitle, currentSubtitle]);
 
   const handleCaptionChange = (index: number, caption: string) => {
@@ -166,8 +168,8 @@ export default function AmbienceGalleryEditor({
       setIsDirty(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
-    } catch (err: any) {
-      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
   };
 
@@ -439,7 +441,7 @@ export default function AmbienceGalleryEditor({
             </div>
             <h4 className="font-bold text-sm text-primary">ยังไม่มีรูปภาพในอัลบั้มบรรยากาศ</h4>
             <p className="text-xs text-primary/60 max-w-sm mx-auto">
-              แตะปุ่ม "+ เพิ่มรูปบรรยากาศ" ด้านบนเพื่อเลือกรูปภาพจากมือถือหรือคอมพิวเตอร์ สามารถเลือกได้ครั้งละหลายๆ รูป
+              แตะปุ่ม “+ เพิ่มรูปบรรยากาศ” ด้านบนเพื่อเลือกรูปภาพจากมือถือหรือคอมพิวเตอร์ สามารถเลือกได้ครั้งละหลายๆ รูป
             </p>
           </div>
         )}

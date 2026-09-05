@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import MobileQuickBar from "@/components/MobileQuickBar";
+import AppShell from "@/components/AppShell";
 import { getSetting } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
@@ -213,21 +212,26 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1] overflow-x-hidden">
-        <Navbar
-          logoUrl={brandLogo}
-          btnText={navbarBtnText}
-          btnLink={navbarBtnLink}
-          announcement={{
-            enabled: announcementEnabled,
-            text: announcementText,
-            link: announcementLink,
-            linkText: announcementLinkText,
-            badge: announcementBadge,
+        <AppShell
+          navbar={{
+            logoUrl: brandLogo,
+            btnText: navbarBtnText,
+            btnLink: navbarBtnLink,
+            announcement: {
+              enabled: announcementEnabled,
+              text: announcementText,
+              link: announcementLink,
+              linkText: announcementLinkText,
+              badge: announcementBadge,
+            },
           }}
-        />
-        <main className={`flex-grow ${announcementEnabled && Boolean(announcementText) ? "pt-32" : "pt-24"} pb-16 md:pb-0`}>{children}</main>
-        <Footer />
-        <MobileQuickBar phone={phone} googleMapsUrl={googleMapsUrl} />
+          phone={phone}
+          googleMapsUrl={googleMapsUrl}
+          hasAnnouncement={announcementEnabled && Boolean(announcementText)}
+          footer={<Footer />}
+        >
+          {children}
+        </AppShell>
       </body>
     </html>
   );

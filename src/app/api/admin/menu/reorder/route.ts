@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
-
-async function checkAuth() {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session")?.value;
-  return session === "authenticated";
-}
+import { isAdminAuthenticated } from "@/lib/admin-auth";
 
 function revalidateMenuPages() {
   try {
@@ -26,7 +20,7 @@ function revalidateMenuPages() {
 // 2. { id: number, action: 'top' | 'up' | 'down', category?: string }
 export async function POST(request: NextRequest) {
   try {
-    if (!(await checkAuth())) {
+    if (!(await isAdminAuthenticated())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -139,27 +133,8 @@ export async function POST(request: NextRequest) {
 
     revalidateMenuPages();
 
-    // Auto-commit & push to GitHub so Railway automatically receives updated database
-    try {
-      const { exec } = await import("child_process");
-      const fs = await import("fs");
-      const path = await import("path");
-      if (fs.existsSync(path.join(process.cwd(), ".git"))) {
-        exec(
-          'git add database/restaurant.db && git commit -m "chore(cms): reorder menu" && git push origin main',
-          { cwd: process.cwd() },
-          (err, stdout) => {
-            if (err) console.log("Auto-git push:", err.message);
-            else console.log("Auto-git push complete:", stdout);
-          }
-        );
-      }
-    } catch (gitErr) {
-      console.error("Git auto-push notice:", gitErr);
-    }
-
     return NextResponse.json({ success: true, message: "ปรับลำดับเมนูสำเร็จ" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Reorder Menu API Error:", error);
     return NextResponse.json(
       { error: "เกิดข้อผิดพลาดในการจัดลำดับเมนู" },

@@ -15,7 +15,7 @@ import {
   Tag,
   Type,
 } from "lucide-react";
-import { DEFAULT_STORIES, StoryData } from "./QuickFactsStoryModal";
+import { DEFAULT_STORIES } from "./QuickFactsStoryModal";
 
 export interface StoryTextFields {
   stat: string;
@@ -32,7 +32,7 @@ interface StoryTextEditorProps {
   storyId: "house" | "wood" | "family" | "kitchen";
   storyEmoji: string;
   storyTabName: string;
-  currentCustomData?: any;
+  currentCustomData?: Partial<StoryTextFields> & { photos?: unknown[] };
   onSave: (fields: StoryTextFields) => Promise<void>;
   onReset: () => Promise<void>;
   isLoading: boolean;
@@ -98,6 +98,7 @@ export default function StoryTextEditor({
 
   // Sync state if storyId or currentCustomData changes
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reset the draft when the selected story changes. */
     setStat(getInitialStat());
     setStatLabel(getInitialStatLabel());
     setBadge(getInitialBadge());
@@ -109,6 +110,7 @@ export default function StoryTextEditor({
     setIsDirty(false);
     setSaveSuccess(false);
     setErrorMessage("");
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [storyId, currentCustomData]);
 
   // Compute paragraph count
@@ -149,8 +151,8 @@ export default function StoryTextEditor({
       setIsDirty(false);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
-    } catch (err: any) {
-      setErrorMessage(err?.message || "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    } catch (error: unknown) {
+      setErrorMessage(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     }
   };
 

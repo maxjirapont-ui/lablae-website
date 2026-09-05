@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, message: "จองโต๊ะสำเร็จแล้ว ระบบจะแจ้งเตือนร้านทาง LINE" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Reservation API Error:", error);
     return NextResponse.json(
       { error: "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง" },

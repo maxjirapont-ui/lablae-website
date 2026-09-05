@@ -1,5 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Admin data and deployment
+
+The admin dashboard stores its writable database and new uploads outside Git.
+
+- Locally, runtime data lives in `.data/` and is initialized from `database/seed.db`.
+- On Railway, attach a persistent volume to the web service (recommended mount path: `/data`). The app automatically uses `RAILWAY_VOLUME_MOUNT_PATH`.
+- Set `ADMIN_PASSWORD` to a strong value of at least 12 characters before the first production login. The first successful login migrates it to a salted password hash in the database.
+- `ADMIN_SESSION_SECRET` is optional but recommended. It must be a long, private random value.
+
+Do not commit `.data/`, `database/restaurant.db`, or newly uploaded files. Existing files in `public/uploads/` are legacy seed assets and remain available as read-only fallbacks.
+
 ## Getting Started
 
 First, run the development server:
