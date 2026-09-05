@@ -1,7 +1,8 @@
 import React from "react";
+import Link from "next/link";
 import { getMenuItems, getSetting } from "@/lib/data";
 import MenuList from "@/components/MenuList";
-import { Sparkles, FileText, AlertCircle } from "lucide-react";
+import { Sparkles, FileText, AlertCircle, Calendar } from "lucide-react";
 
 export const revalidate = 0; // Disable static cache for menu, so dashboard updates show instantly
 
@@ -50,8 +51,16 @@ export default async function MenuPage() {
             </div>
           )}
 
-          {showPdf && pdfUrl && (
-            <div className="pt-2 flex justify-center">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5">
+            <Link
+              href="/#booking"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-accent hover:bg-accent-dark text-primary-dark font-thai font-bold text-xs transition-all hover:scale-[1.02] shadow-sm"
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>จองโต๊ะอาหารล่วงหน้า</span>
+            </Link>
+
+            {showPdf && pdfUrl && (
               <a
                 href={pdfUrl}
                 target="_blank"
@@ -61,8 +70,8 @@ export default async function MenuPage() {
                 <FileText className="w-3.5 h-3.5 text-accent-dark" />
                 <span>{pdfBtnText}</span>
               </a>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 

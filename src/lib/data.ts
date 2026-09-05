@@ -11,6 +11,7 @@ export interface MenuItem {
   is_recommended?: number;
   is_seasonal?: number;
   is_visible?: number;
+  sort_order?: number;
 }
 
 export interface Article {
@@ -28,7 +29,7 @@ export interface Article {
 
 export async function getMenuItems(): Promise<MenuItem[]> {
   const db = await getDb();
-  return db.all<MenuItem[]>("SELECT * FROM menus WHERE is_visible = 1 ORDER BY category, name");
+  return db.all<MenuItem[]>("SELECT * FROM menus WHERE is_visible = 1 ORDER BY category, sort_order ASC, id ASC");
 }
 
 export async function getArticles(): Promise<Article[]> {

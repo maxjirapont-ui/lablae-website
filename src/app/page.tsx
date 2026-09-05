@@ -163,10 +163,18 @@ export default async function Home() {
   const showSeasonal = (await getSetting("home_section_seasonal_show")) !== "0";
   const showSocial = (await getSetting("home_section_social_show")) !== "0";
   const showContact = (await getSetting("home_section_contact_show")) !== "0";
-  const rawOrder = (await getSetting("homepage_sections_order")) || "featured,seasonal,intro,gallery,book,social,contact";
+  const rawOrder = (await getSetting("homepage_sections_order")) || "featured,seasonal,intro,gallery,book,booking,social,contact";
   let sections = rawOrder.split(",").map(s => s.trim()).filter(Boolean);
   if (!sections.includes("book")) {
     sections.push("book");
+  }
+  if (!sections.includes("booking")) {
+    const contactIdx = sections.indexOf("contact");
+    if (contactIdx !== -1) {
+      sections.splice(contactIdx, 0, "booking");
+    } else {
+      sections.push("booking");
+    }
   }
   if (!sections.includes("gallery")) {
     const introIdx = sections.indexOf("intro");
@@ -227,6 +235,18 @@ export default async function Home() {
               className="w-full sm:w-auto px-8 py-3.5 border-2 border-accent/60 hover:bg-accent hover:border-accent hover:text-[#1a100a] text-[#f7eee3] font-thai font-semibold rounded-full transition-all duration-300 text-sm backdrop-blur-xs text-center"
             >
               {heroBtn2Text}
+            </Link>
+          </div>
+
+          {/* Quick Booking Callout */}
+          <div className="pt-1">
+            <Link
+              href="/#booking"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/40 hover:bg-black/60 border border-accent/40 text-xs sm:text-sm text-accent hover:text-white transition-all font-thai font-medium backdrop-blur-xs shadow-xs"
+            >
+              <Clock className="w-3.5 h-3.5 text-accent" />
+              <span>ต้องการจองโต๊ะอาหารล่วงหน้า? กดจองโต๊ะที่นี่</span>
+              <span className="text-accent">↓</span>
             </Link>
           </div>
         </div>
@@ -668,6 +688,26 @@ export default async function Home() {
                   </div>
                 </div>
               </div>
+            </section>
+          );
+        }
+
+        if (sectionKey === "booking") {
+          return (
+            <section key="booking" id="booking" className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28">
+              <div className="text-center space-y-3 mb-8">
+                <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-accent/20 text-accent text-xs font-thai font-medium border border-accent/30 tracking-wide">
+                  <Clock className="w-3.5 h-3.5" />
+                  สำรองที่นั่งล่วงหน้า
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-bold font-thai text-primary leading-tight">
+                  จองโต๊ะอาหารล่วงหน้า
+                </h2>
+                <p className="font-thai text-xs sm:text-sm text-[#f5ece1]/80 max-w-lg mx-auto leading-relaxed">
+                  สัมผัสบรรยากาศบ้านไม้โบราณ ๑๐๐ ปี เพื่อความสะดวกและไม่ต้องรอคิว (โดยเฉพาะช่วงวันหยุดและมื้อเย็น) กรุณากรอกข้อมูลจองโต๊ะล่วงหน้าได้เลยครับ
+                </p>
+              </div>
+              <BookingForm />
             </section>
           );
         }

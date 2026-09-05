@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const db = await getDb();
-    const menus = await db.all("SELECT * FROM menus ORDER BY category, name");
+    const menus = await db.all("SELECT * FROM menus ORDER BY category, sort_order ASC, id ASC");
     return NextResponse.json({ success: true, menus });
   } catch (error) {
     return NextResponse.json({ error: "เกิดข้อผิดพลาดในการดึงข้อมูล" }, { status: 500 });
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
     await db.run(
-      "INSERT INTO menus (name, price, category, description, image_url, available, is_recommended, is_seasonal, is_visible) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)",
+      "INSERT INTO menus (name, price, category, description, image_url, available, is_recommended, is_seasonal, is_visible, sort_order) VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM menus))",
       [
         name, 
         parseFloat(price), 

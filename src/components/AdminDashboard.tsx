@@ -56,7 +56,8 @@ import {
   Palette,
   Quote,
   Download,
-  Globe
+  Globe,
+  ChevronsUp
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -271,6 +272,54 @@ export default function AdminDashboard({
       alert("เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setIsPublishing(false);
+    }
+  };
+
+  // --- MENU REORDER HANDLER ---
+  const handleReorderMenu = async (id: number, action: "top" | "up" | "down") => {
+    setMenus(prevMenus => {
+      const target = prevMenus.find(m => m.id === id);
+      if (!target) return prevMenus;
+
+      const targetCategory = target.category;
+      const categoryItems = prevMenus.filter(m => m.category === targetCategory);
+      const otherItems = prevMenus.filter(m => m.category !== targetCategory);
+      
+      const currIdx = categoryItems.findIndex(m => m.id === id);
+      if (currIdx === -1) return prevMenus;
+
+      const updatedCategoryItems = [...categoryItems];
+      if (action === "top") {
+        if (currIdx === 0) return prevMenus;
+        updatedCategoryItems.splice(currIdx, 1);
+        updatedCategoryItems.unshift(target);
+      } else if (action === "up") {
+        if (currIdx === 0) return prevMenus;
+        const prev = updatedCategoryItems[currIdx - 1];
+        updatedCategoryItems[currIdx - 1] = target;
+        updatedCategoryItems[currIdx] = prev;
+      } else if (action === "down") {
+        if (currIdx === updatedCategoryItems.length - 1) return prevMenus;
+        const next = updatedCategoryItems[currIdx + 1];
+        updatedCategoryItems[currIdx + 1] = target;
+        updatedCategoryItems[currIdx] = next;
+      }
+
+      updatedCategoryItems.forEach((item, idx) => {
+        item.sort_order = idx + 1;
+      });
+
+      return [...otherItems, ...updatedCategoryItems];
+    });
+
+    try {
+      await fetch("/api/admin/menu/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action }),
+      });
+    } catch (err) {
+      console.error("Reorder failed:", err);
     }
   };
 
@@ -3237,11 +3286,47 @@ export default function AdminDashboard({
 
                         {/* Title & Price */}
                         <div className="flex justify-between items-start gap-2 mb-1.5">
-                          <h4 className="font-bold text-primary text-sm line-clamp-1">{menu.name}</h4>
+                          <div>
+                            <h4 className="font-bold text-primary text-sm line-clamp-1">{menu.name}</h4>
+                            <span className="text-[10px] text-accent-dark font-medium">{menu.category}</span>
+                          </div>
                           <span className="font-bold text-accent-dark text-sm shrink-0">
                             {menu.price > 0 ? `฿${menu.price}` : "ตามน้ำหนัก"}
                           </span>
                         </div>
+
+                        {/* Reorder Buttons (Move Up, Down, Top) */}
+                        <div className="flex items-center justify-between gap-1 py-1 px-2 bg-cream/70 border border-primary/10 rounded-xl mb-2 text-[11px]">
+                          <span className="text-[10px] text-primary/60 font-semibold">จัดลำดับ:</span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => handleReorderMenu(menu.id, "top")}
+                              className="px-2 py-0.5 bg-white hover:bg-accent text-primary-dark rounded-md text-[10px] font-bold shadow-2xs border border-primary/15 transition-all flex items-center gap-0.5 cursor-pointer"
+                              title="ย้ายเมนูนี้ไปไว้บนสุดของหมวดนี้"
+                            >
+                              <ChevronsUp className="w-3 h-3 text-accent-dark" />
+                              <span>บนสุด</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReorderMenu(menu.id, "up")}
+                              className="p-1 bg-white hover:bg-primary/10 text-primary rounded-md text-[10px] font-bold shadow-2xs border border-primary/15 transition-all cursor-pointer"
+                              title="เลื่อนขึ้น 1 อันดับ"
+                            >
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleReorderMenu(menu.id, "down")}
+                              className="p-1 bg-white hover:bg-primary/10 text-primary rounded-md text-[10px] font-bold shadow-2xs border border-primary/15 transition-all cursor-pointer"
+                              title="เลื่อนลง 1 อันดับ"
+                            >
+                              <ChevronDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
                         {menu.description && (
                           <p className="text-[11px] text-primary/60 line-clamp-2 mb-3 leading-relaxed">
                             {menu.description}
@@ -3355,6 +3440,7 @@ export default function AdminDashboard({
                         <th className="px-4 py-3">ชื่ออาหาร</th>
                         <th className="px-4 py-3">ราคา</th>
                         <th className="px-4 py-3">หมวดหมู่</th>
+                        <th className="px-3 py-3 text-center">จัดลำดับ</th>
                         <th className="px-4 py-3 text-center">แสดงหน้าเว็บ</th>
                         <th className="px-4 py-3 text-center">เมนูแนะนำ</th>
                         <th className="px-4 py-3 text-center">ตามฤดูกาล</th>
@@ -3376,6 +3462,35 @@ export default function AdminDashboard({
                             <span className="px-2 py-0.5 bg-accent/15 text-accent-dark rounded-full text-[10px] font-semibold">
                               {menu.category}
                             </span>
+                          </td>
+                          <td className="px-3 py-3 text-center whitespace-nowrap">
+                            <div className="inline-flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleReorderMenu(menu.id, "top")}
+                                className="px-1.5 py-0.5 bg-cream hover:bg-accent text-primary-dark rounded text-[10px] font-bold border border-primary/15 cursor-pointer shadow-2xs flex items-center gap-0.5"
+                                title="ย้ายไปไว้บนสุดของหมวดหมู่นี้"
+                              >
+                                <ChevronsUp className="w-3 h-3 text-accent-dark" />
+                                <span>บนสุด</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReorderMenu(menu.id, "up")}
+                                className="p-1 bg-cream hover:bg-primary/10 text-primary rounded text-[10px] font-bold border border-primary/15 cursor-pointer shadow-2xs"
+                                title="เลื่อนขึ้น 1 อันดับ"
+                              >
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleReorderMenu(menu.id, "down")}
+                                className="p-1 bg-cream hover:bg-primary/10 text-primary rounded text-[10px] font-bold border border-primary/15 cursor-pointer shadow-2xs"
+                                title="เลื่อนลง 1 อันดับ"
+                              >
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-center">
                             <button

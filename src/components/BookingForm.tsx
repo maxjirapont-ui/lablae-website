@@ -55,11 +55,11 @@ export default function BookingForm() {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto wood-card bg-[#241710] border border-accent/20 rounded-2xl shadow-xl p-6 sm:p-8">
-      <div className="text-center mb-6">
-        <h3 className="font-thai text-xl sm:text-2xl font-bold text-primary">จองโต๊ะอาหารล่วงหน้า</h3>
-        <p className="font-thai text-xs sm:text-sm text-primary/70 mt-1">
-          กรุณากรอกข้อมูลเพื่อจองโต๊ะอาหาร (มื้อเย็นแนะนำโทรจองก่อน)
+    <div className="w-full max-w-lg mx-auto wood-card bg-[#241710] border border-accent/30 rounded-3xl shadow-2xl p-6 sm:p-8">
+      <div className="text-center mb-6 space-y-1">
+        <h3 className="font-thai text-xl sm:text-2xl font-bold text-cream">จองโต๊ะอาหารล่วงหน้า</h3>
+        <p className="font-thai text-xs sm:text-sm text-cream/70">
+          กรุณากรอกข้อมูลเพื่อจองโต๊ะอาหาร (มื้อเย็นหรือวันหยุดแนะนำจองล่วงหน้าครับ)
         </p>
       </div>
 
@@ -83,11 +83,11 @@ export default function BookingForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
-          <label htmlFor="name" className="block font-thai text-sm font-medium text-primary mb-1">
+          <label htmlFor="name" className="block font-thai text-xs sm:text-sm font-bold text-cream mb-1">
             ชื่อผู้จอง
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent">
               <User className="h-4 w-4" />
             </div>
             <input
@@ -98,18 +98,18 @@ export default function BookingForm() {
               value={formData.name}
               onChange={handleChange}
               placeholder="คุณรักดี เรียนเก่ง"
-              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
+              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
             />
           </div>
         </div>
 
         {/* Phone */}
         <div>
-          <label htmlFor="phone" className="block font-thai text-sm font-medium text-primary mb-1">
+          <label htmlFor="phone" className="block font-thai text-xs sm:text-sm font-bold text-cream mb-1">
             เบอร์โทรศัพท์
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent">
               <Phone className="h-4 w-4" />
             </div>
             <input
@@ -120,7 +120,7 @@ export default function BookingForm() {
               value={formData.phone}
               onChange={handleChange}
               placeholder="095-628-3125"
-              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
+              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm placeholder-[#f5ece1]/40"
             />
           </div>
         </div>
@@ -128,11 +128,11 @@ export default function BookingForm() {
         <div className="grid grid-cols-2 gap-4">
           {/* Date */}
           <div>
-            <label htmlFor="date" className="block font-thai text-sm font-medium text-primary mb-1">
+            <label htmlFor="date" className="block font-thai text-xs sm:text-sm font-bold text-cream mb-1">
               วันที่จอง
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent">
                 <Calendar className="h-4 w-4" />
               </div>
               <input
@@ -142,18 +142,18 @@ export default function BookingForm() {
                 required
                 value={formData.date}
                 onChange={handleChange}
-                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
+                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
               />
             </div>
           </div>
 
           {/* Time */}
           <div>
-            <label htmlFor="time" className="block font-thai text-sm font-medium text-primary mb-1">
+            <label htmlFor="time" className="block font-thai text-xs sm:text-sm font-bold text-cream mb-1">
               เวลาที่จอง
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent">
                 <Clock className="h-4 w-4" />
               </div>
               <input
@@ -163,7 +163,7 @@ export default function BookingForm() {
                 required
                 value={formData.time}
                 onChange={handleChange}
-                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
+                className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
               />
             </div>
           </div>
@@ -171,11 +171,11 @@ export default function BookingForm() {
 
         {/* Guests */}
         <div>
-          <label htmlFor="guests" className="block font-thai text-sm font-medium text-primary mb-1">
+          <label htmlFor="guests" className="block font-thai text-xs sm:text-sm font-bold text-cream mb-1">
             จำนวนคน
           </label>
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent/60">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-accent">
               <Users className="h-4 w-4" />
             </div>
             <select
@@ -183,7 +183,7 @@ export default function BookingForm() {
               id="guests"
               value={formData.guests}
               onChange={handleChange}
-              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/25 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
+              className="font-thai block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent text-sm"
             >
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((num) => (
                 <option key={num} value={num} className="bg-[#1a100a] text-[#f5ece1]">

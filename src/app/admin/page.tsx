@@ -11,7 +11,7 @@ async function getDashboardData() {
   const db = await getDb();
 
   // 1. Get Menus
-  const menus = await db.all<MenuItem[]>("SELECT * FROM menus ORDER BY category, name");
+  const menus = await db.all<MenuItem[]>("SELECT * FROM menus ORDER BY category, sort_order ASC, id ASC");
 
   // 2. Get Reservations (Sorted latest first)
   const reservations = await db.all("SELECT * FROM reservations ORDER BY created_at DESC");

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Utensils } from "lucide-react";
+import { Menu, X, Utensils, Calendar } from "lucide-react";
 import AnnouncementBanner, { AnnouncementBannerProps } from "./AnnouncementBanner";
 
 interface NavbarProps {
@@ -92,7 +92,7 @@ export default function Navbar({
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -107,6 +107,15 @@ export default function Navbar({
               </Link>
             ))}
             
+            {/* Table Booking Button */}
+            <Link
+              href="/#booking"
+              className="inline-flex items-center px-4 py-2 border border-accent/70 text-sm font-semibold rounded-full text-accent hover:bg-accent hover:text-[#1c120c] transition-all duration-300 shadow-md hover:scale-102"
+            >
+              <Calendar className="w-4 h-4 mr-1.5" />
+              จองโต๊ะ
+            </Link>
+
             {/* Navbar Custom Button */}
             <Link
               href={btnLink}
@@ -152,9 +161,17 @@ export default function Navbar({
             </Link>
           ))}
           <Link
+            href="/#booking"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center justify-center w-full px-4 py-3 mt-4 text-center text-accent border border-accent/50 bg-accent/10 hover:bg-accent hover:text-[#1c120c] rounded-full font-thai font-bold transition-all shadow-md"
+          >
+            <Calendar className="w-4 h-4 mr-2" />
+            จองโต๊ะอาหารล่วงหน้า
+          </Link>
+          <Link
             href={btnLink}
             onClick={() => setIsOpen(false)}
-            className="flex items-center justify-center w-full px-4 py-3 mt-4 text-center text-[#1c120c] bg-accent hover:bg-accent-dark rounded-full font-thai font-bold transition-all shadow-md"
+            className="flex items-center justify-center w-full px-4 py-3 mt-2 text-center text-[#1c120c] bg-accent hover:bg-accent-dark rounded-full font-thai font-bold transition-all shadow-md"
           >
             <Utensils className="w-4 h-4 mr-2" />
             {btnText}

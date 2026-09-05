@@ -78,6 +78,9 @@ export async function getDb(): Promise<Database> {
   try {
     await db.exec("ALTER TABLE menus ADD COLUMN is_visible INTEGER DEFAULT 1");
   } catch (err) {}
+  try {
+    await db.exec("ALTER TABLE menus ADD COLUMN sort_order INTEGER DEFAULT 0");
+  } catch (err) {}
 
   globalDb = db;
   return db;
