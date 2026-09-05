@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/db";
 
 // Auth helper
@@ -24,6 +25,7 @@ export async function PUT(request: NextRequest) {
 
     const db = await getDb();
     await db.run("UPDATE reservations SET status = ? WHERE id = ?", [status, id]);
+    revalidatePath("/admin");
 
     return NextResponse.json({ success: true, message: "อัปเดตสถานะการจองสำเร็จ" });
   } catch (error) {
@@ -47,6 +49,7 @@ export async function DELETE(request: NextRequest) {
 
     const db = await getDb();
     await db.run("DELETE FROM reservations WHERE id = ?", [id]);
+    revalidatePath("/admin");
 
     return NextResponse.json({ success: true, message: "ลบประวัติการจองสำเร็จ" });
   } catch (error) {

@@ -54,7 +54,8 @@ import {
   ExternalLink,
   RefreshCw,
   Palette,
-  Quote
+  Quote,
+  Download
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -70,10 +71,11 @@ export default function AdminDashboard({
   initialArticles,
   initialSettings
 }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "photos" | "menus" | "articles" | "settings" | "preview">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "reservations" | "photos" | "menus" | "articles" | "settings" | "preview">("overview");
   const [settingsSubTab, setSettingsSubTab] = useState<"info" | "appearance" | "social" | "layout" | "security">("info");
   const [menuViewMode, setMenuViewMode] = useState<"cards" | "table">("cards");
   const [quickSearch, setQuickSearch] = useState<string>("");
+  const [resStatusFilter, setResStatusFilter] = useState<string>("ทั้งหมด");
   const [showFloatingPreview, setShowFloatingPreview] = useState(false);
   const router = useRouter();
 
@@ -209,6 +211,32 @@ export default function AdminDashboard({
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  // --- FULL SYSTEM BACKUP HANDLER ---
+  const handleExportBackup = () => {
+    try {
+      const backupData = {
+        exported_at: new Date().toISOString(),
+        restaurant_name: settings.restaurant_name || "ร้านลำลำลับแลบ้าน 100 ปี",
+        version: "1.0",
+        settings,
+        menus,
+        articles,
+        reservations,
+      };
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+      const downloadAnchor = document.createElement("a");
+      const dateStr = new Date().toISOString().slice(0, 10);
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `lamlam-restaurant-backup-${dateStr}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    } catch (err) {
+      console.error("Backup failed:", err);
+      alert("เกิดข้อผิดพลาดในการสำรองข้อมูล");
     }
   };
 
@@ -912,10 +940,14 @@ export default function AdminDashboard({
     return matchesSearch && matchesCategory;
   });
 
-  const filteredReservations = reservations.filter(r =>
-    r.name.toLowerCase().includes(resSearch.toLowerCase()) ||
-    r.phone.includes(resSearch)
-  );
+  const filteredReservations = reservations.filter(r => {
+    const matchesSearch = !resSearch ||
+      (r.name && r.name.toLowerCase().includes(resSearch.toLowerCase())) ||
+      (r.phone && r.phone.includes(resSearch)) ||
+      (r.date && r.date.includes(resSearch));
+    const matchesStatus = resStatusFilter === "ทั้งหมด" || r.status === resStatusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const filteredArticles = articles.filter(art => {
     const matchesSearch = !articleSearch ||
@@ -1111,6 +1143,26 @@ export default function AdminDashboard({
             </button>
 
             <button
+              id="admin-tab-reservations"
+              onClick={() => setActiveTab("reservations")}
+              className={`flex items-center justify-between gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
+                activeTab === "reservations"
+                  ? "bg-primary text-white shadow-sm"
+                  : "text-primary/80 hover:bg-primary/5 hover:text-accent"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Calendar className="w-4.5 h-4.5 text-accent" />
+                <span>จัดการการจองโต๊ะ</span>
+              </div>
+              {reservations.filter(r => r.status === "pending").length > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-red-500 text-white font-bold animate-pulse">
+                  {reservations.filter(r => r.status === "pending").length}
+                </span>
+              )}
+            </button>
+
+            <button
               id="admin-tab-photos"
               onClick={() => setActiveTab("photos")}
               className={`flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer shrink-0 ${
@@ -1244,8 +1296,35 @@ export default function AdminDashboard({
               </div>
             </div>
 
-            {/* 4 Stat Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Pending Reservations Banner Alert */}
+            {reservations.filter(r => r.status === "pending").length > 0 && (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-amber-50 border-2 border-amber-400 text-amber-900 rounded-2xl shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 font-bold text-lg shadow-xs">
+                    🔔
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-sm text-amber-950 flex items-center gap-2">
+                      <span>มีรายการจองโต๊ะใหม่รอยืนยัน {reservations.filter(r => r.status === "pending").length} รายการ</span>
+                      <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                    </h4>
+                    <p className="text-xs text-amber-800">
+                      กรุณาตรวจสอบข้อมูลและโทรคอนเฟิร์มกับลูกค้าเพื่อจัดเตรียมโต๊ะอาหารครับ
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab("reservations"); setResStatusFilter("pending"); }}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer shrink-0"
+                >
+                  ไปที่หน้าจัดการการจอง →
+                </button>
+              </div>
+            )}
+
+            {/* 5 Stat Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <button
                 type="button"
                 onClick={() => { setActiveTab("menus"); setMenuCatFilter("ทั้งหมด"); }}
@@ -1258,7 +1337,7 @@ export default function AdminDashboard({
                   </div>
                 </div>
                 <div className="text-2xl font-bold text-primary">{menus.length}</div>
-                <span className="text-[10px] text-accent-dark font-medium">คลิกเพื่อดูรายการทั้งหมด →</span>
+                <span className="text-[10px] text-accent-dark font-medium">คลิกดูรายการอาหาร →</span>
               </button>
 
               <button
@@ -1288,7 +1367,7 @@ export default function AdminDashboard({
                 <div className="text-2xl font-bold text-red-700">
                   {menus.filter(m => m.available === 0).length}
                 </div>
-                <span className="text-[10px] text-red-600 font-medium">ปิดขายบนหน้าเว็บอยู่</span>
+                <span className="text-[10px] text-red-600 font-medium">ปิดขายบนหน้าเว็บ</span>
               </div>
 
               <button
@@ -1297,7 +1376,7 @@ export default function AdminDashboard({
                 className="p-4 bg-white border border-amber-200 rounded-2xl text-left hover:border-amber-400 transition-all cursor-pointer shadow-xs group"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold text-amber-800">เมนูแนะนำหน้าแรก</span>
+                  <span className="text-xs font-semibold text-amber-800">เมนูแนะนำ</span>
                   <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
                     <Star className="w-4 h-4 fill-current" />
                   </div>
@@ -1305,7 +1384,33 @@ export default function AdminDashboard({
                 <div className="text-2xl font-bold text-amber-700">
                   {menus.filter(m => m.is_recommended === 1).length}
                 </div>
-                <span className="text-[10px] text-amber-600 font-medium">โชว์ในกล่องแนะนำหน้าแรก</span>
+                <span className="text-[10px] text-amber-600 font-medium">โชว์หน้าแรก</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setActiveTab("reservations"); setResStatusFilter("ทั้งหมด"); }}
+                className={`p-4 bg-white border rounded-2xl text-left transition-all cursor-pointer shadow-xs group ${
+                  reservations.filter(r => r.status === "pending").length > 0
+                    ? "border-amber-400 bg-amber-50/30 hover:border-amber-500"
+                    : "border-primary/10 hover:border-accent"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-primary/70">การจองโต๊ะ</span>
+                  <div className="w-8 h-8 rounded-xl bg-accent/10 flex items-center justify-center text-accent-dark group-hover:bg-accent group-hover:text-primary-dark transition-colors">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-primary">{reservations.length}</span>
+                  {reservations.filter(r => r.status === "pending").length > 0 && (
+                    <span className="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full animate-pulse">
+                      รอ {reservations.filter(r => r.status === "pending").length}
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] text-accent-dark font-medium">คลิกเพื่อดูและโทรหาลูกค้า →</span>
               </button>
 
               {/* Shortcut Card to Edit Book */}
@@ -1581,6 +1686,362 @@ export default function AdminDashboard({
 
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB: RESERVATIONS MANAGEMENT */}
+        {activeTab === "reservations" && (
+          <div className="space-y-6 font-thai">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-accent/20 rounded-2xl text-accent-dark">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl sm:text-2xl font-bold text-primary">ระบบจัดการการจองโต๊ะ</h2>
+                    {reservations.filter(r => r.status === "pending").length > 0 && (
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white animate-pulse">
+                        รอยืนยัน {reservations.filter(r => r.status === "pending").length} รายการ
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-primary/70 mt-0.5">
+                    ตรวจสอบรายชื่อลูกค้าที่จองโต๊ะล่วงหน้า โทรติดต่อได้ในคลิกเดียว และอัปเดตสถานะโต๊ะอาหาร
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => router.refresh()}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-white border border-primary/15 hover:bg-cream text-primary rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                  title="รีเฟรชข้อมูลล่าสุด"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>รีเฟรช</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportBackup}
+                  className="flex items-center gap-1.5 px-3.5 py-2 bg-primary hover:bg-primary-light text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                  title="สำรองข้อมูลทั้งหมด"
+                >
+                  <Download className="w-3.5 h-3.5 text-accent" />
+                  <span>สำรองข้อมูล</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 4 Stat Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+              <button
+                type="button"
+                onClick={() => setResStatusFilter("pending")}
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer shadow-xs ${
+                  resStatusFilter === "pending"
+                    ? "bg-amber-50 border-amber-400 ring-2 ring-amber-400/40"
+                    : "bg-white border-amber-200 hover:border-amber-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-amber-800">⏳ รอยืนยัน</span>
+                  {reservations.filter(r => r.status === "pending").length > 0 && (
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                  )}
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-amber-700">
+                  {reservations.filter(r => r.status === "pending").length}
+                </div>
+                <p className="text-[10px] text-amber-700/80 mt-0.5">รอแอดมินโทรคอนเฟิร์ม</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setResStatusFilter("confirmed")}
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer shadow-xs ${
+                  resStatusFilter === "confirmed"
+                    ? "bg-emerald-50 border-emerald-400 ring-2 ring-emerald-400/40"
+                    : "bg-white border-emerald-200 hover:border-emerald-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-emerald-800">✅ ยืนยันแล้ว</span>
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-emerald-700">
+                  {reservations.filter(r => r.status === "confirmed").length}
+                </div>
+                <p className="text-[10px] text-emerald-700/80 mt-0.5">ล็อคโต๊ะรอต้อนรับ</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setResStatusFilter("completed")}
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer shadow-xs ${
+                  resStatusFilter === "completed"
+                    ? "bg-blue-50 border-blue-400 ring-2 ring-blue-400/40"
+                    : "bg-white border-blue-200 hover:border-blue-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-blue-800">🎉 เสร็จสิ้น</span>
+                  <Utensils className="w-4 h-4 text-blue-600" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-blue-700">
+                  {reservations.filter(r => r.status === "completed").length}
+                </div>
+                <p className="text-[10px] text-blue-700/80 mt-0.5">ลูกค้ามาทานเรียบร้อย</p>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setResStatusFilter("cancelled")}
+                className={`p-4 rounded-2xl border text-left transition-all cursor-pointer shadow-xs ${
+                  resStatusFilter === "cancelled"
+                    ? "bg-gray-100 border-gray-400 ring-2 ring-gray-400/40"
+                    : "bg-white border-gray-200 hover:border-gray-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-gray-700">❌ ยกเลิก</span>
+                  <XCircle className="w-4 h-4 text-gray-500" />
+                </div>
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700">
+                  {reservations.filter(r => r.status === "cancelled").length}
+                </div>
+                <p className="text-[10px] text-gray-500 mt-0.5">รายการที่ยกเลิก</p>
+              </button>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div className="bg-white p-4 border border-primary/10 rounded-2xl space-y-3 shadow-xs">
+              <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+                {/* Search Box */}
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-primary/40 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="ค้นหาชื่อลูกค้า, เบอร์โทรศัพท์, วันที่ (เช่น 2026-09-08)..."
+                    value={resSearch}
+                    onChange={(e) => setResSearch(e.target.value)}
+                    className="w-full pl-10 pr-10 py-2.5 bg-cream/50 border border-primary/15 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-accent focus:bg-white transition-colors"
+                  />
+                  {resSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setResSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-primary/40 hover:text-primary cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Status Filter Buttons */}
+                <div className="flex items-center gap-1 overflow-x-auto pb-1 md:pb-0 scrollbar-none shrink-0">
+                  {[
+                    { id: "ทั้งหมด", label: `ทั้งหมด (${reservations.length})` },
+                    { id: "pending", label: `รอยืนยัน (${reservations.filter(r => r.status === "pending").length})` },
+                    { id: "confirmed", label: `ยืนยันแล้ว (${reservations.filter(r => r.status === "confirmed").length})` },
+                    { id: "completed", label: `เสร็จสิ้น (${reservations.filter(r => r.status === "completed").length})` },
+                    { id: "cancelled", label: `ยกเลิก (${reservations.filter(r => r.status === "cancelled").length})` },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setResStatusFilter(tab.id)}
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                        resStatusFilter === tab.id
+                          ? "bg-primary text-white shadow-xs"
+                          : "bg-cream text-primary/70 hover:text-primary hover:bg-primary/5"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Reservations List */}
+            {filteredReservations.length === 0 ? (
+              <div className="p-12 text-center bg-white border border-primary/10 rounded-2xl space-y-3">
+                <div className="w-12 h-12 rounded-full bg-cream border border-primary/10 flex items-center justify-center mx-auto text-primary/40">
+                  <Calendar className="w-6 h-6" />
+                </div>
+                <h3 className="font-bold text-primary text-sm">ไม่พบข้อมูลการจองโต๊ะ</h3>
+                <p className="text-xs text-primary/60 max-w-sm mx-auto">
+                  {resSearch || resStatusFilter !== "ทั้งหมด"
+                    ? "ไม่พบข้อมูลที่ตรงกับเงื่อนไขค้นหา ลองค้นหาด้วยคำอื่นหรือกดดูทั้งหมดครับ"
+                    : "ขณะนี้ยังไม่มีประวัติการจองโต๊ะจากลูกค้า เมื่อมีลูกค้าจองโต๊ะ รายชื่อจะแสดงขึ้นที่นี่อัตโนมัติครับ"}
+                </p>
+                {(resSearch || resStatusFilter !== "ทั้งหมด") && (
+                  <button
+                    type="button"
+                    onClick={() => { setResSearch(""); setResStatusFilter("ทั้งหมด"); }}
+                    className="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                  >
+                    ล้างตัวกรองทั้งหมด
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {filteredReservations.map((res: any) => {
+                  const isPending = res.status === "pending";
+                  const isConfirmed = res.status === "confirmed";
+                  const isCompleted = res.status === "completed";
+                  const isCancelled = res.status === "cancelled";
+
+                  return (
+                    <div
+                      key={res.id}
+                      className={`p-5 rounded-2xl border transition-all shadow-xs bg-white ${
+                        isPending
+                          ? "border-amber-300 ring-1 ring-amber-200"
+                          : isConfirmed
+                          ? "border-emerald-200 hover:border-emerald-400"
+                          : "border-primary/10 hover:border-primary/25"
+                      }`}
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        {/* Left Details: Date, Time, Guests, Customer, Phone */}
+                        <div className="space-y-2.5">
+                          {/* Top Badges */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {/* Date */}
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/5 text-primary rounded-lg text-xs font-bold">
+                              <Calendar className="w-3.5 h-3.5 text-accent-dark" />
+                              {res.date}
+                            </span>
+                            {/* Time */}
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary/5 text-primary rounded-lg text-xs font-bold">
+                              <Clock className="w-3.5 h-3.5 text-accent-dark" />
+                              {res.time} น.
+                            </span>
+                            {/* Guests */}
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-accent/15 text-accent-dark rounded-lg text-xs font-bold">
+                              👥 {res.guests} ท่าน
+                            </span>
+
+                            {/* Status Badge */}
+                            {isPending && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-100 border border-amber-300 text-amber-800 rounded-lg text-xs font-bold animate-pulse">
+                                ⏳ รอยืนยัน (Pending)
+                              </span>
+                            )}
+                            {isConfirmed && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-lg text-xs font-bold">
+                                ✅ ยืนยันแล้ว (Confirmed)
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 border border-blue-300 text-blue-800 rounded-lg text-xs font-bold">
+                                🎉 มาทานแล้ว (Completed)
+                              </span>
+                            )}
+                            {isCancelled && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 border border-gray-300 text-gray-700 rounded-lg text-xs font-semibold">
+                                ❌ ยกเลิก (Cancelled)
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Customer Name & Direct Call */}
+                          <div className="flex flex-wrap items-center gap-3">
+                            <h3 className="text-base sm:text-lg font-bold text-primary">
+                              คุณ {res.name}
+                            </h3>
+
+                            {/* Click to Call Button */}
+                            <a
+                              href={`tel:${res.phone}`}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                              title="แตะเพื่อโทรออกหาลูกค้าทันที"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                              <span>โทรหาลูกค้า: {res.phone}</span>
+                            </a>
+                          </div>
+
+                          {/* Created at timestamp */}
+                          {res.created_at && (
+                            <p className="text-[11px] text-primary/50">
+                              ทำรายการจองเมื่อ: {res.created_at}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Right Actions: Status toggles & Delete */}
+                        <div className="flex flex-wrap items-center gap-2 pt-2 lg:pt-0 border-t lg:border-t-0 border-primary/5">
+                          {/* Confirm Button */}
+                          {!isConfirmed && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateReservationStatus(res.id, "confirmed")}
+                              className="flex items-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>ยืนยันการจอง</span>
+                            </button>
+                          )}
+
+                          {/* Complete Button */}
+                          {!isCompleted && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateReservationStatus(res.id, "completed")}
+                              className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              <span>ลูกค้ามาทานแล้ว</span>
+                            </button>
+                          )}
+
+                          {/* Cancel Button */}
+                          {!isCancelled && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateReservationStatus(res.id, "cancelled")}
+                              className="flex items-center gap-1 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              <span>ยกเลิก</span>
+                            </button>
+                          )}
+
+                          {/* Back to Pending if cancelled or completed */}
+                          {(isCancelled || isCompleted) && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateReservationStatus(res.id, "pending")}
+                              className="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-colors cursor-pointer"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                              <span>รอยืนยัน</span>
+                            </button>
+                          )}
+
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteReservation(res.id)}
+                            className="p-2 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors cursor-pointer ml-auto lg:ml-0"
+                            title="ลบประวัติการจองนี้"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 
@@ -3216,7 +3677,7 @@ export default function AdminDashboard({
                   }`}
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  <span>5. รหัสผ่าน & แจ้งเตือน LINE</span>
+                  <span>5. รหัสผ่าน, แจ้งเตือน LINE & สำรองข้อมูล</span>
                 </button>
               </div>
 
@@ -4403,29 +4864,52 @@ export default function AdminDashboard({
                   </div>
 
                   {/* LINE Notify Setting */}
-              <div className="p-5 bg-accent/5 border border-accent/20 rounded-2xl space-y-4">
-                <h3 className="font-bold text-primary text-sm flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 bg-green-600 rounded-full animate-pulse"></span>
-                  การเชื่อมต่อระบบแจ้งเตือนไลน์กลุ่ม (LINE Notify Token)
-                </h3>
-                <p className="text-xs text-primary/70 leading-relaxed">
-                  เชื่อมต่อเพื่อให้เมื่อลูกค้ากดจองโต๊ะอาหารจากหน้าเว็บ ระบบจะส่งข้อความรายละเอียดการจองตรงเข้ากลุ่มไลน์ของร้านทันที 
-                  (คุณสามารถนำ Token มาใส่ที่ช่องด้านล่างเพื่อเปิดใช้งานการแจ้งเตือนได้เลยครับ)
-                </p>
-                <div>
-                  <label htmlFor="line_notify_token" className="block text-xs font-semibold text-primary mb-1">
-                    LINE Notify Access Token
-                  </label>
-                  <input
-                    type="text"
-                    id="line_notify_token"
-                    value={settings.line_notify_token || ""}
-                    onChange={e => setSettings(prev => ({ ...prev, line_notify_token: e.target.value }))}
-                    placeholder="กรอก Access Token (ตัวอย่าง: G5sF8d...)"
-                    className="block w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm focus:outline-none"
-                  />
-                </div>
-              </div>
+                  <div className="p-5 bg-accent/5 border border-accent/20 rounded-2xl space-y-4">
+                    <h3 className="font-bold text-primary text-sm flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 bg-green-600 rounded-full animate-pulse"></span>
+                      การเชื่อมต่อระบบแจ้งเตือนไลน์กลุ่ม (LINE Notify Token)
+                    </h3>
+                    <p className="text-xs text-primary/70 leading-relaxed">
+                      เชื่อมต่อเพื่อให้เมื่อลูกค้ากดจองโต๊ะอาหารจากหน้าเว็บ ระบบจะส่งข้อความรายละเอียดการจองตรงเข้ากลุ่มไลน์ของร้านทันที 
+                      (คุณสามารถนำ Token มาใส่ที่ช่องด้านล่างเพื่อเปิดใช้งานการแจ้งเตือนได้เลยครับ)
+                    </p>
+                    <div>
+                      <label htmlFor="line_notify_token" className="block text-xs font-semibold text-primary mb-1">
+                        LINE Notify Access Token
+                      </label>
+                      <input
+                        type="text"
+                        id="line_notify_token"
+                        value={settings.line_notify_token || ""}
+                        onChange={e => setSettings(prev => ({ ...prev, line_notify_token: e.target.value }))}
+                        placeholder="กรอก Access Token (ตัวอย่าง: G5sF8d...)"
+                        className="block w-full px-3 py-2 bg-white border border-primary/20 rounded-xl text-xs sm:text-sm focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* System Full Backup Card */}
+                  <div className="p-5 bg-cream/70 border border-primary/20 rounded-2xl space-y-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                      <div className="space-y-1">
+                        <h3 className="font-bold text-primary text-sm flex items-center gap-2">
+                          <Download className="w-4.5 h-4.5 text-accent" />
+                          สำรองข้อมูลระบบทั้งหมด (Full JSON Data Backup)
+                        </h3>
+                        <p className="text-xs text-primary/70 leading-relaxed">
+                          ดาวน์โหลดข้อมูลทั้งหมดของร้าน (การตั้งค่าร้าน, เมนูอาหารทั้งหมด, บทความตำราลับแลง ๓๒ ตอน, และประวัติการจองโต๊ะ) บันทึกเก็บไว้ในเครื่องของคุณได้ตลอดเวลาเพื่อความปลอดภัยสูงสุด
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleExportBackup}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary-light text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer shrink-0"
+                      >
+                        <Download className="w-4 h-4 text-accent" />
+                        <span>ดาวน์โหลดสำรองข้อมูล (JSON)</span>
+                      </button>
+                    </div>
+                  </div>
 
                   
               <div className="flex justify-end pt-4 border-t border-primary/5">
