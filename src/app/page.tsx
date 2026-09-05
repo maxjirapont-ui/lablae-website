@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { getSetting, MenuItem } from "@/lib/data";
 import BookingForm from "@/components/BookingForm";
-import AtmosphereGallery from "@/components/AtmosphereGallery";
 import QuickFactsStoryModal from "@/components/QuickFactsStoryModal";
 import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight } from "lucide-react";
 
@@ -137,11 +136,6 @@ export default async function Home() {
     if (split.length > 0) aboutParagraphs = split;
   }
 
-  // Gallery Section Customizable Texts & Items with Captions
-  const galleryBadge = (await getSetting("gallery_badge")) || "บรรยากาศบ้าน ๑๐๐ ปี";
-  const galleryTitle = (await getSetting("gallery_title")) || "ภาพบรรยากาศร้านลำลำลับแลบ้าน ๑๐๐ ปี";
-  const gallerySubtitle = (await getSetting("gallery_subtitle")) || "ใต้ถุนเรือนไม้สักโบราณไร้ตะปู อายุกว่า ๑๐๐ ปี อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ๆ";
-
   // Custom Stories Data for 4 Quick Facts
   const rawCustomStories = await getSetting("custom_stories_data");
   let customStoriesData = undefined;
@@ -151,53 +145,14 @@ export default async function Home() {
     }
   } catch {}
 
-  const rawGallery = await getSetting("restaurant_gallery");
-  let galleryItems: { url: string; caption?: string }[] = [];
-  try {
-    if (rawGallery) {
-      const parsed = JSON.parse(rawGallery);
-      if (Array.isArray(parsed)) {
-        galleryItems = parsed.map((item: any) => {
-          if (typeof item === "string") return { url: item, caption: "" };
-          return { url: item?.url || "", caption: item?.caption || "" };
-        }).filter((item) => Boolean(item.url));
-      }
-    }
-  } catch {
-    galleryItems = [];
-  }
-
-  // Seamlessly merge all uploaded photos from custom stories so any photos added in admin appear in the homepage gallery!
-  if (customStoriesData) {
-    const storyKeys = ["house", "wood", "family", "kitchen"] as const;
-    storyKeys.forEach((k) => {
-      const pList = (customStoriesData as any)?.[k]?.photos;
-      if (Array.isArray(pList)) {
-        pList.forEach((p: any) => {
-          if (p?.url && !galleryItems.some((g) => g.url === p.url)) {
-            galleryItems.push({
-              url: p.url,
-              caption: p.caption ? `${p.caption} (${p.tag || "บรรยากาศ"})` : (p.tag || "บรรยากาศร้านลำลำลับแล"),
-            });
-          }
-        });
-      }
-    });
-  }
-
-  if (galleryItems.length === 0) {
-    if (aboutImage) galleryItems.push({ url: aboutImage, caption: "บรรยากาศเรือนไม้สักโบราณ ๑๐๐ ปี" });
-    if (heroImage) galleryItems.push({ url: heroImage, caption: "หน้าร้านลำลำลับแลบ้าน ๑๐๐ ปี" });
-  }
-
   // Web Layout & Sections customizability
   const showIntro = (await getSetting("home_section_intro_show")) !== "0";
   const showFeatured = (await getSetting("home_section_featured_show")) !== "0";
   const showSeasonal = (await getSetting("home_section_seasonal_show")) !== "0";
   const showSocial = (await getSetting("home_section_social_show")) !== "0";
   const showContact = (await getSetting("home_section_contact_show")) !== "0";
-  const rawOrder = (await getSetting("homepage_sections_order")) || "featured,seasonal,intro,gallery,book,booking,social,contact";
-  let sections = rawOrder.split(",").map(s => s.trim()).filter(Boolean);
+  const rawOrder = (await getSetting("homepage_sections_order")) || "featured,seasonal,intro,book,booking,social,contact";
+  let sections = rawOrder.split(",").map(s => s.trim()).filter(s => s && s !== "gallery");
   if (!sections.includes("book")) {
     sections.push("book");
   }
@@ -207,14 +162,6 @@ export default async function Home() {
       sections.splice(contactIdx, 0, "booking");
     } else {
       sections.push("booking");
-    }
-  }
-  if (!sections.includes("gallery")) {
-    const introIdx = sections.indexOf("intro");
-    if (introIdx !== -1) {
-      sections.splice(introIdx + 1, 0, "gallery");
-    } else {
-      sections.push("gallery");
     }
   }
 
@@ -351,18 +298,6 @@ export default async function Home() {
                 </div>
               </div>
             </section>
-          );
-        }
-
-        if (sectionKey === "gallery" && galleryItems.length > 0) {
-          return (
-            <AtmosphereGallery
-              key="gallery"
-              images={galleryItems}
-              badge={galleryBadge}
-              title={galleryTitle}
-              subtitle={gallerySubtitle}
-            />
           );
         }
 
