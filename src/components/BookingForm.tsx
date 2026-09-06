@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
   CalendarDays,
   CheckCircle2,
   Clock,
   ExternalLink,
-  MessageSquareText,
   Phone,
+  RotateCcw,
   Send,
   User,
   Users,
@@ -30,22 +30,49 @@ type SubmitResult = {
   statusUrl: string;
   lineConnectUrl?: string | null;
 };
-
-const STATUS_LABEL: Record<SlotStatus, string> = {
-  available: "ว่าง",
-  few: "เหลือน้อย",
-  full: "เต็ม",
+type BookingDetails = {
+  name: string;
+  phone: string;
+  date: string;
+  time: string;
+  guests: string;
+  notes: string;
 };
 
+const initialFormData: BookingDetails = {
+  name: "",
+  phone: "",
+  date: "",
+  time: "",
+  guests: "2",
+  notes: "",
+};
+
+function formatBookingDate(date: string) {
+  if (!date) return "";
+  return new Intl.DateTimeFormat("th-TH-u-nu-latn", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "Asia/Bangkok",
+  }).format(new Date(`${date}T12:00:00+07:00`));
+}
+
 export default function BookingForm() {
-  const [formData, setFormData] = useState({ name: "", phone: "", date: "", time: "", guests: "2", notes: "" });
+  const [formData, setFormData] = useState<BookingDetails>(initialFormData);
+  const [submittedDetails, setSubmittedDetails] = useState<BookingDetails | null>(null);
   const [availability, setAvailability] = useState<AvailabilityResponse | null>(null);
   const [availabilityError, setAvailabilityError] = useState("");
+  const [selectionNotice, setSelectionNotice] = useState("");
   const [loadingAvailability, setLoadingAvailability] = useState(true);
   const [minimumDate, setMinimumDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<SubmitResult | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const loadAvailability = useCallback(async (startDate?: string) => {
     setLoadingAvailability(true);
@@ -62,7 +89,12 @@ export default function BookingForm() {
       setFormData((previous) => {
         const nextDate = data.days[0]?.date || startDate || "";
         const selectedDay = data.days.find((day) => day.date === nextDate);
-        const selectedSlotStillOpen = selectedDay?.slots.some((slot) => slot.time === previous.time && slot.status !== "full");
+        const selectedSlotStillOpen = selectedDay?.slots.some(
+          (slot) =>
+            slot.time === previous.time &&
+            slot.status !== "full" &&
+            Number(previous.guests) <= slot.maxGuests,
+        );
         return {
           ...previous,
           date: nextDate,
@@ -82,15 +114,53 @@ export default function BookingForm() {
     void loadAvailability();
   }, [loadAvailability]);
 
+  useEffect(() => {
+    if (!result) return;
+    window.requestAnimationFrame(() => {
+      resultRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      resultRef.current?.focus({ preventScroll: true });
+    });
+  }, [result]);
+
+  useEffect(() => {
+    if (!error) return;
+    window.requestAnimationFrame(() => {
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      errorRef.current?.focus({ preventScroll: true });
+    });
+  }, [error]);
+
   const selectedDay = useMemo(
     () => availability?.days.find((day) => day.date === formData.date),
     [availability, formData.date],
   );
   const guestCount = Number(formData.guests);
+  const availableSlots = useMemo(
+    () => selectedDay?.slots.filter(
+      (slot) => slot.status !== "full" && guestCount <= slot.maxGuests,
+    ) || [],
+    [guestCount, selectedDay],
+  );
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleGuestChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const guests = event.target.value;
+    const selectedSlot = selectedDay?.slots.find((slot) => slot.time === formData.time);
+    const timeStillWorks = !formData.time || Boolean(
+      selectedSlot && selectedSlot.status !== "full" && Number(guests) <= selectedSlot.maxGuests,
+    );
+    setSelectionNotice(
+      timeStillWorks ? "" : "ช่วงเวลาที่เลือกมีที่ไม่พอสำหรับจำนวนนี้ กรุณาเลือกเวลาใหม่ครับ",
+    );
+    setFormData((previous) => ({
+      ...previous,
+      guests,
+      time: timeStillWorks ? previous.time : "",
+    }));
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -106,9 +176,8 @@ export default function BookingForm() {
       });
       const data = await response.json() as SubmitResult & { error?: string };
       if (!response.ok) throw new Error(data.error || "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
+      setSubmittedDetails({ ...formData });
       setResult(data);
-      setFormData((previous) => ({ ...previous, name: "", phone: "", time: "", guests: "2", notes: "" }));
-      await loadAvailability(formData.date);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
     } finally {
@@ -116,130 +185,246 @@ export default function BookingForm() {
     }
   };
 
-  return (
-    <div className="w-full max-w-3xl mx-auto wood-card bg-[#241710] border border-accent/30 rounded-3xl shadow-2xl p-5 sm:p-8">
-      <div className="text-center mb-6 space-y-1.5">
-        <h3 className="font-thai text-xl sm:text-2xl font-bold text-cream">เลือกวันและเวลาที่ต้องการ</h3>
-        <p className="font-thai text-sm text-cream/70">
-          ร้านรับได้ 20 โต๊ะ รวม 80 ที่นั่ง การจองจะสมบูรณ์เมื่อได้รับข้อความยืนยันจากร้าน
-        </p>
-      </div>
+  const handleNewBooking = () => {
+    const date = formData.date;
+    setResult(null);
+    setSubmittedDetails(null);
+    setError("");
+    setSelectionNotice("");
+    setFormData({ ...initialFormData, date });
+    void loadAvailability(date || undefined);
+    window.requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
 
-      {result && (
-        <div className="p-5 rounded-2xl mb-6 font-thai bg-emerald-950/70 text-emerald-100 border border-emerald-500/30 space-y-3" role="status">
-          <div className="flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+  if (result && submittedDetails) {
+    return (
+      <div
+        ref={resultRef}
+        tabIndex={-1}
+        role="status"
+        aria-live="polite"
+        className="w-full max-w-2xl mx-auto rounded-3xl border border-emerald-500/35 bg-[#18251d] p-6 shadow-2xl outline-none sm:p-9"
+      >
+        <div className="text-center font-thai">
+          <CheckCircle2 className="mx-auto h-14 w-14 text-emerald-400" aria-hidden="true" />
+          <h3 className="mt-4 text-2xl font-bold text-cream sm:text-3xl">ได้รับคำขอจองแล้ว</h3>
+          <p className="mx-auto mt-3 max-w-lg text-base leading-7 text-cream/80">
+            เจ้าหน้าที่ร้านจะโทรกลับที่ <strong className="text-cream">{submittedDetails.phone}</strong> เพื่อยืนยันโต๊ะครับ
+          </p>
+        </div>
+
+        <div className="mt-7 rounded-2xl border border-white/10 bg-black/20 p-5 font-thai">
+          <p className="text-sm font-bold text-emerald-300">รายละเอียดที่ส่งให้ร้าน</p>
+          <dl className="mt-4 grid gap-4 text-base sm:grid-cols-2">
             <div>
-              <p className="font-bold">ร้านได้รับคำขอจองแล้ว</p>
-              <p className="text-sm text-emerald-100/80">ตอนนี้ยังอยู่ระหว่างรอทางร้านยืนยันโต๊ะ</p>
+              <dt className="text-sm text-cream/55">วันที่</dt>
+              <dd className="mt-1 font-semibold text-cream">{formatBookingDate(submittedDetails.date)}</dd>
             </div>
-          </div>
-          <div className="rounded-xl bg-black/20 px-4 py-3">
-            <p className="text-xs text-emerald-100/60">เลขที่การจอง</p>
-            <p className="font-mono text-base font-bold tracking-wide">{result.bookingCode}</p>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-2">
-            {result.lineConnectUrl && (
-              <a href={result.lineConnectUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#06C755] px-4 py-3 text-sm font-bold text-white hover:brightness-105">
-                <MessageSquareText className="w-4 h-4" /> รับผลยืนยันทาง LINE
-              </a>
-            )}
-            <a href={result.statusUrl} className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-400/40 px-4 py-3 text-sm font-bold text-emerald-100 hover:bg-white/5">
-              <ExternalLink className="w-4 h-4" /> เช็กสถานะการจอง
-            </a>
-          </div>
+            <div>
+              <dt className="text-sm text-cream/55">เวลา</dt>
+              <dd className="mt-1 font-semibold text-cream">{submittedDetails.time} น.</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-cream/55">จำนวน</dt>
+              <dd className="mt-1 font-semibold text-cream">{submittedDetails.guests} คน</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-cream/55">ชื่อผู้จอง</dt>
+              <dd className="mt-1 font-semibold text-cream">{submittedDetails.name}</dd>
+            </div>
+          </dl>
+          <p className="mt-5 border-t border-white/10 pt-4 text-xs text-cream/50">
+            เลขที่การจอง {result.bookingCode}
+          </p>
+        </div>
+
+        <div className="mt-6 rounded-2xl bg-emerald-500/12 px-4 py-4 text-center font-thai text-base font-bold text-emerald-200">
+          เรียบร้อยครับ ตอนนี้รอรับสายจากเจ้าหน้าที่ร้านได้เลย
+        </div>
+        <p className="mt-5 text-center font-thai text-sm text-cream/55">ตัวเลือกเพิ่มเติม</p>
+        <div className="mt-2 flex flex-wrap justify-center gap-x-6 gap-y-3 font-thai">
+          <a
+            href={result.statusUrl}
+            className="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-cream/75 underline decoration-white/25 underline-offset-4 hover:text-cream"
+          >
+            <ExternalLink className="h-5 w-5" aria-hidden="true" /> เช็กสถานะการจอง
+          </a>
+          <button
+            type="button"
+            onClick={handleNewBooking}
+            className="inline-flex min-h-11 items-center justify-center gap-2 text-sm font-semibold text-cream/75 underline decoration-white/25 underline-offset-4 hover:text-cream"
+          >
+            <RotateCcw className="h-5 w-5" aria-hidden="true" /> จองโต๊ะเพิ่ม
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full max-w-2xl mx-auto wood-card bg-[#241710] border border-accent/30 rounded-3xl shadow-2xl p-5 sm:p-8">
+      {availabilityError && (
+        <div className="flex items-start gap-3 p-4 rounded-xl mb-6 font-thai text-base bg-rose-950/70 text-rose-100 border border-rose-500/30" role="alert">
+          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+          <span>{availabilityError}</span>
         </div>
       )}
 
-      {(error || availabilityError) && (
-        <div className="flex items-start gap-3 p-4 rounded-xl mb-6 font-thai text-sm bg-rose-950/70 text-rose-200 border border-rose-500/30" role="alert">
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-          <span>{error || availabilityError}</span>
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <fieldset disabled={loadingAvailability}>
-          <legend className="flex items-center gap-2 font-thai text-sm font-bold text-cream mb-3">
-            <CalendarDays className="w-4 h-4 text-accent" /> วันที่จอง
-          </legend>
-          <input
-            type="date"
-            min={minimumDate || undefined}
-            value={formData.date}
-            onChange={(event) => {
-              const date = event.target.value;
-              setFormData((previous) => ({ ...previous, date, time: "" }));
-              if (date) void loadAvailability(date);
-            }}
-            className="block w-full rounded-xl border border-accent/30 bg-[#1a100a] px-4 py-3 text-sm text-cream focus:outline-none focus:ring-2 focus:ring-accent/40 disabled:opacity-60"
-          />
-        </fieldset>
-
-        <fieldset disabled={!selectedDay}>
-          <legend className="flex items-center gap-2 font-thai text-sm font-bold text-cream mb-3">
-            <Clock className="w-4 h-4 text-accent" /> เลือกเวลา
-          </legend>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-            {selectedDay?.slots.map((slot) => {
-              const disabled = slot.status === "full" || guestCount > slot.maxGuests;
-              const selected = formData.time === slot.time;
-              return (
-                <button
-                  key={slot.time}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setFormData((previous) => ({ ...previous, time: slot.time }))}
-                  aria-pressed={selected}
-                  title={disabled && slot.maxGuests > 0 ? `ช่วงนี้รับได้ไม่เกิน ${slot.maxGuests} คน` : undefined}
-                  className={`rounded-xl border px-2 py-2.5 text-sm font-bold transition-colors disabled:opacity-35 disabled:cursor-not-allowed ${selected ? "border-accent bg-accent text-[#1a100a]" : "border-white/10 bg-black/15 text-cream hover:border-accent/50"}`}
-                >
-                  {slot.time} น.
-                  <span className="block mt-0.5 text-[10px] font-normal">{disabled ? "เต็ม" : STATUS_LABEL[slot.status]}</span>
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          <label className="block font-thai text-sm font-bold text-cream">
-            ชื่อผู้จอง
-            <span className="relative block mt-1.5">
-              <User className="absolute left-3 top-3 w-4 h-4 text-accent" />
-              <input type="text" name="name" required maxLength={120} value={formData.name} onChange={handleChange} placeholder="ชื่อ–นามสกุล" className="block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm placeholder:text-[#f5ece1]/40" />
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block font-thai text-base font-bold text-cream">
+            วันที่จะมา
+            <span className="relative block mt-2">
+              <CalendarDays className="absolute left-4 top-4 w-5 h-5 text-accent pointer-events-none" aria-hidden="true" />
+              <input
+                type="date"
+                required
+                min={minimumDate || undefined}
+                disabled={loadingAvailability}
+                value={formData.date}
+                onChange={(event) => {
+                  const date = event.target.value;
+                  setSelectionNotice("");
+                  setFormData((previous) => ({ ...previous, date, time: "" }));
+                  if (date) void loadAvailability(date);
+                }}
+                className="block min-h-14 w-full rounded-xl border border-accent/40 bg-[#1a100a] py-3 pl-12 pr-3 text-base text-cream focus:outline-none focus:ring-2 focus:ring-accent"
+              />
             </span>
           </label>
-          <label className="block font-thai text-sm font-bold text-cream">
-            เบอร์โทรศัพท์
-            <span className="relative block mt-1.5">
-              <Phone className="absolute left-3 top-3 w-4 h-4 text-accent" />
-              <input type="tel" name="phone" required inputMode="tel" value={formData.phone} onChange={handleChange} placeholder="095-628-3125" className="block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm placeholder:text-[#f5ece1]/40" />
+
+          <label className="block font-thai text-base font-bold text-cream">
+            จำนวนคน
+            <span className="relative block mt-2">
+              <Users className="absolute left-4 top-4 w-5 h-5 text-accent pointer-events-none" aria-hidden="true" />
+              <select
+                name="guests"
+                value={formData.guests}
+                onChange={handleGuestChange}
+                className="block min-h-14 w-full rounded-xl border border-accent/40 bg-[#1a100a] py-3 pl-12 pr-3 text-base text-cream focus:outline-none focus:ring-2 focus:ring-accent"
+              >
+                {Array.from({ length: availability?.config.maxOnlineGuests || 20 }, (_, index) => index + 1).map((number) => (
+                  <option key={number} value={number}>{number} คน</option>
+                ))}
+              </select>
             </span>
           </label>
         </div>
 
-        <label className="block font-thai text-sm font-bold text-cream">
-          จำนวนคน
-          <span className="relative block mt-1.5">
-            <Users className="absolute left-3 top-3 w-4 h-4 text-accent pointer-events-none" />
-            <select name="guests" value={formData.guests} onChange={(event) => setFormData((previous) => ({ ...previous, guests: event.target.value, time: "" }))} className="block w-full pl-10 pr-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm">
-              {Array.from({ length: availability?.config.maxOnlineGuests || 20 }, (_, index) => index + 1).map((number) => <option key={number} value={number}>{number} คน</option>)}
+        <label className="block font-thai text-base font-bold text-cream">
+          เวลาที่สะดวก
+          <span className="relative block mt-2">
+            <Clock className="absolute left-4 top-4 w-5 h-5 text-accent pointer-events-none" aria-hidden="true" />
+            <select
+              required
+              value={formData.time}
+              disabled={loadingAvailability || !selectedDay || availableSlots.length === 0}
+              onChange={(event) => {
+                setSelectionNotice("");
+                setFormData((previous) => ({ ...previous, time: event.target.value }));
+              }}
+              className="block min-h-14 w-full rounded-xl border border-accent/40 bg-[#1a100a] py-3 pl-12 pr-3 text-base text-cream focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-55"
+            >
+              <option value="">
+                {loadingAvailability
+                  ? "กำลังดูเวลาว่าง..."
+                  : availableSlots.length > 0
+                    ? "กดเพื่อเลือกเวลา"
+                    : "ไม่มีเวลาว่างสำหรับจำนวนนี้"}
+              </option>
+              {availableSlots.map((slot) => (
+                <option key={slot.time} value={slot.time}>{slot.time} น.</option>
+              ))}
             </select>
           </span>
-          <span className="block mt-1.5 text-xs font-normal text-cream/55">มากกว่า 20 คน กรุณาโทรสอบถามร้านเพื่อจัดโต๊ะ</span>
+          {selectionNotice && (
+            <span className="mt-2 block text-sm font-normal leading-6 text-amber-300" role="alert">{selectionNotice}</span>
+          )}
         </label>
 
-        <label className="block font-thai text-sm font-bold text-cream">
-          หมายเหตุเพิ่มเติม <span className="font-normal text-cream/50">(ไม่บังคับ)</span>
-          <textarea name="notes" rows={3} maxLength={300} value={formData.notes} onChange={handleChange} placeholder="เช่น มีเด็กเล็ก ผู้สูงอายุ ต้องการโต๊ะติดกัน ใช้รถเข็น หรือมีอาหารที่แพ้" className="mt-1.5 block w-full px-3 py-2.5 border border-accent/30 rounded-xl bg-[#1a100a] text-[#f5ece1] focus:outline-none focus:ring-2 focus:ring-accent/40 text-sm placeholder:text-[#f5ece1]/40 resize-y" />
-          <span className="block mt-1 text-right text-xs font-normal text-cream/45">{formData.notes.length}/300</span>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <label className="block font-thai text-base font-bold text-cream">
+            ชื่อผู้จอง
+            <span className="relative block mt-2">
+              <User className="absolute left-4 top-4 w-5 h-5 text-accent" aria-hidden="true" />
+              <input
+                type="text"
+                name="name"
+                required
+                maxLength={120}
+                autoComplete="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="เช่น สมชาย"
+                className="block min-h-14 w-full rounded-xl border border-accent/40 bg-[#1a100a] py-3 pl-12 pr-3 text-base text-[#f5ece1] placeholder:text-[#f5ece1]/40 focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </span>
+          </label>
+          <label className="block font-thai text-base font-bold text-cream">
+            เบอร์โทรศัพท์
+            <span className="relative block mt-2">
+              <Phone className="absolute left-4 top-4 w-5 h-5 text-accent" aria-hidden="true" />
+              <input
+                type="tel"
+                name="phone"
+                required
+                inputMode="tel"
+                autoComplete="tel"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="095-628-3125"
+                className="block min-h-14 w-full rounded-xl border border-accent/40 bg-[#1a100a] py-3 pl-12 pr-3 text-base text-[#f5ece1] placeholder:text-[#f5ece1]/40 focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+            </span>
+          </label>
+        </div>
+
+        <label className="block font-thai text-base font-bold text-cream">
+          หมายเหตุ <span className="font-normal text-cream/55">(ไม่ต้องกรอกก็ได้)</span>
+          <textarea
+            name="notes"
+            rows={2}
+            maxLength={300}
+            value={formData.notes}
+            onChange={handleChange}
+            placeholder="เช่น มีผู้สูงอายุ ใช้รถเข็น หรือมีอาหารที่แพ้"
+            className="mt-2 block w-full resize-y rounded-xl border border-accent/40 bg-[#1a100a] px-4 py-3 text-base text-[#f5ece1] placeholder:text-[#f5ece1]/40 focus:outline-none focus:ring-2 focus:ring-accent"
+          />
         </label>
 
-        <button type="submit" disabled={loading || !formData.date || !formData.time} className="w-full flex items-center justify-center py-3.5 px-4 rounded-xl shadow-md text-sm font-bold text-[#1a100a] bg-gradient-to-r from-accent to-[#e6b87d] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent disabled:opacity-50 transition-all font-thai cursor-pointer">
-          {loading ? <span className="w-5 h-5 border-2 border-[#1a100a] border-t-transparent rounded-full animate-spin" /> : <><Send className="w-4 h-4 mr-2" />ส่งคำขอจองโต๊ะ</>}
+        {formData.date && formData.time && (
+          <div className="rounded-xl border border-accent/25 bg-accent/10 px-4 py-3 font-thai text-base leading-7 text-cream">
+            <span className="text-cream/65">ข้อมูลที่เลือก: </span>
+            <strong>{formatBookingDate(formData.date)} เวลา {formData.time} น. จำนวน {formData.guests} คน</strong>
+          </div>
+        )}
+
+        {error && (
+          <div
+            ref={errorRef}
+            tabIndex={-1}
+            className="flex items-start gap-3 rounded-xl border border-rose-500/30 bg-rose-950/70 p-4 font-thai text-base text-rose-100 outline-none"
+            role="alert"
+          >
+            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading || !formData.date || !formData.time}
+          className="flex min-h-14 w-full items-center justify-center rounded-xl bg-gradient-to-r from-accent to-[#e6b87d] px-5 py-3.5 font-thai text-base font-bold text-[#1a100a] shadow-md transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {loading ? (
+            <><span className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-[#1a100a] border-t-transparent" />กำลังส่งข้อมูล...</>
+          ) : (
+            <><Send className="mr-2 h-5 w-5" aria-hidden="true" />ส่งคำขอจองโต๊ะ</>
+          )}
         </button>
-        <p className="text-center text-xs text-cream/50">ร้านใช้ชื่อและเบอร์โทรเพื่อติดต่อเรื่องการจองนี้เท่านั้น</p>
+        <p className="text-center font-thai text-sm leading-6 text-cream/60">
+          กดส่งเพียงครั้งเดียว แล้วรอเจ้าหน้าที่โทรกลับเพื่อยืนยันโต๊ะครับ
+        </p>
       </form>
     </div>
   );

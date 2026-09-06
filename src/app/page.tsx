@@ -690,8 +690,8 @@ export default async function Home() {
                 <h2 className="text-2xl sm:text-4xl font-bold font-thai text-primary leading-tight">
                   จองโต๊ะอาหารล่วงหน้า
                 </h2>
-                <p className="font-thai text-xs sm:text-sm text-[#f5ece1]/80 max-w-lg mx-auto leading-relaxed">
-                  เลือกวันและเวลาที่ว่าง แล้วส่งคำขอจองได้จากหน้าเว็บ ทางร้านจะแจ้งผลยืนยันกลับทาง LINE
+                <p className="font-thai text-sm sm:text-base text-[#f5ece1]/80 max-w-lg mx-auto leading-relaxed">
+                  เลือกวัน จำนวนคน และเวลาที่สะดวก แล้วเจ้าหน้าที่ร้านจะโทรกลับเพื่อยืนยันโต๊ะครับ
                 </p>
               </div>
               <BookingForm />
