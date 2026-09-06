@@ -1,4 +1,5 @@
 import React from "react";
+import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getDb } from "@/lib/db";
@@ -9,11 +10,19 @@ import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
-export const metadata = pageMetadata(
-  "ลำลำลับแลบ้าน 100 ปี | ร้านอาหารลับแล อุตรดิตถ์",
-  "ลำลำลับแลบ้าน 100 ปี ร้านอาหารพื้นเมืองในอำเภอลับแล จังหวัดอุตรดิตถ์ อาหารเหนือสูตรครอบครัว 4 รุ่น พริกแกงทำเอง ดูเมนูขันโตก แผนที่ และจองโต๊ะออนไลน์",
-  "/",
-);
+const HOME_TITLE = "ลำลำลับแลบ้าน 100 ปี | ร้านอาหารลับแล อุตรดิตถ์";
+const HOME_DESCRIPTION = "ลำลำลับแลบ้าน 100 ปี ร้านอาหารพื้นเมืองในอำเภอลับแล จังหวัดอุตรดิตถ์ อาหารเหนือสูตรครอบครัว 4 รุ่น พริกแกงทำเอง ดูเมนูขันโตก แผนที่ และจองโต๊ะออนไลน์";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const heroImage = (await getSetting("home_hero_image")) || undefined;
+  return pageMetadata(
+    HOME_TITLE,
+    HOME_DESCRIPTION,
+    "/",
+    heroImage,
+    "บรรยากาศบ้านไม้ 100 ปี ร้านลำลำลับแล",
+  );
+}
 const HOMEPAGE_FEATURED_LIMIT = 3;
 
 // Server component fetching featured dishes

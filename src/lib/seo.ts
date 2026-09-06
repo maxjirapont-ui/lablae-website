@@ -4,7 +4,13 @@ export const SITE_URL = "https://www.lablae.net";
 export const SITE_NAME = "ร้านลำลำลับแลบ้าน 100 ปี";
 export const SHARE_IMAGE = "/images/menu/khantoke_big.jpg";
 
-export function pageMetadata(title: string, description: string, path: string): Metadata {
+export function pageMetadata(
+  title: string,
+  description: string,
+  path: string,
+  image = SHARE_IMAGE,
+  imageAlt = "ชุดขันโตก ร้านลำลำลับแลบ้าน 100 ปี",
+): Metadata {
   const url = new URL(path, SITE_URL).href;
   const shareTitle = path === "/" ? title : `${title} | ${SITE_NAME}`;
   return {
@@ -18,13 +24,13 @@ export function pageMetadata(title: string, description: string, path: string): 
       title: shareTitle,
       description,
       url,
-      images: [{ url: SHARE_IMAGE, alt: "ชุดขันโตก ร้านลำลำลับแลบ้าน 100 ปี" }],
+      images: [{ url: image, alt: imageAlt }],
     },
     twitter: {
       card: "summary_large_image",
       title: shareTitle,
       description,
-      images: [SHARE_IMAGE],
+      images: [image],
     },
   };
 }
