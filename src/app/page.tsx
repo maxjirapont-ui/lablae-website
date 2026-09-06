@@ -10,7 +10,7 @@ import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
 export const metadata = pageMetadata(
-  "ร้านอาหารลับแล อุตรดิตถ์ อาหารพื้นเมืองและขันโตก",
+  "ลำลำลับแลบ้าน 100 ปี | ร้านอาหารลับแล อุตรดิตถ์",
   "ลำลำลับแลบ้าน 100 ปี ร้านอาหารพื้นเมืองในอำเภอลับแล จังหวัดอุตรดิตถ์ อาหารเหนือสูตรครอบครัว 4 รุ่น พริกแกงทำเอง ดูเมนูขันโตก แผนที่ และจองโต๊ะออนไลน์",
   "/",
 );
