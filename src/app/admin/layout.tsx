@@ -1,5 +1,10 @@
 import React from "react";
 
+export const metadata = {
+  title: "จัดการร้าน",
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+};
+
 export default function AdminLayout({
   children,
 }: {

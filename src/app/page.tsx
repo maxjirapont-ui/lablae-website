@@ -1,4 +1,5 @@
 import React from "react";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getDb } from "@/lib/db";
 import { getSetting, MenuItem } from "@/lib/data";
@@ -8,6 +9,11 @@ import { Clock, Phone, MapPin, Sparkles, BookOpen, Utensils, Heart, ChevronRight
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
+export const metadata = pageMetadata(
+  "ร้านอาหารลับแล อุตรดิตถ์ อาหารพื้นเมืองและขันโตก",
+  "ลำลำลับแลบ้าน 100 ปี ร้านอาหารพื้นเมืองในอำเภอลับแล จังหวัดอุตรดิตถ์ อาหารเหนือสูตรครอบครัว 4 รุ่น พริกแกงทำเอง ดูเมนูขันโตก แผนที่ และจองโต๊ะออนไลน์",
+  "/",
+);
 const HOMEPAGE_FEATURED_LIMIT = 3;
 
 // Server component fetching featured dishes
@@ -775,6 +781,27 @@ export default async function Home() {
 
         return null;
       })}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 font-thai" aria-labelledby="visit-questions">
+        <h2 id="visit-questions" className="text-2xl font-bold text-primary mb-5">ก่อนแวะมากินข้าวที่ลับแล</h2>
+        <div className="divide-y divide-accent/20 rounded-2xl border border-accent/20 px-5">
+          <details className="py-4">
+            <summary className="cursor-pointer font-semibold text-primary">ร้านลำลำลับแลบ้าน 100 ปี อยู่ที่ไหน?</summary>
+            <p className="mt-3 text-sm leading-relaxed text-primary/80">{address} <Link href="/directions" className="text-accent underline">ดูแผนที่และเส้นทางมาร้าน</Link></p>
+          </details>
+          <details className="py-4">
+            <summary className="cursor-pointer font-semibold text-primary">ร้านเปิดเวลาไหน?</summary>
+            <p className="mt-3 text-sm leading-relaxed text-primary/80">{hours} สอบถามเพิ่มเติมได้ที่ {phone}</p>
+          </details>
+          <details className="py-4">
+            <summary className="cursor-pointer font-semibold text-primary">มีอาหารอะไรให้เลือกบ้าง?</summary>
+            <p className="mt-3 text-sm leading-relaxed text-primary/80">อาหารพื้นเมืองลับแลและอาหารเหนือสูตรครอบครัว 4 รุ่น ทั้งชุดขันโตก น้ำพริก และกับข้าว พริกแกงทำเอง <Link href="/menu" className="text-accent underline">ดูเมนูและราคาปัจจุบัน</Link></p>
+          </details>
+          <details className="py-4">
+            <summary className="cursor-pointer font-semibold text-primary">จองโต๊ะล่วงหน้าได้อย่างไร?</summary>
+            <p className="mt-3 text-sm leading-relaxed text-primary/80"><a href="#booking" className="text-accent underline">เลือกวัน เวลา และจำนวนคนในแบบฟอร์มจอง</a> แล้วรอทางร้านยืนยัน หรือโทร {phone} เพื่อสอบถามครับ</p>
+          </details>
+        </div>
+      </section>
     </div>
   );
 }

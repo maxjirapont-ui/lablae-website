@@ -1,4 +1,5 @@
 import React from "react";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getMenuItems, getSetting } from "@/lib/data";
 import MenuList from "@/components/MenuList";
@@ -6,10 +7,11 @@ import { Sparkles, FileText, AlertCircle, Calendar } from "lucide-react";
 
 export const revalidate = 0; // Disable static cache for menu, so dashboard updates show instantly
 
-export const metadata = {
-  title: "กับข้าวและสำรับอาหาร | ร้านลำลำลับแลบ้าน 100 ปี",
-  description: "เมนูอาหารเหนือแบบลับแล ขันโตก น้ำพริกหนุ่ม น้ำพริกอ่อง ข้าวพันผัก และอาหารพื้นบ้านสูตรโบราณ 4 รุ่น",
-};
+export const metadata = pageMetadata(
+  "เมนูอาหารพื้นเมืองลับแลและชุดขันโตก",
+  "ดูเมนูและราคาอาหารร้านลำลำลับแลบ้าน 100 ปี อุตรดิตถ์ ชุดขันโตก น้ำพริกหนุ่ม น้ำพริกอ่อง ข้าวพันผัก และอาหารเหนือสูตรครอบครัว 4 รุ่น พร้อมจองโต๊ะออนไลน์",
+  "/menu",
+);
 
 export default async function MenuPage() {
   const menuItems = await getMenuItems();

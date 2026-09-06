@@ -1,12 +1,14 @@
 import { Clock, MapPin, Navigation, Phone } from "lucide-react";
 import { getSetting } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 0;
 
-export const metadata = {
-  title: "แผนที่มาร้าน",
-  description: "แผนที่และเส้นทางมายังร้านลำลำลับแลบ้าน 100 ปี อำเภอลับแล จังหวัดอุตรดิตถ์",
-};
+export const metadata = pageMetadata(
+  "แผนที่และเส้นทางมาร้านที่ลับแล อุตรดิตถ์",
+  "แผนที่ร้านลำลำลับแลบ้าน 100 ปี อำเภอลับแล จังหวัดอุตรดิตถ์ ดูที่อยู่ เวลาเปิด เบอร์โทร และเปิดเส้นทางนำทางใน Google Maps",
+  "/directions",
+);
 
 const MAP_EMBED_URL =
   "https://www.google.com/maps?q=17.6586925,100.0409076&z=17&output=embed";

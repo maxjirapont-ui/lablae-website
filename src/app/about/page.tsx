@@ -1,14 +1,16 @@
 import React from "react";
+import { pageMetadata } from "@/lib/seo";
 import { getSetting } from "@/lib/data";
 import AboutClientView from "@/components/AboutClientView";
 import { DEFAULT_ABOUT_DATA, AboutCustomData } from "@/components/AboutPageEditor";
 
 export const revalidate = 0; // Disable static cache so admin edits reflect immediately
 
-export const metadata = {
-  title: "รู้จักบ้านและเรื่องเล่าลับแล | ร้านลำลำลับแลบ้าน 100 ปี",
-  description: "เรื่องราวของเรือนไม้ไร้ตะปู 100 ปี คนสี่รุ่น และอาหารแห่งความทรงจำ ณ ลำลำลับแล จ.อุตรดิตถ์",
-};
+export const metadata = pageMetadata(
+  "บ้านไม้ 100 ปีและเรื่องราวอาหารเมืองลับแล",
+  "รู้จักร้านลำลำลับแลบ้าน 100 ปี อำเภอลับแล จังหวัดอุตรดิตถ์ เรื่องราวบ้านไม้โบราณ ครอบครัว 4 รุ่น และอาหารพื้นเมืองที่ส่งต่อกันในครอบครัว",
+  "/about",
+);
 
 export default async function AboutPage() {
   const rawAboutData = await getSetting("about_page_custom_data");

@@ -5,6 +5,7 @@ import { getArticleBySlug, getArticles } from "@/lib/data";
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
 
 import type { Metadata } from "next";
+import { pageMetadata, SITE_URL, SHARE_IMAGE } from "@/lib/seo";
 
 export const revalidate = 0; // Disable static cache
 
@@ -18,26 +19,29 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!article) {
     return {
-      title: "ไม่พบบทความ | ร้านลำลำลับแลบ้าน 100 ปี",
+      title: "ไม่พบบทความ",
+      robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
     };
   }
 
-  const title = `${article.title} | ตำราลับแลง ร้านลำลำลับแลบ้าน 100 ปี`;
+  const title = article.title;
   const description = article.excerpt || article.content.substring(0, 160).replace(/\n/g, " ");
 
   return {
-    title,
-    description,
+    ...pageMetadata(title, description, `/blog/${encodeURIComponent(article.slug)}`),
     openGraph: {
       title,
       description,
       type: "article",
       locale: "th_TH",
+      url: `${SITE_URL}/blog/${encodeURIComponent(article.slug)}`,
+      images: [{ url: article.image_url || SHARE_IMAGE, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [article.image_url || SHARE_IMAGE],
     },
   };
 }

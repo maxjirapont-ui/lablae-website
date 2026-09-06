@@ -4,6 +4,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import AppShell from "@/components/AppShell";
 import { getSetting } from "@/lib/data";
+import { SITE_URL, serializeJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -151,10 +152,14 @@ export default async function RootLayout({
   const schemaJson = {
     "@context": "https://schema.org",
     "@type": "Restaurant",
+    "@id": `${SITE_URL}/#restaurant`,
+    "url": SITE_URL,
+    "hasMenu": `${SITE_URL}/menu`,
+    "hasMap": googleMapsUrl,
     "name": restaurantName,
     "image": [
-      heroImage || "https://lh3.googleusercontent.com/sitesv/AA5AbUBtBaZCAX-9g_MZWwNQqvEX6s88oX2eQ8flnpJYsoyFpI7B3ZTMEW3UBdmpNW6VQNI88JEjwbdriszJXS-2j-NhH0Zl5rSbZyXB4F-3sz5S6Ib3EYTV2fZGGKFpMU1x0QdtSqabAmjzbpljKB1IneR9V9gGou-HuVQy9GTJlOti6Yt0Jb1g1U9QCwo=w16383",
-      aboutImage || "https://lh3.googleusercontent.com/sitesv/AA5AbVd9WREClQayfZ7COMLiB91ilUHfEaJefV-DkYOhJLfhpHlbdpnWtZ-s4YnEidqkx8kEnBAQldI3t5Tokl-EMA6k6iY9pNIXI5_-QNGPMUbxcrtWZYB439lqAW0Qt-Hh2Xly7sB2KP7vlppjntbXUXmYriHo_ir0XvRKtNC9UAZtwLkkc4nEflbQ7MdVyCIuxdM213VLqZr1KPB"
+      new URL(heroImage || "/images/menu/khantoke_big.jpg", SITE_URL).href,
+      new URL(aboutImage || "/images/menu/khantoke_big.jpg", SITE_URL).href
     ],
     "address": {
       "@type": "PostalAddress",
@@ -191,7 +196,7 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaJson) }}
+          dangerouslySetInnerHTML={{ __html: serializeJsonLd(schemaJson) }}
         />
         <style
           dangerouslySetInnerHTML={{

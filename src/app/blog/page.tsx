@@ -1,9 +1,15 @@
 import React from "react";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getArticles, Article } from "@/lib/data";
 import { Sparkles, BookOpen, ChevronRight, Bookmark, ArrowUpRight } from "lucide-react";
 
 export const revalidate = 0; // Disable static cache
+export const metadata = pageMetadata(
+  "เรื่องเล่าเมืองลับแล อาหารพื้นบ้าน และตำราลับแลง",
+  "อ่านตำราลับแลง เรื่องเล่าเมืองลับแล อุตรดิตถ์ บันทึกครัวโบราณ อาหารพื้นบ้าน และวิถีชีวิตจากครอบครัวร้านลำลำลับแลบ้าน 100 ปี",
+  "/blog",
+);
 
 export default async function BlogListingPage() {
   const articles = await getArticles();

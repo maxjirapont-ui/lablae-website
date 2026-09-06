@@ -10,7 +10,8 @@ import BookingStatusRefresh from "@/components/BookingStatusRefresh";
 export const revalidate = 0;
 
 export const metadata = {
-  title: "ตรวจสอบสถานะการจอง | ร้านลำลำลับแลบ้าน 100 ปี",
+  title: "ตรวจสอบสถานะการจอง",
+  robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
 };
 
 function statusDetails(status: string) {
