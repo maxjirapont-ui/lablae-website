@@ -28,6 +28,9 @@ const sarabun = Sarabun({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.lablae.net"),
+  verification: {
+    other: { "msvalidate.01": "0D5FEC7249CEA094DC8EE9C9368FDB3E" },
+  },
   title: {
     default: "ร้านลำลำลับแลบ้าน 100 ปี | อาหารเมืองลับแล อุตรดิตถ์",
     template: "%s | ร้านลำลำลับแลบ้าน 100 ปี",
