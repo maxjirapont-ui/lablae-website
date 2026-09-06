@@ -37,6 +37,7 @@ export default function Navbar({
 
   const navLinks = [
     { name: "หน้าแรก", href: "/" },
+    { name: "เมืองลับแล", href: "/lablae" },
     { name: "รู้จักเรา", href: "/about" },
     { name: "เมนูอาหาร", href: "/menu" },
     { name: "ตำราลับแลง", href: "/blog" },
@@ -92,7 +93,7 @@ export default function Navbar({
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
+          <div className="hidden lg:flex items-center space-x-5">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -127,7 +128,7 @@ export default function Navbar({
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-xl text-accent hover:text-[#fff7ed] bg-[#241710]/80 border border-accent/30 focus:outline-none cursor-pointer shadow-xs active:scale-95 transition-all"
@@ -141,7 +142,7 @@ export default function Navbar({
 
       {/* Mobile Menu */}
       <div
-        className={`md:hidden transition-all duration-300 ease-in-out ${
+        className={`lg:hidden transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-screen opacity-100 py-4" : "max-h-0 opacity-0 overflow-hidden"
         } bg-[#261810] border-b border-accent/20`}
       >

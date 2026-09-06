@@ -789,6 +789,10 @@ export default async function Home() {
             <p className="mt-3 text-sm leading-relaxed text-primary/80">{address} <Link href="/directions" className="text-accent underline">ดูแผนที่และเส้นทางมาร้าน</Link></p>
           </details>
           <details className="py-4">
+            <summary className="cursor-pointer font-semibold text-primary">ลับแลมีอะไรน่าสนใจ?</summary>
+            <p className="mt-3 text-sm leading-relaxed text-primary/80">ลับแลมีทั้งตำนานเมือง วิถีชุมชน อาหารพื้นบ้าน และรสชาติที่เชื่อมวัฒนธรรมล้านนากับสุโขทัย <Link href="/lablae" className="text-accent underline">อ่านเรื่องเมืองลับแลก่อนเดินทาง</Link></p>
+          </details>
+          <details className="py-4">
             <summary className="cursor-pointer font-semibold text-primary">ร้านเปิดเวลาไหน?</summary>
             <p className="mt-3 text-sm leading-relaxed text-primary/80">{hours} สอบถามเพิ่มเติมได้ที่ {phone}</p>
           </details>

@@ -103,6 +103,11 @@ export default async function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/lablae" className="hover:text-accent transition-colors">
+                  รู้จักเมืองลับแล อุตรดิตถ์
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="hover:text-accent transition-colors">
                   รู้จักบ้านและเรื่องเล่าลับแล
                 </Link>

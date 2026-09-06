@@ -25,6 +25,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/lablae`,
+      changeFrequency: 'monthly',
+      priority: 0.95,
+    },
+    {
       url: `${baseUrl}/menu`,
       changeFrequency: 'daily',
       priority: 0.9,
