@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { MenuItem } from "@/lib/data";
+import { menuDescription, menuPrice, menuPriceLabel } from "@/lib/menu-display";
 import { Search, Info, Sparkles, Utensils, UtensilsCrossed } from "lucide-react";
 
 interface MenuListProps {
@@ -168,12 +169,12 @@ export default function MenuList({
             </h4>
             <div className="flex-grow border-b border-dotted border-accent/25 min-w-[12px] h-1 self-center" style={{ transform: 'translateY(4px)' }} />
             <span className="font-bold text-sm sm:text-base text-accent shrink-0">
-              {item.price > 0 ? `฿${item.price}` : "ราคาตามน้ำหนัก"}
+              {menuPrice(item.price)}{item.category.includes("ขันโตก") && " / ชุด"}
             </span>
           </div>
           {item.description && (
-            <p className="text-xs text-[#f7eee3]/70 mt-1 leading-relaxed line-clamp-2">
-              {item.description}
+            <p className="text-sm text-[#f7eee3]/85 mt-2 leading-relaxed">
+              {menuDescription(item.description)}
             </p>
           )}
         </div>
@@ -336,17 +337,17 @@ export default function MenuList({
 
                       {/* Description */}
                       {item.description && (
-                        <p className="text-xs text-[#f5ece1]/70 line-clamp-3 mt-1 leading-relaxed">
-                          {item.description}
+                        <p className="text-sm text-[#f5ece1]/85 mt-2 leading-relaxed">
+                          {menuDescription(item.description)}
                         </p>
                       )}
                     </div>
 
                     {/* Price */}
                     <div className="flex items-center justify-between pt-3 border-t border-accent/15">
-                      <span className="text-xs text-[#f5ece1]/60">ราคา</span>
+                      <span className="text-sm text-[#f5ece1]/80">{menuPriceLabel(item.category)}</span>
                       <span className="font-bold text-base sm:text-lg text-accent">
-                        {item.price > 0 ? `฿${item.price}` : "ราคาตามน้ำหนัก"}
+                        {menuPrice(item.price)}
                       </span>
                     </div>
                   </div>

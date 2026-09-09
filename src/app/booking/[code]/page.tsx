@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, CheckCircle2, Clock, MessageSquareText, Phone, Users, XCircle } from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock, Phone, Users, XCircle } from "lucide-react";
 import { getDb } from "@/lib/db";
 import { getSetting } from "@/lib/data";
-import { makeLineConnectUrl } from "@/lib/line-messaging";
 import type { ReservationRecord } from "@/lib/reservations";
 import BookingStatusRefresh from "@/components/BookingStatusRefresh";
 
@@ -35,7 +34,7 @@ function statusDetails(status: string) {
   };
   return {
     label: "รอทางร้านยืนยัน",
-    description: "ร้านได้รับคำขอแล้ว แต่ยังไม่ได้ยืนยันโต๊ะครับ",
+    description: "ร้านได้รับคำขอจองแล้ว เจ้าหน้าที่จะโทรกลับไปยังเบอร์ที่ให้ไว้เพื่อยืนยันโต๊ะครับ",
     color: "border-amber-300 bg-amber-50 text-amber-900",
     icon: <Clock className="w-7 h-7 text-amber-600" />,
   };
@@ -51,62 +50,65 @@ export default async function BookingStatusPage({ params }: { params: Promise<{ 
   if (!reservation) notFound();
   const phone = (await getSetting("phone")) || "095-628-3125";
   const status = statusDetails(reservation.status);
+  const dateLabel = new Intl.DateTimeFormat("th-TH-u-nu-latn", {
+    day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Bangkok",
+  }).format(new Date(`${reservation.date}T12:00:00+07:00`));
 
   return (
     <main className="max-w-2xl mx-auto px-4 py-12 sm:py-20 font-thai">
-      <div className="rounded-3xl border border-primary/15 bg-white shadow-xl overflow-hidden">
+      <div className="rounded-3xl border border-stone-300 bg-white text-stone-900 shadow-xl overflow-hidden">
         <div className={`flex items-start gap-4 p-6 sm:p-8 border-b ${status.color}`}>
           {status.icon}
           <div>
             <h1 className="text-xl sm:text-2xl font-bold">{status.label}</h1>
-            <p className="mt-1 text-sm opacity-80">{status.description}</p>
+            <p className="mt-2 text-base leading-7">{status.description}</p>
             <BookingStatusRefresh active={reservation.status === "pending"} />
           </div>
         </div>
 
         <div className="p-6 sm:p-8 space-y-6">
           <div>
-            <p className="text-xs text-primary/50">เลขที่การจอง</p>
-            <p className="font-mono text-lg font-bold tracking-wide text-primary">{reservation.booking_code}</p>
+            <p className="text-sm text-stone-600">เลขที่การจอง</p>
+            <p className="font-mono text-lg font-bold tracking-wide text-stone-900">{reservation.booking_code}</p>
           </div>
           <div className="grid sm:grid-cols-2 gap-3">
-            <div className="flex items-center gap-3 rounded-2xl bg-primary/5 p-4">
-              <CalendarDays className="w-5 h-5 text-accent-dark" />
-              <div><p className="text-xs text-primary/55">วันที่</p><p className="font-bold text-primary">{reservation.date}</p></div>
+            <div className="flex items-center gap-3 rounded-2xl bg-stone-100 p-4">
+              <CalendarDays className="w-5 h-5 shrink-0 text-stone-600" aria-hidden="true" />
+              <div><p className="text-sm text-stone-600">วันที่</p><p className="font-bold text-stone-900">{dateLabel}</p></div>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl bg-primary/5 p-4">
-              <Clock className="w-5 h-5 text-accent-dark" />
-              <div><p className="text-xs text-primary/55">เวลา</p><p className="font-bold text-primary">{reservation.time} น.</p></div>
+            <div className="flex items-center gap-3 rounded-2xl bg-stone-100 p-4">
+              <Clock className="w-5 h-5 text-stone-600" aria-hidden="true" />
+              <div><p className="text-sm text-stone-600">เวลา</p><p className="font-bold text-stone-900">{reservation.time} น.</p></div>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl bg-primary/5 p-4">
-              <Users className="w-5 h-5 text-accent-dark" />
-              <div><p className="text-xs text-primary/55">จำนวน</p><p className="font-bold text-primary">{reservation.guests} คน</p></div>
+            <div className="flex items-center gap-3 rounded-2xl bg-stone-100 p-4">
+              <Users className="w-5 h-5 text-stone-600" aria-hidden="true" />
+              <div><p className="text-sm text-stone-600">จำนวน</p><p className="font-bold text-stone-900">{reservation.guests} คน</p></div>
             </div>
-            <div className="flex items-center gap-3 rounded-2xl bg-primary/5 p-4">
-              <Clock className="w-5 h-5 text-accent-dark" />
-              <div><p className="text-xs text-primary/55">ระยะเวลาโต๊ะ</p><p className="font-bold text-primary">ประมาณ {reservation.duration_minutes} นาที</p></div>
+            <div className="flex items-center gap-3 rounded-2xl bg-stone-100 p-4">
+              <Clock className="w-5 h-5 text-stone-600" aria-hidden="true" />
+              <div><p className="text-sm text-stone-600">เวลารับประทานโดยประมาณ</p><p className="font-bold text-stone-900">{reservation.duration_minutes} นาที</p></div>
             </div>
           </div>
 
           {reservation.notes && (
-            <div className="rounded-2xl border border-primary/10 p-4">
-              <p className="text-xs text-primary/50">หมายเหตุ</p>
-              <p className="mt-1 text-sm text-primary/80 whitespace-pre-wrap">{reservation.notes}</p>
+            <div className="rounded-2xl border border-stone-300 p-4">
+              <p className="text-sm text-stone-600">หมายเหตุ</p>
+              <p className="mt-1 text-base text-stone-900 whitespace-pre-wrap">{reservation.notes}</p>
             </div>
           )}
 
-          {!reservation.customer_line_user_id && reservation.status === "pending" && (
-            <a href={makeLineConnectUrl(reservation.booking_code || "")} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-2 rounded-xl bg-[#06C755] px-4 py-3 text-sm font-bold text-white hover:brightness-105">
-              <MessageSquareText className="w-4 h-4" /> รับผลยืนยันทาง LINE
-            </a>
+          {reservation.status === "pending" && (
+            <p className="rounded-xl bg-amber-50 p-4 text-base leading-7 text-amber-900">
+              ตอนนี้รอรับสายจากร้านได้เลยครับ ไม่ต้องส่งคำขอจองซ้ำ
+            </p>
           )}
 
           <div className="grid sm:grid-cols-2 gap-2">
-            <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="flex items-center justify-center gap-2 rounded-xl border border-primary/15 px-4 py-3 text-sm font-bold text-primary hover:bg-primary/5">
+            <a href={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-stone-400 px-4 py-3 text-base font-bold text-stone-900 hover:bg-stone-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-stone-800">
               <Phone className="w-4 h-4" /> โทรสอบถามร้าน {phone}
             </a>
-            <Link href="/#booking" className="flex items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white hover:bg-primary-light">
-              กลับไปหน้าจองโต๊ะ
+            <Link href="/menu" className="flex min-h-12 items-center justify-center rounded-xl bg-stone-800 px-4 py-3 text-base font-bold text-white hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-stone-800">
+              ดูเมนูอาหาร
             </Link>
           </div>
         </div>

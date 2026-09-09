@@ -45,6 +45,9 @@ export default async function MenuPage() {
           <p className="font-thai text-sm sm:text-base text-primary/70 max-w-xl mx-auto">
             {subtitle}
           </p>
+          <p className="font-thai text-sm text-primary/85 max-w-xl mx-auto leading-relaxed">
+            ราคาขันโตกเป็นราคาต่อชุด ดูรายการอาหารที่รวมในแต่ละชุดด้านล่างครับ
+          </p>
 
           {notice && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-accent/10 border border-accent/25 text-xs text-accent-dark font-thai font-medium max-w-lg mx-auto">

@@ -3,7 +3,8 @@ import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import AppShell from "@/components/AppShell";
-import { getSetting } from "@/lib/data";
+import { getMenuItems, getSetting } from "@/lib/data";
+import { menuPriceRange } from "@/lib/menu-display";
 import { SITE_URL, serializeJsonLd } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
@@ -136,6 +137,7 @@ export default async function RootLayout({
   const heroImage = (await getSetting("home_hero_image")) || "";
   const aboutImage = (await getSetting("home_about_image")) || "";
   const brandLogo = (await getSetting("brand_logo")) || "";
+  const priceRange = menuPriceRange(await getMenuItems());
   const navbarBtnText = (await getSetting("navbar_btn_text")) || "ดูเมนูอาหาร";
   const navbarBtnLink = (await getSetting("navbar_btn_link")) || "/menu";
 
@@ -173,7 +175,7 @@ export default async function RootLayout({
       "addressCountry": "TH"
     },
     "telephone": phone,
-    "priceRange": "฿50 - ฿350",
+    "priceRange": priceRange,
     "servesCuisine": ["อาหารเหนือ", "อาหารพื้นเมืองลับแล", "อาหารล้านนา", "อาหารสุโขทัย", "ข้าวพันผัก"],
     "openingHoursSpecification": [
       {

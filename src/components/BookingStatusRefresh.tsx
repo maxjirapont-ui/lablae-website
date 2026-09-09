@@ -12,5 +12,5 @@ export default function BookingStatusRefresh({ active }: { active: boolean }) {
     return () => window.clearInterval(interval);
   }, [active, router]);
 
-  return active ? <p className="mt-2 text-xs opacity-60">หน้านี้จะตรวจสอบสถานะใหม่ให้อัตโนมัติ</p> : null;
+  return active ? <p className="mt-2 text-sm">หน้านี้จะตรวจสอบสถานะใหม่ให้อัตโนมัติ</p> : null;
 }
