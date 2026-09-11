@@ -12,7 +12,7 @@ export function isPublicAnalyticsPath(path: string): boolean {
 export function campaignParameters(search: string): Record<string, string> {
   const params = new URLSearchParams(search);
   const allowed: Record<string, readonly string[]> = {
-    utm_source: ["facebook", "line", "google", "tiktok"],
+    utm_source: ["facebook", "line", "google", "tiktok", "chatgpt.com", "perplexity.ai", "gemini.google.com"],
     utm_medium: ["organic_social", "social", "organic", "referral"],
     utm_campaign: ["website_launch", "business_profile"],
     utm_content: ["pinned_menu", "menu", "website", "directions", "booking", "house_story", "khao_phan_phak"],

@@ -223,7 +223,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1] overflow-x-hidden">
-        {process.env.WEBSITE_ANALYTICS_ENABLED === "1" && <WebsiteAnalytics />}
+        {process.env.WEBSITE_ANALYTICS_ENABLED !== "0" && <WebsiteAnalytics />}
         <AppShell
           navbar={{
             logoUrl: brandLogo,
