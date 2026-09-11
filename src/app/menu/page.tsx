@@ -35,7 +35,7 @@ export default async function MenuPage() {
   const showPdf = (await getSetting("menu_pdf_show")) !== "0";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-12">
+    <div className="max-w-6xl mx-auto px-4 py-6 sm:py-12 sm:px-6 lg:px-8 space-y-6 sm:space-y-10">
       {/* Header */}
       {!showHeader && <h1 className="sr-only">เมนูอาหารและราคา ร้านลำลำลับแลบ้าน 100 ปี</h1>}
       {showHeader && (

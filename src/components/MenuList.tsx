@@ -25,6 +25,11 @@ export default function MenuList({
   });
   const [searchQuery, setSearchQuery] = useState<string>("");
 
+  const orderedItems = useMemo(() => [...initialItems].sort((a, b) => {
+    const isHouseKhantoke = (name: string) => /ขันโตก\s*บ้าน\s*100\s*ปี/.test(name);
+    return Number(isHouseKhantoke(b.name)) - Number(isHouseKhantoke(a.name));
+  }), [initialItems]);
+
   // Map database categories into user-friendly grouped categories based on user customization order
   const categoryGroups = useMemo(() => {
     const list = categoriesOrder
@@ -70,7 +75,7 @@ export default function MenuList({
 
   // Filter items based on selected category and search query
   const filteredItems = useMemo(() => {
-    return initialItems.filter((item) => {
+    return orderedItems.filter((item) => {
       const matchesSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -90,7 +95,7 @@ export default function MenuList({
       const itemGroup = getGroupForCategory(item.category);
       return itemGroup === selectedCategory;
     });
-  }, [initialItems, selectedCategory, searchQuery]);
+  }, [orderedItems, selectedCategory, searchQuery]);
 
   // Group items by category (used for classic list layout when showing all categories)
   const groupedByCategory = useMemo(() => {
@@ -99,7 +104,7 @@ export default function MenuList({
       if (g !== "ทั้งหมด") groups[g] = [];
     });
 
-    initialItems.forEach((item) => {
+    orderedItems.forEach((item) => {
       const matchesSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -119,7 +124,7 @@ export default function MenuList({
       }
     });
     return groups;
-  }, [initialItems, searchQuery, categoryGroups]);
+  }, [orderedItems, searchQuery, categoryGroups]);
 
   // Render method for classic items
   const renderClassicItem = (item: MenuItem) => {
@@ -127,14 +132,14 @@ export default function MenuList({
     return (
       <div
         key={item.id}
-        className="flex gap-3.5 sm:gap-4 items-start p-4 rounded-2xl bg-[#241710] border border-accent/20 hover:border-accent/45 shadow-xs hover:shadow-md transition-all font-thai group"
+        className="flex flex-col overflow-hidden rounded-2xl bg-[#241710] border border-accent/20 hover:border-accent/45 shadow-xs hover:shadow-md transition-all font-thai group"
       >
         {item.image_url && item.image_url.trim() !== "" ? (
-          <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-accent/20 shadow-xs bg-[#1a100a]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden shrink-0 border-b border-accent/20 bg-[#1a100a]">
             <img
               src={item.image_url}
               alt={item.name}
-              loading="lazy"
+              loading={/ขันโตก\s*บ้าน\s*100\s*ปี/.test(item.name) ? "eager" : "lazy"}
               decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
@@ -145,13 +150,13 @@ export default function MenuList({
             )}
           </div>
         ) : (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-accent/15 bg-[#1f140e] flex items-center justify-center text-accent/40">
+          <div className="h-12 w-full border-b border-accent/15 bg-[#1f140e] flex items-center justify-center text-accent/40">
             <UtensilsCrossed className="w-6 h-6" />
           </div>
         )}
-        <div className="flex-grow min-w-0">
+        <div className="flex-grow min-w-0 w-full p-4 sm:p-5">
           <div className="flex items-baseline gap-2">
-            <h4 className={`font-bold text-sm sm:text-base text-[#f7eee3] flex flex-wrap items-center gap-1.5 ${isOutOfStock ? 'opacity-50' : ''}`}>
+            <h4 className={`font-bold text-lg sm:text-xl text-[#f7eee3] flex flex-wrap items-center gap-1.5 ${isOutOfStock ? 'opacity-50' : ''}`}>
               <span>{item.name}</span>
               {item.is_recommended === 1 && (
                 <span className="inline-flex items-center gap-0.5 text-[9px] text-amber-300 bg-amber-950/70 border border-amber-600/40 px-1.5 py-0.5 rounded-full font-normal">
@@ -170,7 +175,7 @@ export default function MenuList({
               )}
             </h4>
             <div className="flex-grow border-b border-dotted border-accent/25 min-w-[12px] h-1 self-center" style={{ transform: 'translateY(4px)' }} />
-            <span className="font-bold text-sm sm:text-base text-accent shrink-0">
+            <span className="font-bold text-base sm:text-lg text-accent shrink-0">
               {menuPrice(item.price)}{item.category.includes("ขันโตก") && " / ชุด"}
             </span>
           </div>
@@ -210,22 +215,6 @@ export default function MenuList({
           </div>
         </div>
       )}
-
-      {/* First-Timer Recommendation Banner */}
-      <div 
-        onClick={() => setSelectedCategory("เมนูแนะนำ")}
-        className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-accent/15 via-[#261810] to-accent/15 border border-accent/30 flex items-center justify-between gap-3 cursor-pointer hover:border-accent transition-all group"
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-lg shrink-0">⭐</span>
-          <p className="text-xs sm:text-sm text-[#f7eee3] truncate font-medium">
-            <strong className="text-accent">มาครั้งแรกสั่งอะไรดี?</strong> แนะนำ: ชุดขันโตกบ้าน 100 ปี, หมูทอดลับแลพริกข่า, ข้าวพันผัก, อ่องมันปู
-          </p>
-        </div>
-        <span className="text-[11px] font-bold text-accent shrink-0 group-hover:underline flex items-center gap-1">
-          ดูเมนูแนะนำ →
-        </span>
-      </div>
 
       {/* Category Tabs (Horizontal Scrollable) */}
       <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-thin scrollbar-thumb-accent/20">
@@ -274,7 +263,7 @@ export default function MenuList({
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredItems.map((item) => {
               const isOutOfStock = item.available === 0;
               return (
@@ -295,11 +284,11 @@ export default function MenuList({
 
                   {/* Menu Item Image or Decorative Accent Header */}
                   {item.image_url && item.image_url.trim() !== "" ? (
-                    <div className="relative h-44 w-full overflow-hidden border-b border-accent/15">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-accent/15">
                       <img
                         src={item.image_url}
                         alt={item.name}
-                        loading="lazy"
+                        loading={/ขันโตก\s*บ้าน\s*100\s*ปี/.test(item.name) ? "eager" : "lazy"}
                         decoding="async"
                         className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                       />
