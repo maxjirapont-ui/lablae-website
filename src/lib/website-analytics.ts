@@ -2,10 +2,10 @@ export const WEBSITE_MEASUREMENT_ID = "G-8ZCYCYC7JY";
 
 export type WebsiteAction = "menu_click" | "directions_click" | "phone_click" | "booking_click" | "booking_request_submitted";
 
-const publicPaths = new Set(["/", "/menu", "/about", "/directions", "/lablae", "/blog"]);
+const publicPaths = new Set(["/", "/menu", "/about", "/directions", "/lablae", "/blog", "/visit"]);
 
 export function isPublicAnalyticsPath(path: string): boolean {
-  return publicPaths.has(path) || /^\/blog\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path);
+  return publicPaths.has(path) || /^\/(?:blog|visit)\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(path);
 }
 
 // Only our named campaign labels are retained. Never send arbitrary query strings.

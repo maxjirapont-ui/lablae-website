@@ -122,6 +122,11 @@ export default async function Footer() {
                   บทความและเรื่องราวจากครัวไฟ
                 </Link>
               </li>
+              <li>
+                <Link href="/visit" className="hover:text-accent transition-colors">
+                  แวะลับแล · เรื่องน่ารู้ก่อนมาร้าน
+                </Link>
+              </li>
             </ul>
           </div>
 

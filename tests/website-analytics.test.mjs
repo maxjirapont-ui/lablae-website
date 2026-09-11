@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { campaignParameters, isPublicAnalyticsPath, websiteLinkAction, trackWebsiteAction } from '../src/lib/website-analytics.ts';
 
 test('only public restaurant pages can be measured', () => {
-  for (const path of ['/', '/menu', '/directions', '/blog/chapter-22-khao-phan-phak']) assert.equal(isPublicAnalyticsPath(path), true);
+  for (const path of ['/', '/menu', '/directions', '/blog/chapter-22-khao-phan-phak', '/visit', '/visit/khantoke-for-two']) assert.equal(isPublicAnalyticsPath(path), true);
   for (const path of ['/admin', '/admin/bookings', '/booking/ABC123', '/shop', '/api/bookings', '/blog/name@example.com']) assert.equal(isPublicAnalyticsPath(path), false);
 });
 

@@ -40,6 +40,7 @@ export default function Navbar({
     { name: "เมืองลับแล", href: "/lablae" },
     { name: "รู้จักเรา", href: "/about" },
     { name: "เมนูอาหาร", href: "/menu" },
+    { name: "แวะลับแล", href: "/visit" },
     { name: "ตำราลับแลง", href: "/blog" },
   ];
 
