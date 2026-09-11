@@ -1,6 +1,7 @@
 import { Clock, MapPin, Navigation, Phone } from "lucide-react";
 import { getSetting } from "@/lib/data";
 import { pageMetadata } from "@/lib/seo";
+import VisitQuestions from "@/components/VisitQuestions";
 
 export const revalidate = 0;
 
@@ -28,7 +29,7 @@ export default async function DirectionsPage() {
   const phoneHref = `tel:${phone.replace(/[^\d+]/g, "")}`;
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+    <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <section className="overflow-hidden rounded-3xl border border-accent/25 bg-[#241710] shadow-2xl">
         <div className="p-6 sm:p-8">
           <div className="mb-5 flex items-start gap-3">
@@ -99,6 +100,7 @@ export default async function DirectionsPage() {
           </a>
         </div>
       </section>
+      <VisitQuestions kind="directions" />
     </main>
   );
 }

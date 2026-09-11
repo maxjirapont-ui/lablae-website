@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getMenuItems, getSetting } from "@/lib/data";
 import MenuList from "@/components/MenuList";
+import VisitQuestions from "@/components/VisitQuestions";
 import { Sparkles, FileText, AlertCircle, Calendar, MapPin } from "lucide-react";
 
 export const revalidate = 0; // Disable static cache for menu, so dashboard updates show instantly
@@ -93,6 +94,7 @@ export default async function MenuPage() {
       )}
 
       {/* Interactive Menu List with Filtering */}
+      <VisitQuestions kind="menu" />
       <MenuList 
         initialItems={menuItems} 
         layoutStyle={layoutStyle} 
