@@ -94,13 +94,14 @@ export default async function MenuPage() {
       )}
 
       {/* Interactive Menu List with Filtering */}
-      <VisitQuestions kind="menu" />
       <MenuList 
         initialItems={menuItems} 
         layoutStyle={layoutStyle} 
         showSearch={showSearch} 
         categoriesOrder={categoriesOrder}
       />
+
+      <VisitQuestions kind="menu" />
 
       <section className="border-t border-accent/20 pt-8 font-thai space-y-3">
         <h2 className="text-xl font-bold text-primary">เรื่องอาหารและบ้านของเรา</h2>
