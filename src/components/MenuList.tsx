@@ -134,6 +134,8 @@ export default function MenuList({
             <img
               src={item.image_url}
               alt={item.name}
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
             {isOutOfStock && (
@@ -297,6 +299,8 @@ export default function MenuList({
                       <img
                         src={item.image_url}
                         alt={item.name}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                       />
                     </div>

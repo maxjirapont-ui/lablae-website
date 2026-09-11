@@ -137,6 +137,16 @@ export default async function BlogDetailPage({ params }: PageProps) {
         </div>
       </article>
 
+      <aside className="rounded-2xl border border-accent/25 bg-[#241710] p-5 font-thai space-y-3">
+        <h2 className="text-lg font-bold text-primary">แวะมากินข้าวที่บ้าน 100 ปี</h2>
+        <p className="text-sm leading-relaxed text-primary/80">ร้านลำลำลับแลอยู่ใต้ถุนบ้านไม้ของครอบครัว ในอำเภอลับแล จังหวัดอุตรดิตถ์</p>
+        <div className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-accent">
+          <Link href="/menu" className="underline underline-offset-4">ดูเมนูและราคาอาหาร</Link>
+          <Link href="/directions" className="underline underline-offset-4">ดูแผนที่มาร้าน</Link>
+          <Link href="/#booking" className="underline underline-offset-4">จองโต๊ะล่วงหน้า</Link>
+        </div>
+      </aside>
+
       {/* Chapter Pagination (Next / Previous) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
         {prevChapter ? (

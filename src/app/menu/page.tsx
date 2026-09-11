@@ -3,13 +3,13 @@ import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { getMenuItems, getSetting } from "@/lib/data";
 import MenuList from "@/components/MenuList";
-import { Sparkles, FileText, AlertCircle, Calendar } from "lucide-react";
+import { Sparkles, FileText, AlertCircle, Calendar, MapPin } from "lucide-react";
 
 export const revalidate = 0; // Disable static cache for menu, so dashboard updates show instantly
 
 export const metadata = pageMetadata(
-  "เมนูอาหารพื้นเมืองลับแลและชุดขันโตก",
-  "ดูเมนูและราคาอาหารร้านลำลำลับแลบ้าน 100 ปี อุตรดิตถ์ ชุดขันโตก น้ำพริกหนุ่ม น้ำพริกอ่อง ข้าวพันผัก และอาหารเหนือสูตรครอบครัว 4 รุ่น พร้อมจองโต๊ะออนไลน์",
+  "เมนูและราคาอาหาร ขันโตก อาหารพื้นเมืองลับแล",
+  "ดูรูปอาหาร ราคา และรายการในชุดขันโตกของร้านลำลำลับแลบ้าน 100 ปี อุตรดิตถ์ มีข้าวพันผัก น้ำพริก และกับข้าวพื้นเมือง พร้อมแผนที่และจองโต๊ะล่วงหน้า",
   "/menu",
 );
 
@@ -23,7 +23,10 @@ export default async function MenuPage() {
 
   // Dynamic texts and PDF URL
   const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน 100 ปี";
-  const title = (await getSetting("menu_page_title")) || "กับข้าวและสำรับอาหาร";
+  const savedTitle = await getSetting("menu_page_title");
+  const title = !savedTitle || savedTitle === "กับข้าวและสำรับอาหาร"
+    ? "เมนูอาหารและราคา"
+    : savedTitle;
   const subtitle = (await getSetting("menu_page_subtitle")) || "ปรุงสดใหม่ทุกจาน พริกแกงทำเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล";
   const notice = (await getSetting("menu_page_notice")) || "";
   const pdfUrl = (await getSetting("menu_pdf_url")) || "/menu-2026.pdf";
@@ -33,6 +36,7 @@ export default async function MenuPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12 sm:px-6 lg:px-8 space-y-12">
       {/* Header */}
+      {!showHeader && <h1 className="sr-only">เมนูอาหารและราคา ร้านลำลำลับแลบ้าน 100 ปี</h1>}
       {showHeader && (
         <div className="text-center space-y-3">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/15 text-accent-dark text-xs font-thai font-medium border border-accent/20">
@@ -65,6 +69,14 @@ export default async function MenuPage() {
               <span>จองโต๊ะอาหารล่วงหน้า</span>
             </Link>
 
+            <Link
+              href="/directions"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-accent/30 text-primary font-thai font-semibold text-xs hover:bg-accent/10 transition-colors"
+            >
+              <MapPin className="w-3.5 h-3.5" />
+              <span>แผนที่และเส้นทางมาร้าน</span>
+            </Link>
+
             {showPdf && pdfUrl && (
               <a
                 href={pdfUrl}
@@ -87,6 +99,15 @@ export default async function MenuPage() {
         showSearch={showSearch} 
         categoriesOrder={categoriesOrder}
       />
+
+      <section className="border-t border-accent/20 pt-8 font-thai space-y-3">
+        <h2 className="text-xl font-bold text-primary">เรื่องอาหารและบ้านของเรา</h2>
+        <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm text-accent">
+          <Link href="/blog/chapter-22-khao-phan-phak" className="underline underline-offset-4">อ่านเรื่องข้าวพันผักเมืองลับแล</Link>
+          <Link href="/about" className="underline underline-offset-4">รู้จักบ้าน 100 ปี</Link>
+          <Link href="/lablae" className="underline underline-offset-4">รู้จักเมืองลับแล อุตรดิตถ์</Link>
+        </div>
+      </section>
     </div>
   );
 }

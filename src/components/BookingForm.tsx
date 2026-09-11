@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { trackWebsiteAction } from "@/lib/website-analytics";
 import {
   AlertCircle,
   CalendarDays,
@@ -178,6 +179,7 @@ export default function BookingForm() {
       if (!response.ok) throw new Error(data.error || "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
       setSubmittedDetails({ ...formData });
       setResult(data);
+      trackWebsiteAction("booking_request_submitted");
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
     } finally {

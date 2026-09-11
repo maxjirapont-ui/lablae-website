@@ -3,6 +3,7 @@ import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import AppShell from "@/components/AppShell";
+import WebsiteAnalytics from "@/components/WebsiteAnalytics";
 import { getMenuItems, getSetting } from "@/lib/data";
 import { menuPriceRange } from "@/lib/menu-display";
 import { SITE_URL, serializeJsonLd } from "@/lib/seo";
@@ -222,6 +223,7 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1] overflow-x-hidden">
+        {process.env.WEBSITE_ANALYTICS_ENABLED === "1" && <WebsiteAnalytics />}
         <AppShell
           navbar={{
             logoUrl: brandLogo,
