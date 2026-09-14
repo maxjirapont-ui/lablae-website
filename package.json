@@ -6,7 +6,8 @@
     "dev": "next dev -p 3005",
     "build": "next build",
     "start": "next start -p ${PORT:-3005}",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:shop": "node --experimental-strip-types --test tests/shop.test.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.17.0",

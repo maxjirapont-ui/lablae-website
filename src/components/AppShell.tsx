@@ -24,6 +24,7 @@ export default function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
+  const isShop = pathname === "/shop" || pathname.startsWith("/shop/");
 
   if (isAdmin) {
     return <main className="min-h-screen flex-grow">{children}</main>;
@@ -36,7 +37,7 @@ export default function AppShell({
         {children}
       </main>
       {footer}
-      <MobileQuickBar phone={phone} googleMapsUrl={googleMapsUrl} />
+      {!isShop && <MobileQuickBar phone={phone} googleMapsUrl={googleMapsUrl} />}
     </>
   );
 }

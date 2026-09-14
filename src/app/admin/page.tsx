@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getDb } from "@/lib/db";
 import { MenuItem, Article } from "@/lib/data";
@@ -42,11 +43,11 @@ export default async function AdminPage() {
   const { menus, reservations, articles, settingsMap } = await getDashboardData();
 
   return (
-    <AdminDashboard
+    <><div className="max-w-7xl mx-auto px-4 pt-4 font-thai"><Link href="/admin/shop" className="inline-block rounded-xl border border-accent px-4 py-3 text-accent">จัดการออเดอร์ไส้อั่ว →</Link></div><AdminDashboard
       initialMenus={menus}
       initialReservations={reservations}
       initialArticles={articles}
       initialSettings={settingsMap}
-    />
+    /></>
   );
 }

@@ -1,0 +1,33 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { listShopOrders, shopIsPublic } from "@/lib/shop-orders";
+import ShopOrderAdmin from "@/components/ShopOrderAdmin";
+import ShopPaymentSettings from "@/components/ShopPaymentSettings";
+import { getShopPaymentConfig } from "@/lib/shop-payment";
+import ShopStatusRefresh from "@/components/ShopStatusRefresh";
+import ShopLineSettings from "@/components/ShopLineSettings";
+import { getShopLineStatus } from "@/lib/shop-line";
+import { listShopSlips } from "@/lib/shop-slips";
+
+export const dynamic = "force-dynamic";
+export default async function AdminShopPage() {
+  if (!(await isAdminAuthenticated())) redirect("/admin/login");
+  const orders = await listShopOrders();
+  const paymentConfig = await getShopPaymentConfig();
+  const lineStatus = await getShopLineStatus();
+  const slips = await listShopSlips();
+  const waiting = orders.filter(order=>order.status === "requested").length;
+  return <div className="max-w-4xl mx-auto p-4 sm:p-8 space-y-6 font-thai text-primary">
+    <ShopStatusRefresh />
+    <Link href="/admin" className="text-accent">← หลังบ้านร้าน</Link>
+    <h1 className="text-3xl font-bold">ออเดอร์ไส้อั่ว</h1>
+    <p className="text-lg">รอตรวจ {waiting} รายการ · แสดงล่าสุดไม่เกิน 200 รายการ</p>
+    {!shopIsPublic() && <p className="rounded-xl border border-accent/30 p-4">ยังไม่เปิดหน้าสั่งซื้อให้บุคคลทั่วไป รายการจากการทดสอบจะถูกบันทึกในระบบนี้</p>}
+    <div className="flex gap-4"><a href="/admin/shop" className="text-accent underline">โหลดรายการล่าสุด</a><Link href="/shop" className="text-accent underline">เปิดหน้าสินค้า</Link></div>
+    <ShopPaymentSettings config={paymentConfig} />
+    <ShopLineSettings status={lineStatus} />
+    {orders.length === 0 && <p className="py-10">ยังไม่มีคำขอสั่งซื้อ</p>}
+    {orders.map(order=><ShopOrderAdmin key={`${order.id}-${order.version}`} order={order} paymentConfig={paymentConfig} slips={slips.filter(slip=>slip.order_id===order.id)}/>)}
+  </div>;
+}

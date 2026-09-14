@@ -64,7 +64,7 @@ export default function Navbar({
       )}
       <nav
         className={`w-full transition-all duration-300 ${
-          scrolled
+          scrolled || pathname === "/shop"
             ? "bg-[#1a100a]/90 backdrop-blur-md shadow-lg py-3 border-b border-accent/20"
             : "bg-transparent py-5"
         }`}
