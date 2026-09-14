@@ -4,6 +4,7 @@ import { toArabicDigits } from "./text";
 
 const CLIENT_BLOCKED_KEYS = new Set([
   "admin_password_hash",
+  "admin_password_reset_version",
   "admin_password_configured",
   "line_notify_token_configured",
   "line_messaging_configured",

@@ -4636,7 +4636,7 @@ export default function AdminDashboard({
                     value={settings.admin_password || ""}
                     onChange={e => setSettings(prev => ({ ...prev, admin_password: e.target.value }))}
                     autoComplete="new-password"
-                    placeholder={settings.admin_password_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "ตั้งรหัสผ่านใหม่อย่างน้อย 12 ตัวอักษร"}
+                    placeholder={settings.admin_password_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "ตั้งรหัสผ่านใหม่อย่างน้อย 4 ตัวอักษร"}
                     className="block w-full px-3 py-2 bg-white border border-primary/10 rounded-xl text-xs sm:text-sm focus:outline-none"
                   />
                 </div>
@@ -5675,7 +5675,7 @@ export default function AdminDashboard({
                         value={settings.admin_password || ""}
                         onChange={e => setSettings(prev => ({ ...prev, admin_password: e.target.value }))}
                         autoComplete="new-password"
-                        placeholder={settings.admin_password_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "อย่างน้อย 12 ตัวอักษร"}
+                        placeholder={settings.admin_password_configured === "1" ? "ตั้งค่าแล้ว — กรอกเฉพาะเมื่อต้องการเปลี่ยน" : "อย่างน้อย 4 ตัวอักษร"}
                         className="block w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-xs sm:text-sm focus:outline-none font-mono"
                       />
                       <p className="mt-1.5 text-[10px] text-primary/55">ระบบไม่แสดงรหัสเดิมและจะเก็บเฉพาะค่าที่เข้ารหัสแล้ว</p>

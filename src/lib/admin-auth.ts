@@ -9,6 +9,7 @@ import { getDb } from "./db";
 
 export const ADMIN_SESSION_COOKIE = "admin_session";
 export const ADMIN_SESSION_MAX_AGE = 60 * 60 * 8;
+export const ADMIN_REMEMBER_MAX_AGE = 60 * 60 * 24 * 30;
 
 const PASSWORD_HASH_KEY = "admin_password_hash";
 const LEGACY_PASSWORD_KEY = "admin_password";
@@ -65,6 +66,16 @@ export async function verifyPasswordHash(
 
 async function getStoredPasswordHash(): Promise<string> {
   const db = await getDb();
+  const resetPassword = process.env.ADMIN_PASSWORD_RESET;
+  const resetVersion = process.env.ADMIN_PASSWORD_RESET_VERSION;
+  if (resetPassword && resetVersion && resetPassword.length >= 4 && resetPassword.length <= 256) {
+    const applied = await db.get<{value:string}>("SELECT value FROM settings WHERE key='admin_password_reset_version'");
+    if (applied?.value !== resetVersion) {
+      const hash = await hashAdminPassword(resetPassword);
+      await db.run("INSERT OR REPLACE INTO settings(key,value) VALUES ('admin_password_hash',?),('admin_password_reset_version',?)", hash, resetVersion);
+      await db.run("DELETE FROM settings WHERE key='admin_password'");
+    }
+  }
   const row = await db.get<{ value: string }>(
     "SELECT value FROM settings WHERE key = ?",
     [PASSWORD_HASH_KEY],
@@ -73,8 +84,8 @@ async function getStoredPasswordHash(): Promise<string> {
 }
 
 export async function setAdminPassword(password: string): Promise<void> {
-  if (password.length < 12) {
-    throw new Error("รหัสผ่านใหม่ต้องมีอย่างน้อย 12 ตัวอักษร");
+  if (password.length < 4) {
+    throw new Error("รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร");
   }
   if (password.length > 256) {
     throw new Error("รหัสผ่านใหม่ยาวเกินไป");
@@ -136,14 +147,14 @@ function encodePayload(payload: SessionPayload): string {
   return Buffer.from(JSON.stringify(payload)).toString("base64url");
 }
 
-export async function createAdminSession(): Promise<string> {
+export async function createAdminSession(remember = false): Promise<string> {
   const signingKey = await getSessionSigningKey();
   if (!signingKey) throw new Error("ยังไม่ได้ตั้งค่ารหัสผ่านผู้ดูแลระบบ");
 
   const now = Math.floor(Date.now() / 1000);
   const encodedPayload = encodePayload({
     iat: now,
-    exp: now + ADMIN_SESSION_MAX_AGE,
+    exp: now + (remember ? ADMIN_REMEMBER_MAX_AGE : ADMIN_SESSION_MAX_AGE),
     nonce: randomBytes(16).toString("base64url"),
   });
   const signature = createHmac("sha256", signingKey)
@@ -186,12 +197,12 @@ export async function isAdminAuthenticated(): Promise<boolean> {
   return verifyAdminSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 }
 
-export function adminCookieOptions(secure: boolean) {
+export function adminCookieOptions(secure: boolean, remember = false) {
   return {
     httpOnly: true,
     secure,
     sameSite: "strict" as const,
-    maxAge: ADMIN_SESSION_MAX_AGE,
+    maxAge: remember ? ADMIN_REMEMBER_MAX_AGE : ADMIN_SESSION_MAX_AGE,
     path: "/",
     priority: "high" as const,
   };

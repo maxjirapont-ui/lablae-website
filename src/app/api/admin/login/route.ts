@@ -7,7 +7,7 @@ import {
 } from "@/lib/admin-auth";
 
 const MAX_ATTEMPTS = 5;
-const ATTEMPT_WINDOW_MS = 15 * 60 * 1000;
+const ATTEMPT_WINDOW_MS = 30 * 1000;
 const attempts = new Map<string, { count: number; startedAt: number }>();
 
 function getClientKey(request: NextRequest): string {
@@ -38,12 +38,12 @@ export async function POST(request: NextRequest) {
     const clientKey = getClientKey(request);
     if (isRateLimited(clientKey)) {
       return NextResponse.json(
-        { error: "ลองเข้าสู่ระบบหลายครั้งเกินไป กรุณารอ 15 นาทีแล้วลองใหม่" },
-        { status: 429, headers: { "Retry-After": "900" } },
+        { error: "ลองเข้าสู่ระบบหลายครั้งเกินไป กรุณารอ 30 วินาทีแล้วลองใหม่" },
+        { status: 429, headers: { "Retry-After": "30" } },
       );
     }
 
-    const body = (await request.json()) as { password?: unknown };
+    const body = (await request.json()) as { password?: unknown; remember?: unknown };
     const password = typeof body.password === "string" ? body.password : "";
     const result = await authenticateAdminPassword(password);
 
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
       const secure = process.env.NODE_ENV === "production" || forwardedProto === "https";
       response.cookies.set(
         ADMIN_SESSION_COOKIE,
-        await createAdminSession(),
-        adminCookieOptions(secure),
+        await createAdminSession(body.remember === true),
+        adminCookieOptions(secure, body.remember === true),
       );
 
       return response;

@@ -5,6 +5,7 @@ import { Lock, Eye, EyeOff, Sparkles, AlertCircle } from "lucide-react";
 
 export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
+  const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ export default function AdminLoginPage() {
       const response = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, remember }),
       });
 
       const data = await response.json();
@@ -83,10 +84,11 @@ export default function AdminLoginPage() {
               </button>
             </div>
             <p className="text-[10px] text-[#f5ece1]/60 mt-1.5">
-              ระบบจำกัดจำนวนครั้งที่ลองเข้าสู่ระบบและเก็บ session ไว้ไม่เกิน 8 ชั่วโมง
+              ใช้รหัสหลังบ้านของร้าน หากลืมรหัสให้ตั้งใหม่ผ่านผู้ดูแลเว็บ
             </p>
           </div>
 
+          <label className="flex items-center gap-2 text-sm text-[#f5ece1]"><input type="checkbox" checked={remember} onChange={e=>setRemember(e.target.checked)} />จำฉันไว้บนเครื่องนี้ 30 วัน</label>
           <button
             type="submit"
             disabled={loading}

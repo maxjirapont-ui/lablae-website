@@ -12,7 +12,7 @@ const {open} = require('sqlite');
 const assert = require('node:assert/strict');
 const children = [];
 let browser;
-const password = 'local-shop-integration-only-2026';
+const password = '1555';
 async function main() {
   const directory=mkdtempSync(path.join(tmpdir(),'lablae-orders-'));
   const databasePath=path.join(directory,'test.db');
@@ -21,7 +21,7 @@ async function main() {
   await db.run("DELETE FROM settings WHERE key IN ('admin_password','admin_password_hash')");
   const reservationsBefore=(await db.get('SELECT COUNT(*) AS count FROM reservations')).count;
   function start(port,enabled,extra={}) {
-    const proc=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{env:{...process.env,DATABASE_PATH:databasePath,UPLOAD_DIR:path.join(directory,'uploads'),ADMIN_PASSWORD:password,ADMIN_SESSION_SECRET:password,SHOP_ORDERS_ENABLED:enabled,WEBSITE_ANALYTICS_ENABLED:'0',LINE_CHANNEL_ACCESS_TOKEN:'',LINE_CHANNEL_SECRET:'booking-only-secret',SHOP_LINE_CHANNEL_SECRET:'test-line-secret',SHOP_LINE_CHANNEL_ACCESS_TOKEN:'',LINE_GROUP_ID:'booking-group',...extra},stdio:'ignore'});
+    const proc=spawn(process.execPath,['node_modules/next/dist/bin/next','start','-p',String(port)],{env:{...process.env,DATABASE_PATH:databasePath,UPLOAD_DIR:path.join(directory,'uploads'),ADMIN_PASSWORD:password,ADMIN_PASSWORD_RESET:password,ADMIN_PASSWORD_RESET_VERSION:'test-reset-1',ADMIN_SESSION_SECRET:password,SHOP_ORDERS_ENABLED:enabled,WEBSITE_ANALYTICS_ENABLED:'0',LINE_CHANNEL_ACCESS_TOKEN:'',LINE_CHANNEL_SECRET:'booking-only-secret',SHOP_LINE_CHANNEL_SECRET:'test-line-secret',SHOP_LINE_CHANNEL_ACCESS_TOKEN:'',LINE_GROUP_ID:'booking-group',...extra},stdio:'ignore'});
     children.push(proc);return proc;
   }
   async function ready(base) {
@@ -33,8 +33,10 @@ async function main() {
   await Promise.all([ready(closed),ready(base)]);
   assert.equal((await fetch(closed+'/shop')).status,404);
   assert.equal((await fetch(closed+'/api/shop/orders',{method:'POST',headers:{origin:closed,'content-type':'application/json'},body:'{}'})).status,403);
-  const login=await fetch(base+'/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})});
+  const login=await fetch(base+'/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password,remember:true})});
   assert.equal(login.status,200);
+  assert(login.headers.get('set-cookie').includes('Max-Age=2592000'));
+  assert.equal((await db.get("SELECT value FROM settings WHERE key='admin_password_reset_version'")).value,'test-reset-1');
   const cookie=login.headers.get('set-cookie').split(';')[0];
   const requestKey=randomBytes(24).toString('hex');
   const address={name:'ผู้รับทดสอบ',phone:'0812345678',address:'ข้อมูลสมมติ 1',subdistrict:'ทดสอบ',district:'ทดสอบ',province:'อุตรดิตถ์',postcode:'53130',note:'ออเดอร์ทดสอบ ห้ามจัดส่ง'};
