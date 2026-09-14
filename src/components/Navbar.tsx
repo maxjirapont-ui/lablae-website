@@ -40,7 +40,6 @@ export default function Navbar({
     { name: "เมืองลับแล", href: "/lablae" },
     { name: "รู้จักเรา", href: "/about" },
     { name: "เมนูอาหาร", href: "/menu" },
-    { name: "สั่งไส้อั่ว", href: "/shop" },
     { name: "แวะลับแล", href: "/visit" },
     { name: "ตำราลับแลง", href: "/blog" },
   ];
@@ -178,6 +177,9 @@ export default function Navbar({
           >
             <Utensils className="w-4 h-4 mr-2" />
             {btnText}
+          </Link>
+          <Link href="/shop" onClick={() => setIsOpen(false)} className="block px-4 py-3 text-center text-accent font-thai font-semibold rounded-xl hover:bg-accent/10">
+            สั่งไส้อั่วส่งถึงบ้าน
           </Link>
         </div>
       </div>

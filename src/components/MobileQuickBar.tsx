@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Phone, MapPin, UtensilsCrossed } from "lucide-react";
+import { Phone, MapPin, UtensilsCrossed, ShoppingBag } from "lucide-react";
 
 interface MobileQuickBarProps {
   phone?: string;
@@ -17,7 +17,7 @@ export default function MobileQuickBar({
 
   return (
     <aside aria-label="แถบทางลัดสำหรับมือถือ" className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-3 py-2 bg-[#140c07]/95 backdrop-blur-md border-t border-accent/25 shadow-[0_-8px_25px_rgba(0,0,0,0.6)]">
-      <div className="max-w-md mx-auto grid grid-cols-3 gap-2 font-thai">
+      <div className="max-w-md mx-auto grid grid-cols-4 gap-2 font-thai">
         {/* Call Button */}
         <a
           href={`tel:${cleanPhone}`}
@@ -54,6 +54,11 @@ export default function MobileQuickBar({
           </div>
           <span className="text-[11px] font-bold text-[#1a100a] leading-tight">ดูเมนูอาหาร</span>
           <span className="text-[9px] text-[#1a100a]/75 leading-tight">ราคา & รูปภาพ</span>
+        </Link>
+        <Link href="/shop" className="flex flex-col items-center justify-center py-2 px-1 rounded-xl bg-[#2e1d13] border border-accent/25 text-accent active:scale-95 transition-all text-center">
+          <ShoppingBag className="w-5 h-5 mb-1" />
+          <span className="text-[11px] font-bold leading-tight">สั่งไส้อั่ว</span>
+          <span className="text-[9px] text-[#f7eee3]/60 leading-tight">ส่งถึงบ้าน</span>
         </Link>
       </div>
     </aside>
