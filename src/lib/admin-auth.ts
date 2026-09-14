@@ -1,5 +1,6 @@
 import {
   createHmac,
+  createHash,
   randomBytes,
   scrypt,
   timingSafeEqual,
@@ -70,9 +71,10 @@ async function getStoredPasswordHash(): Promise<string> {
   const resetVersion = process.env.ADMIN_PASSWORD_RESET_VERSION;
   if (resetPassword && resetVersion && resetPassword.length >= 4 && resetPassword.length <= 256) {
     const applied = await db.get<{value:string}>("SELECT value FROM settings WHERE key='admin_password_reset_version'");
-    if (applied?.value !== resetVersion) {
+    const resetIdentity = createHash("sha256").update(resetVersion + "\0" + resetPassword).digest("hex");
+    if (applied?.value !== resetIdentity) {
       const hash = await hashAdminPassword(resetPassword);
-      await db.run("INSERT OR REPLACE INTO settings(key,value) VALUES ('admin_password_hash',?),('admin_password_reset_version',?)", hash, resetVersion);
+      await db.run("INSERT OR REPLACE INTO settings(key,value) VALUES ('admin_password_hash',?),('admin_password_reset_version',?)", hash, resetIdentity);
       await db.run("DELETE FROM settings WHERE key='admin_password'");
     }
   }

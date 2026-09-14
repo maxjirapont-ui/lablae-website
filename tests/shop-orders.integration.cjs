@@ -36,7 +36,7 @@ async function main() {
   const login=await fetch(base+'/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password,remember:true})});
   assert.equal(login.status,200);
   assert(login.headers.get('set-cookie').includes('Max-Age=2592000'));
-  assert.equal((await db.get("SELECT value FROM settings WHERE key='admin_password_reset_version'")).value,'test-reset-1');
+  assert.equal((await db.get("SELECT value FROM settings WHERE key='admin_password_reset_version'")).value,require('node:crypto').createHash('sha256').update('test-reset-1\0'+password).digest('hex'));
   const cookie=login.headers.get('set-cookie').split(';')[0];
   const requestKey=randomBytes(24).toString('hex');
   const address={name:'ผู้รับทดสอบ',phone:'0812345678',address:'ข้อมูลสมมติ 1',subdistrict:'ทดสอบ',district:'ทดสอบ',province:'อุตรดิตถ์',postcode:'53130',note:'ออเดอร์ทดสอบ ห้ามจัดส่ง'};
