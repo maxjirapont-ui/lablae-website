@@ -14,8 +14,10 @@ export const SHOP_FLAT_SHIPPING_MAX_PACKS = 9;
 export const SHOP_SHIPPING_BAHT = 200;
 
 export function getShopShippingBaht(quantity: number): number | null {
-  return Number.isSafeInteger(quantity) && quantity >= 1 && quantity <= SHOP_FLAT_SHIPPING_MAX_PACKS
-    ? SHOP_SHIPPING_BAHT : null;
+  if (!Number.isSafeInteger(quantity) || quantity < 1) return null;
+  if (quantity <= 9) return 200;
+  if (quantity <= 20) return 400;
+  return null;
 }
 
 export function estimateShopOrder(quantity: number) {

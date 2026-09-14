@@ -31,7 +31,7 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
       {order.dispatch_note && <p className="whitespace-pre-wrap">{order.dispatch_note}</p>}
     </section>
     {order.status === "quoted" && <section className="rounded-2xl bg-[#fffaf3] text-stone-900 p-5 space-y-3">
-      <h2 className="font-bold text-xl">ช่องทางชำระเงินที่ร้านยืนยัน</h2>
+      <h2 className="font-bold text-xl">ชำระเงินแล้วแนบสลิป</h2><p>ร้านตรวจเงินเข้าบัญชีแล้วจะโทรติดต่อเรื่องจัดส่ง ยังไม่ชำระเงินจะยังไม่จัดส่งครับ</p>
       <p className="whitespace-pre-wrap break-words">{order.payment_instructions}</p>
       {paymentQr && <div className="space-y-4">
         <p className="font-bold">สแกน QR แล้วใส่ยอด {(order.goods_baht + (order.shipping_baht || 0)).toLocaleString("th-TH")} บาท</p>

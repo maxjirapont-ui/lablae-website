@@ -111,11 +111,11 @@ async function main() {
   await customer.getByRole('button',{name:'เพิ่มจำนวน 1 แพ็ก',exact:true}).click();
   assert.equal(await customer.locator('#shop-quantity').inputValue(),'10');
   await customer.locator('#shop-quantity').fill('20');
-  assert.equal(await customer.getByTestId('shop-total').innerText(),'5,000 บาท');
-  assert.equal(await customer.getByText('รอร้านยืนยัน',{exact:true}).count(),1);
+  assert.equal(await customer.getByTestId('shop-total').innerText(),'5,400 บาท');
+  assert.equal(await customer.getByText('รอร้านยืนยัน',{exact:true}).count(),0);
   for(const [id,value] of Object.entries({...address,phone:'0891234567'})) await customer.locator('#shop-'+id).fill(value);
   await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
-  await customer.getByRole('button',{name:'ส่งคำขอสั่งซื้อ',exact:true}).click();
+  await customer.getByRole('button',{name:'สั่งซื้อและดูช่องทางชำระเงิน',exact:true}).click();
   await customer.waitForURL('**/shop/orders/*');
   const savedUrl=customer.url();await customer.reload();assert.equal(customer.url(),savedUrl);
   assert.equal(await customer.getByRole('status').innerText(),'รอร้านยืนยันสินค้าและรอบส่ง');
@@ -123,10 +123,10 @@ async function main() {
   assert.equal((await db.get('SELECT COUNT(*) AS count FROM reservations')).count,reservationsBefore);
   assert.equal((await customer.goto(base+'/shop/orders/'+randomBytes(24).toString('hex'))).status(),404);
   const bulkOrder=await db.get('SELECT * FROM shop_orders WHERE phone=?','0891234567');
-  assert.equal(bulkOrder.quantity,20);assert.equal(bulkOrder.goods_baht,5000);assert.equal(bulkOrder.shipping_baht,null);
-  assert.equal((await update({id:bulkOrder.id,version:bulkOrder.version,action:'quote',shippingBaht:350,paymentInstructions:'บัญชีทดสอบเท่านั้น ห้ามโอนเงินจริง',dispatchNote:'วางแผนผลิตสำหรับรอบทดสอบ',confirmed:true})).status,200);
+  assert.equal(bulkOrder.quantity,20);assert.equal(bulkOrder.goods_baht,5000);assert.equal(bulkOrder.shipping_baht,400);
+  assert.equal((await update({id:bulkOrder.id,version:bulkOrder.version,action:'quote',shippingBaht:400,paymentInstructions:'บัญชีทดสอบเท่านั้น ห้ามโอนเงินจริง',dispatchNote:'วางแผนผลิตสำหรับรอบทดสอบ',confirmed:true})).status,200);
   await customer.goto(savedUrl);
-  assert.equal(await customer.getByText('ยอดรวม 5,350 บาท',{exact:true}).count(),1);
+  assert.equal(await customer.getByText('ยอดรวม 5,400 บาท',{exact:true}).count(),1);
   // Rate limit is persistent; attempts cannot create arbitrarily many requests for one phone.
   for(let i=0;i<4;i++) assert.equal((await post({...input,requestKey:randomBytes(24).toString('hex')})).status,201);
   assert.equal((await post({...input,requestKey:randomBytes(24).toString('hex')})).status,429);
@@ -145,10 +145,21 @@ async function main() {
   assert.equal((await uploadQr(firstQr,0,true,'https://example.com')).status,403);
   assert.equal((await uploadQr(Buffer.from('invalid image'),0)).status,400);
   assert.equal((await uploadQr(firstQr,0)).status,200);
+  for (const [quantity, shipping] of [[1,200],[9,200],[10,400],[20,400],[21,null]]) {
+    const res = await post({...input,quantity,requestKey:randomBytes(24).toString('hex'),address:{...address,phone:'08700000'+String(quantity).padStart(2,'0')}});
+    assert.equal(res.status,201);
+    const data=await res.json();
+    const fresh=await db.get('SELECT * FROM shop_orders WHERE token=?',data.url.split('/').pop());
+    assert.equal(fresh.shipping_baht,shipping);
+    assert.equal(fresh.status,shipping===null?'requested':'quoted');
+    assert.equal((await fetch(base+data.url+'/payment-qr')).status,shipping===null?404:200);
+    if(shipping!==null) assert(JSON.parse(fresh.payment_qr_json).recipient);
+  }
+
   const paymentConfig=await db.get('SELECT * FROM shop_payment_config WHERE id=1');
   assert.equal((await fetch(savedUrl+'/payment-qr')).status,404); // manual quote
   let bulk=await db.get('SELECT * FROM shop_orders WHERE id=?',bulkOrder.id);
-  const qrQuote={id:bulk.id,version:bulk.version,action:'quote',shippingBaht:350,paymentMethod:'qr',paymentQrFilename:paymentConfig.filename,dispatchNote:'รอบส่งทดสอบ',confirmed:true};
+  const qrQuote={id:bulk.id,version:bulk.version,action:'quote',shippingBaht:400,paymentMethod:'qr',paymentQrFilename:paymentConfig.filename,dispatchNote:'รอบส่งทดสอบ',confirmed:true};
   assert.equal((await update({...qrQuote,paymentQrFilename:'wrong'})).status,409);
   assert.equal((await update(qrQuote)).status,200);
   await customer.goto(savedUrl);

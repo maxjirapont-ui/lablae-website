@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { ensureRuntimeStorage, getDatabasePath } from "./storage";
-import { SHOP_PRODUCT, SHOP_MAX_PACKS, SHOP_FLAT_SHIPPING_MAX_PACKS, getShopShippingBaht, validateShopAddress, normalizeShopDigits, type ShopAddress } from "./shop";
+import { SHOP_PRODUCT, SHOP_MAX_PACKS, getShopShippingBaht, validateShopAddress, normalizeShopDigits, type ShopAddress } from "./shop";
 import { parsePaymentQr, type ShopOrder, type OrderStatus } from "./shop-order-types";
 
 import { SHOP_PAYMENT_SCHEMA, type ShopPaymentConfig } from "./shop-payment";
@@ -76,8 +76,13 @@ export async function createShopOrder(input: unknown): Promise<ShopOrder> {
     const token = randomBytes(24).toString("hex");
     await db.run(`INSERT INTO shop_orders (token, request_key, fingerprint, quantity, product_name, unit_price, goods_baht, address_json, phone, shipping_baht)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, [token, body.requestKey, fingerprint, quantity, SHOP_PRODUCT.name, SHOP_PRODUCT.priceBaht, quantity * SHOP_PRODUCT.priceBaht, JSON.stringify(address), address.phone, getShopShippingBaht(quantity)]);
+    const qr = await db.get<ShopPaymentConfig>("SELECT * FROM shop_payment_config WHERE id = 1");
+    if (getShopShippingBaht(quantity) !== null && qr) {
+      await db.run("UPDATE shop_orders SET status='quoted', payment_qr_json=?, payment_instructions=? WHERE token=?",
+        JSON.stringify({filename:qr.filename, recipient:qr.recipient}), `พร้อมเพย์\nชื่อผู้รับเงิน: ${qr.recipient}`, token);
+    }
     const order = (await db.get<ShopOrder>("SELECT * FROM shop_orders WHERE token = ?", token))!;
-    await db.run("INSERT INTO shop_order_events (order_id, status) VALUES (?, 'requested')", order.id);
+    await db.run("INSERT INTO shop_order_events (order_id, status) VALUES (?, ?)", order.id, order.status);
     await enqueueShopEvent(db, order.id, "order", `order:${order.id}`);
     await db.exec("COMMIT");
     return order;
@@ -112,7 +117,7 @@ export async function updateShopOrder(input: Record<string, unknown>) {
     if (input.action === "quote" && ["requested", "quoted"].includes(status)) {
       if (!Number.isSafeInteger(input.shippingBaht) || Number(input.shippingBaht) < 0 || Number(input.shippingBaht) > 5000) throw new OrderError("กรอกค่าส่งรวมกล่องและค่าบริการทั้งหมด 0–5,000 บาท");
       const flatShipping = getShopShippingBaht(order.quantity);
-      if (flatShipping !== null && input.shippingBaht !== flatShipping) throw new OrderError(`ค่าส่งเหมาจ่าย ${flatShipping} บาท สำหรับ 1–${SHOP_FLAT_SHIPPING_MAX_PACKS} แพ็ก`);
+      if (flatShipping !== null && input.shippingBaht !== flatShipping) throw new OrderError(`ค่าส่งเหมาจ่าย ${flatShipping} บาท สำหรับจำนวน ${order.quantity} แพ็ก`);
       if (input.paymentMethod === "qr") {
         const qr = parsePaymentQr(order.payment_qr_json) || await db.get<ShopPaymentConfig>("SELECT * FROM shop_payment_config WHERE id = 1");
         if (!qr) throw new OrderError("กรุณาตั้งค่า QR รับเงินก่อน");

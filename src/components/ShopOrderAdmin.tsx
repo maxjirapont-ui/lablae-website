@@ -43,8 +43,8 @@ export default function ShopOrderAdmin({order, paymentConfig, slips=[]}: {order:
     <a href={`/shop/orders/${order.token}`} target="_blank" rel="noreferrer" className="inline-block text-accent underline py-2">เปิดหน้าติดตามของลูกค้า</a>
     {["requested","quoted"].includes(order.status) && <form onSubmit={quote} className="space-y-4 border-t border-accent/20 pt-4">
       <label className="block">ค่าส่ง (บาท)<input name="shipping" type="number" min="0" max="5000" step="1" required readOnly={flatShipping !== null} defaultValue={flatShipping ?? order.shipping_baht ?? ""} className={field}/></label>
-      {flatShipping !== null && <p className="text-sm text-primary/75">ค่าส่งเหมาจ่าย 200 บาท สำหรับ 1–9 แพ็ก ตามราคาหน้าร้าน</p>}
-      {flatShipping === null && <p className="text-sm text-primary/75">ออเดอร์มากกว่า 9 แพ็ก: วางแผนผลิต แล้วกรอกค่าส่งและรอบส่งที่ยืนยันได้ก่อนแจ้งลูกค้าชำระเงิน</p>}
+      {flatShipping !== null && <p className="text-sm text-primary/75">ค่าส่งตามจำนวน: 1–9 แพ็ก 200 บาท · 10–20 แพ็ก 400 บาท</p>}
+      {flatShipping === null && <p className="text-sm text-primary/75">ออเดอร์มากกว่า 20 แพ็ก: วางแผนผลิต แล้วกรอกค่าส่งและรอบส่งที่ยืนยันได้ก่อนแจ้งลูกค้าชำระเงิน</p>}
       <label className="block">ขนส่งและรอบส่งที่ยืนยัน<textarea name="dispatch" required maxLength={500} defaultValue={order.dispatch_note} className={field} placeholder="เช่น ชื่อขนส่งและวันที่ส่งที่ตกลงกับลูกค้า"/></label>
       {qr && <label className="flex items-start gap-3"><input type="checkbox" checked={useQr} onChange={event=>setUseQr(event.target.checked)} className="mt-1 h-5 w-5 shrink-0"/>ใช้ QR พร้อมเพย์ · {qr.recipient}</label>}
       {!useQr && <label className="block">ช่องทางรับเงินและชื่อบัญชี<textarea name="payment" required minLength={10} maxLength={1000} defaultValue={order.payment_instructions} className={field} placeholder="กรอกบัญชีหรือพร้อมเพย์ของร้านที่ตรวจแล้ว ข้อความนี้จะแสดงให้ลูกค้า"/></label>}

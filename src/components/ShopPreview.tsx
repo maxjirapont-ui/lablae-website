@@ -126,7 +126,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
           <div className="flex justify-between gap-4"><dt>ไส้อั่ว {quantity} แพ็ก</dt><dd>{money(estimate.goodsBaht)} บาท</dd></div>
           <div className="flex justify-between gap-4"><dt>ค่าส่งแช่แข็ง</dt><dd className="shrink-0">{estimate.shippingBaseBaht === null ? "รอร้านยืนยัน" : `${money(estimate.shippingBaseBaht)} บาท`}</dd></div>
         </dl>
-        <p className="text-sm leading-relaxed text-stone-600">{estimate.shippingBaseBaht === null ? "สั่งเกิน 9 แพ็กได้ ร้านจะวางแผนผลิตและยืนยันค่าส่งกับรอบส่งก่อนชำระเงิน" : "ค่าส่งเหมาจ่าย 200 บาท สำหรับ 1–9 แพ็ก รอร้านยืนยันรอบส่งก่อนชำระเงิน"}</p>
+        <p className="text-sm leading-relaxed text-stone-600">{estimate.shippingBaseBaht === null ? "เกิน 20 แพ็ก ร้านแจ้งค่าส่งก่อนชำระ" : "1–9 แพ็ก ส่ง 200 บาท · 10–20 แพ็ก ส่ง 400 บาท"}</p>
       </div>
     );
   }
@@ -145,7 +145,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
           {reviewing ? "ตรวจสอบรายการของคุณ" : "ไส้อั่ว ส่งถึงบ้าน"}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-primary/80">
-          {reviewing ? "ตรวจรายการแล้วส่งให้ร้านยืนยันสินค้าพร้อมส่ง ยังไม่ต้องชำระเงิน" : "อร่อยจากลับแลถึงบ้านคุณ จะกินเองหรือรวมสั่งกับคนที่บ้านก็คุ้ม"}
+          {reviewing ? "ตรวจรายการ แล้วไปชำระเงิน" : "อร่อยจากลับแลถึงบ้านคุณ จะกินเองหรือรวมสั่งกับคนที่บ้านก็คุ้ม"}
         </p>
       </div>
 
@@ -162,9 +162,9 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
             <p className="mt-2 whitespace-pre-wrap leading-relaxed">{address.address}<br />{address.subdistrict} · {address.district}<br />{address.province} {address.postcode}</p>
             {address.note.trim() && <p className="mt-3 whitespace-pre-wrap text-stone-600">หมายเหตุ: {address.note}</p>}
           </div>
-          <p className="rounded-xl bg-amber-100 p-4 text-sm leading-relaxed text-amber-950">ร้านจะตรวจยอดสั่ง วางแผนผลิต และยืนยันรอบส่งก่อนรับเงิน เมื่อส่งคำขอแล้วจะได้เลขออเดอร์และลิงก์ติดตาม</p>
+          <p className="rounded-xl bg-amber-100 p-4 text-sm leading-relaxed text-amber-950">สั่ง 1–20 แพ็กแล้วชำระผ่าน QR และแนบสลิปได้เลย ร้านตรวจเงินแล้วโทรติดต่อเรื่องจัดส่ง ส่วนเกิน 20 แพ็กรอแจ้งค่าส่งก่อน</p>
           {submitError && <p role="alert" className="text-red-800">{submitError}</p>}
-          <button type="button" disabled={sending} onClick={()=>void submitOrder()} className={`${buttonClass} w-full bg-[#653c20] px-4 py-4 font-bold text-white`}>{sending ? "กำลังบันทึก…" : "ส่งคำขอสั่งซื้อ"}</button>
+          <button type="button" disabled={sending} onClick={()=>void submitOrder()} className={`${buttonClass} w-full bg-[#653c20] px-4 py-4 font-bold text-white`}>{sending ? "กำลังบันทึก…" : "สั่งซื้อและดูช่องทางชำระเงิน"}</button>
           <button type="button" disabled={sending} onClick={() => setReviewing(false)} className={`${buttonClass} w-full border border-stone-400 px-4 py-3 font-bold hover:bg-stone-100`}>กลับไปแก้ไขจำนวนหรือที่อยู่</button>
           <p className="text-center text-sm text-stone-600">ชื่อ เบอร์โทร และที่อยู่จะส่งให้ร้านเพื่อจัดการออเดอร์และการจัดส่ง</p>
         </section>
@@ -193,7 +193,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
               <p className="mt-2 leading-relaxed text-stone-700">ชวนคนที่บ้านหรือเพื่อนสั่งด้วยกัน จ่ายค่าส่งครั้งเดียวต่อออเดอร์ ส่งไปที่อยู่เดียวกัน</p>
               <p className="mt-3 flex items-center gap-2 text-sm text-stone-600"><Snowflake size={16} aria-hidden="true" /> จัดส่งแบบแช่แข็ง</p>
             </div>
-            <p className="text-sm leading-relaxed text-primary/75">สั่งมากกว่า 9 แพ็กได้ เลือกจำนวนด้านล่างได้เลย ร้านจะยืนยันค่าส่งและรอบส่งให้ก่อนชำระเงิน</p>
+            <p className="text-sm leading-relaxed text-primary/75">10–20 แพ็ก ส่ง 400 บาท · เกิน 20 แพ็ก ร้านแจ้งค่าส่งก่อนโอน</p>
             <details className="rounded-2xl border border-accent/30 p-5 text-primary">
               <summary className="cursor-pointer text-lg font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">อุ่นไส้อั่วที่บ้าน</summary>
               <div className="mt-4 space-y-5 text-sm leading-relaxed text-primary/85">
@@ -270,7 +270,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
                 </div>
                 <span>แพ็ก</span>
               </div>
-              <p id="shop-quantity-hint" className={`mt-2 text-sm ${estimate ? "text-stone-600" : "text-red-800"}`}>{estimate ? "พิมพ์จำนวนที่ต้องการได้เลย สั่งเกิน 9 แพ็กได้" : "กรุณาใส่จำนวนเต็มตั้งแต่ 1 ขึ้นไปและไม่มากเกินกว่าระบบจะคำนวณได้"}</p>
+              <p id="shop-quantity-hint" className={`mt-2 text-sm ${estimate ? "text-stone-600" : "text-red-800"}`}>{estimate ? "พิมพ์จำนวนที่ต้องการได้เลย" : "กรุณาใส่จำนวนเต็มตั้งแต่ 1 ขึ้นไปและไม่มากเกินกว่าระบบจะคำนวณได้"}</p>
             </section>
 
             {suggestion && (
@@ -313,8 +313,8 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
             {estimate && <p className="border-t border-stone-200 pt-5 text-center font-bold">{quantity} แพ็ก · {estimate.estimatedSubtotalBaht === null ? "ค่าสินค้า" : "ยอดรวม"} {money(estimate.estimatedSubtotalBaht ?? estimate.goodsBaht)} บาท{estimate.estimatedSubtotalBaht === null && " · ยังไม่รวมค่าส่ง"}</p>}
             {Object.values(errors).some(Boolean) && <p role="alert" className="text-sm text-red-800">กรุณาตรวจข้อมูลในช่องที่มีข้อความสีแดง</p>}
             <button type="submit" disabled={!hydrated} className={`${buttonClass} flex w-full items-center justify-center gap-2 bg-[#653c20] px-4 py-4 text-base font-bold text-white hover:bg-[#4b2c18]`}>ตรวจรายการก่อนส่ง<ArrowRight size={18} aria-hidden="true" /></button>
-            <p className="text-center text-sm text-stone-600">ไม่ต้องสมัครสมาชิก · ร้านยืนยันยอดก่อนชำระ</p>
-            <noscript><p className="text-red-800">กรุณาเปิด JavaScript เพื่อเลือกสินค้าและส่งคำขอสั่งซื้อ</p></noscript>
+            <p className="text-center text-sm text-stone-600">ไม่ต้องสมัครสมาชิก · สั่งแล้วสแกนจ่ายได้เลย (1–20 แพ็ก)</p>
+            <noscript><p className="text-red-800">กรุณาเปิด JavaScript เพื่อเลือกสินค้าและสั่งซื้อและดูช่องทางชำระเงิน</p></noscript>
           </form>
         </div>
       )}
