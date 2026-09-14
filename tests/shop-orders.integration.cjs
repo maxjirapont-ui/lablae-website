@@ -196,6 +196,13 @@ async function main() {
   assert.equal((await db.get('SELECT status FROM shop_orders WHERE id=?',bulk.id)).status,'quoted');
   assert.equal((await db.get("SELECT COUNT(*) n FROM shop_line_outbox WHERE event_key=?",'slip:'+slipResults[0].id)).n,1);
   await customer.reload();assert.equal(await customer.getByLabel('รูปสลิป',{exact:true}).count(),1);
+  await customer.goto(savedUrl);
+  const pick=customer.waitForEvent('filechooser');
+  await customer.getByRole('button',{name:'เลือกรูปสลิปจากมือถือ',exact:true}).click();
+  await (await pick).setFiles({name:'test-slip.png',mimeType:'image/png',buffer:firstQr});
+  assert(await customer.getByText('เลือกแล้ว: test-slip.png',{exact:true}).isVisible());
+  await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
+  await customer.getByText('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี',{exact:true}).waitFor();
   // Signed pairing is one-time and cannot overwrite the booking group.
   const lineAction=(action,authenticated=true)=>fetch(base+'/api/admin/shop-line',{method:'POST',headers:{origin:base,'content-type':'application/json',...(authenticated?{cookie}:{})},body:JSON.stringify({action})});
   assert.equal((await lineAction('pair',false)).status,401);
