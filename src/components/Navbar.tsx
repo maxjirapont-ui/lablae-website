@@ -40,6 +40,7 @@ export default function Navbar({
     { name: "เมืองลับแล", href: "/lablae" },
     { name: "รู้จักเรา", href: "/about" },
     { name: "เมนูอาหาร", href: "/menu" },
+    { name: "สั่งไส้อั่ว", href: "/shop" },
     { name: "แวะลับแล", href: "/visit" },
     { name: "ตำราลับแลง", href: "/blog" },
   ];
@@ -94,7 +95,7 @@ export default function Navbar({
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-5">
+          <div className="hidden lg:flex items-center gap-3 xl:gap-5">
             {navLinks.map((link) => (
               <Link
                 key={link.name}

@@ -258,6 +258,22 @@ export default async function Home() {
         </div>
       </section>
 
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 font-thai" aria-labelledby="home-shop-heading">
+        <div className="grid md:grid-cols-2 overflow-hidden rounded-3xl border border-accent/30 bg-[#261810]">
+          <Link href="/shop" className="block bg-[#eee4d6]" aria-label="ดูไส้อั่วลำลำลับแล 500 กรัม">
+            <img src="/images/shop/sai-ua-500g-studio.png" alt="ไส้อั่วลำลำลับแลแพ็กซีลสูญญากาศ 500 กรัม" width={640} height={640} loading="lazy" className="w-full h-72 sm:h-80 object-contain" />
+          </Link>
+          <div className="p-6 sm:p-8 flex flex-col justify-center items-start gap-4">
+            <p className="text-accent text-sm">จากครัวบ้าน 100 ปี ส่งถึงบ้านคุณ</p>
+            <h2 id="home-shop-heading" className="text-2xl sm:text-3xl font-bold text-[#f5ece1]">สั่งไส้อั่วลำลำลับแล</h2>
+            <p className="text-[#f5ece1]/80">ปรุงสุก ซีลสูญญากาศ จัดส่งแช่แข็ง<br />แพ็กละ 500 กรัม · <strong className="text-accent">250 บาท</strong></p>
+            <p className="text-sm text-[#f5ece1]/80">1–9 แพ็ก ค่าส่งรวม 200 บาท สั่งรวมกันคุ้มกว่า<br />สั่งมากกว่า 9 แพ็กได้ ร้านยืนยันค่าส่งและรอบส่งก่อนโอน</p>
+            <Link href="/shop" className="inline-flex min-h-12 items-center rounded-full bg-accent px-7 py-3 font-bold text-[#1c120c] hover:bg-accent-dark transition-colors">เลือกจำนวนและสั่งซื้อ →</Link>
+          </div>
+        </div>
+      </section>
+
+
       {/* Render Dynamic Reorderable Sections */}
       {sections.map((sectionKey) => {
         if (sectionKey === "intro" && showIntro) {
