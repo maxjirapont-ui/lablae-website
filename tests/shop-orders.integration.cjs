@@ -43,6 +43,8 @@ async function main() {
   const input={requestKey,quantity:3,address,goodsBaht:1,shippingBaht:0,status:'paid'};
   const post=(body,origin=base)=>fetch(base+'/api/shop/orders',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)});
   assert.equal((await post(input,'https://example.com')).status,403);
+  assert.equal((await post({...input,quantity:0},'https://www.lablae.net')).status,400);
+  assert.equal((await post(input,'https://www.lablae.net.evil.example')).status,403);
   assert.equal((await post({...input,quantity:1.5})).status,400);
   assert.equal((await post({...input,quantity:0})).status,400);
   const responses=await Promise.all([post(input),post(input),post(input)]);

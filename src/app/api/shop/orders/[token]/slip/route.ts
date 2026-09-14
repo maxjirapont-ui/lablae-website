@@ -1,3 +1,4 @@
+import { isShopOriginAllowed } from "@/lib/shop-origin";
 import {NextRequest,NextResponse,after} from 'next/server';
 import {uploadShopSlip} from '@/lib/shop-slips';
 import {OrderError,shopIsPublic} from '@/lib/shop-orders';
@@ -5,7 +6,7 @@ import {isAdminAuthenticated} from '@/lib/admin-auth';
 import {flushShopNotifications} from '@/lib/shop-line';
 const headers={'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow','Referrer-Policy':'no-referrer'};
 export async function POST(request:NextRequest,{params}:{params:Promise<{token:string}>}) {
- if(request.headers.get('origin')!==request.nextUrl.origin)return NextResponse.json({error:'คำขอไม่ถูกต้อง'},{status:403,headers});
+ if(!isShopOriginAllowed(request))return NextResponse.json({error:'คำขอไม่ถูกต้อง'},{status:403,headers});
  if(process.env.NODE_ENV==='production' && !shopIsPublic() && !(await isAdminAuthenticated()))return NextResponse.json({error:'ยังไม่เปิดรับออเดอร์'},{status:403,headers});
  if(Number(request.headers.get('content-length'))>6*1024*1024)return NextResponse.json({error:'ไฟล์ใหญ่เกินไป'},{status:413,headers});
  try{

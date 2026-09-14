@@ -1,10 +1,11 @@
+import { isShopOriginAllowed } from "@/lib/shop-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { OrderError, updateShopOrder } from "@/lib/shop-orders";
 
 export async function POST(request: NextRequest) {
   if (!(await isAdminAuthenticated())) return NextResponse.json({error:"กรุณาเข้าสู่ระบบ"},{status:401});
-  if (request.headers.get("origin") !== request.nextUrl.origin) return NextResponse.json({error:"คำขอไม่ถูกต้อง"},{status:403});
+  if (!isShopOriginAllowed(request)) return NextResponse.json({error:"คำขอไม่ถูกต้อง"},{status:403});
   try {
     const text = await request.text();
     if (text.length > 5000) return NextResponse.json({error:"ข้อมูลยาวเกินไป"},{status:413});

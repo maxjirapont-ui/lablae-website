@@ -1,3 +1,4 @@
+import { isShopOriginAllowed } from "@/lib/shop-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getShopPaymentConfig, readPaymentQr, saveShopPaymentConfig } from "@/lib/shop-payment";
@@ -14,7 +15,7 @@ export async function GET() {
 }
 export async function POST(request: NextRequest) {
   if (!(await isAdminAuthenticated())) return NextResponse.json({error:"กรุณาเข้าสู่ระบบ"}, {status:401, headers});
-  if (request.headers.get("origin") !== request.nextUrl.origin) return NextResponse.json({error:"คำขอไม่ถูกต้อง"}, {status:403, headers});
+  if (!isShopOriginAllowed(request)) return NextResponse.json({error:"คำขอไม่ถูกต้อง"}, {status:403, headers});
   if (Number(request.headers.get("content-length")) > 6 * 1024 * 1024) return NextResponse.json({error:"ไฟล์ใหญ่เกินไป"}, {status:413, headers});
   try {
     const form = await request.formData();
