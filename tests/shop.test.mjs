@@ -17,7 +17,7 @@ test("bundle suggestion discloses extra goods and the complete new estimate", ()
   for (const n of [0, -1, 1.5, 3, 4, 5, 9, 10, 11, NaN, Infinity]) assert.equal(getShopBundleSuggestion(n), null);
 });
 
-test("confirmed flat shipping applies only to 1–9 packs", () => {
+test("confirmed shipping tiers apply to 1–9 and 10–20 packs", () => {
   for (let count = 1; count <= 9; count++) {
     const estimate = estimateShopOrder(count);
     assert.equal(getShopShippingBaht(count), 200);
@@ -26,7 +26,13 @@ test("confirmed flat shipping applies only to 1–9 packs", () => {
     assert.equal(estimate.estimatedSubtotalBaht, count * 250 + 200);
     assert.equal(estimate.payable, false);
   }
-  for (const count of [0, -1, 1.5, 10, 11, NaN, Infinity, "1", null, undefined]) {
+  for (let count = 10; count <= 20; count++) {
+    const estimate = estimateShopOrder(count);
+    assert.equal(getShopShippingBaht(count), 400);
+    assert.equal(estimate.shippingBaseBaht, 400);
+    assert.equal(estimate.estimatedSubtotalBaht, count * 250 + 400);
+  }
+  for (const count of [0, -1, 1.5, 21, NaN, Infinity, "1", null, undefined]) {
     assert.equal(getShopShippingBaht(count), null);
   }
 });
@@ -64,8 +70,8 @@ test("missing and oversized fields, invalid phone and postcode are rejected", ()
 });
 
 
-test("bulk orders accept more than nine packs without inventing a shipping total", () => {
-  for (const quantity of [10, 20, 100, 1000, SHOP_MAX_PACKS]) {
+test("bulk orders accept more than twenty packs without inventing a shipping total", () => {
+  for (const quantity of [21, 100, 1000, SHOP_MAX_PACKS]) {
     const order = estimateShopOrder(quantity);
     assert.equal(order.goodsBaht, quantity * 250);
     assert.equal(order.shippingBaseBaht, null);

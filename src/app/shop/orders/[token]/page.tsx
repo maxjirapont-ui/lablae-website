@@ -20,7 +20,8 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
   return <div className="max-w-2xl mx-auto p-4 sm:p-8 font-thai space-y-6 text-primary">
     <ShopStatusRefresh />
     <h1 className="text-3xl font-bold">ออเดอร์ LL-{order.id}</h1>
-    <p className="text-xl text-accent" role="status">{ORDER_STATUS[order.status]}</p>
+    <p className="text-xl text-accent" role="status">{order.status === "quoted" && slips.length > 0 ? "ได้รับสลิปแล้ว · รอร้านตรวจเงิน" : ORDER_STATUS[order.status]}</p>
+    {order.status === "quoted" && slips.length > 0 && <p className="rounded-xl bg-[#f1e6d5] p-4 text-stone-900">ไม่ต้องโอนซ้ำครับ ร้านจะตรวจเงินเข้าบัญชีแล้วโทรติดต่อเรื่องจัดส่ง</p>}
     {order.status === "requested" && <p className="leading-relaxed">ได้รับคำขอสั่งซื้อแล้วครับ ร้านจะตรวจสินค้าพร้อมส่ง พื้นที่จัดส่ง และยอดรวมก่อน ยังไม่ต้องโอนเงิน กรุณาเก็บลิงก์หน้านี้ไว้ดูความคืบหน้าหรือแจ้งเลขออเดอร์เมื่อติดต่อร้าน</p>}
     <section className="rounded-2xl border border-accent/30 p-5 space-y-3">
       <h2 className="text-xl font-bold">{order.product_name}</h2>
@@ -32,6 +33,7 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
     </section>
     {order.status === "quoted" && <section className="rounded-2xl bg-[#fffaf3] text-stone-900 p-5 space-y-3">
       <h2 className="font-bold text-xl">ชำระเงินแล้วแนบสลิป</h2><p>ร้านตรวจเงินเข้าบัญชีแล้วจะโทรติดต่อเรื่องจัดส่ง ยังไม่ชำระเงินจะยังไม่จัดส่งครับ</p>
+      <a href="#payment-slip" className="block rounded-xl border-2 border-[#653c20] px-4 py-3 text-center font-bold text-[#653c20]">{slips.length > 0 ? "ดูสถานะสลิป / แนบเพิ่ม" : "โอนแล้ว กดแนบสลิป"}</a>
       <p className="whitespace-pre-wrap break-words">{order.payment_instructions}</p>
       {paymentQr && <div className="space-y-4">
         <p className="font-bold">สแกน QR แล้วใส่ยอด {(order.goods_baht + (order.shipping_baht || 0)).toLocaleString("th-TH")} บาท</p>
@@ -39,7 +41,7 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
         <a href={`/shop/orders/${order.token}/payment-qr?download=1`} download className="block rounded-xl bg-[#653c20] px-4 py-3 text-center font-bold text-white">บันทึกรูป QR เพื่อโอนเงิน</a>
         <p className="text-sm leading-relaxed">ใช้มือถือเครื่องเดียว: บันทึกรูป แล้วเลือกสแกนจากรูปในแอปธนาคาร ตรวจชื่อผู้รับเงินให้ตรงกับ {paymentQr.recipient} และยอดรวมก่อนยืนยันโอน</p>
       </div>}
-      <p>หลังโอน แนบสลิปด้านล่างได้เลย สถานะจะเปลี่ยนเมื่อร้านตรวจเงินเข้าจริงแล้ว</p>
+      <a href="#payment-slip" className="block rounded-xl bg-[#653c20] px-4 py-3 text-center font-bold text-white">{slips.length > 0 ? "ดูสถานะสลิป / แนบเพิ่ม" : "โอนแล้ว กดแนบสลิป"}</a>
     </section>}
     {order.status === "quoted" && <ShopSlipUpload token={order.token} count={slips.length} />}
     {order.tracking && <section className="border border-accent/30 rounded-2xl p-5"><h2 className="font-bold text-xl">ข้อมูลจัดส่ง</h2><p className="break-words mt-2">{order.tracking}</p></section>}

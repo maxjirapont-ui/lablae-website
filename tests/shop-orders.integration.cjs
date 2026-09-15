@@ -72,6 +72,10 @@ async function main() {
   await page.getByRole('checkbox',{name:'ตรวจสินค้าพร้อมส่ง'}).check();
   await page.getByRole('button',{name:'ยืนยันยอดให้ลูกค้า',exact:true}).click();
   await page.getByRole('button',{name:'ยืนยันรับเงินแล้ว',exact:true}).waitFor();
+  assert.equal(await page.getByRole('button',{name:'ยืนยันยอดให้ลูกค้า',exact:true}).isVisible(),false);
+  await page.getByText('แก้ไขยอดหรือข้อมูลจัดส่ง',{exact:true}).click();
+  assert(await page.getByRole('button',{name:'ยืนยันยอดให้ลูกค้า',exact:true}).isVisible());
+  await page.getByText('แก้ไขยอดหรือข้อมูลจัดส่ง',{exact:true}).click();
   assert.equal((await update({action:'cancel'})).status,409); // stale version
   order=await db.get('SELECT * FROM shop_orders');assert.equal(order.status,'quoted');assert.equal(order.shipping_baht,200);
   const customer=await browser.newPage({viewport:{width:390,height:844}});
@@ -90,6 +94,8 @@ async function main() {
   assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   // Mobile and desktop prices show the final total and the max quantity.
   await customer.goto(base+'/shop');
+  await customer.getByRole('link',{name:'เลือกจำนวนและดูยอดรวม',exact:true}).click();
+  assert.equal(new URL(customer.url()).hash,'#shop-quantity-heading');
   for (const [quantity, title, total] of [[3,'กินที่บ้าน',950],[5,'แบ่งกันอร่อย',1450],[9,'รวมสั่งกับเพื่อน',2450]]) {
     await customer.getByRole('radio',{name:`${title} ${quantity} แพ็ก`,exact:true}).check();
     assert.equal(await customer.getByTestId('shop-total').innerText(),`${total.toLocaleString('th-TH')} บาท`);
@@ -203,6 +209,11 @@ async function main() {
   assert(await customer.getByText('เลือกแล้ว: test-slip.png',{exact:true}).isVisible());
   await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
   await customer.getByText('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี',{exact:true}).waitFor();
+  await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
+  await customer.getByRole('link',{name:'ดูสถานะสลิป / แนบเพิ่ม',exact:true}).first().click();
+  assert.equal(new URL(customer.url()).hash,'#payment-slip');
+  assert(await customer.getByRole('heading',{name:'โอนแล้ว แนบสลิปที่นี่',exact:true}).isVisible());
+  await customer.screenshot({path:path.join(directory,'slip-received-mobile.png')});
   // Signed pairing is one-time and cannot overwrite the booking group.
   const lineAction=(action,authenticated=true)=>fetch(base+'/api/admin/shop-line',{method:'POST',headers:{origin:base,'content-type':'application/json',...(authenticated?{cookie}:{})},body:JSON.stringify({action})});
   assert.equal((await lineAction('pair',false)).status,401);

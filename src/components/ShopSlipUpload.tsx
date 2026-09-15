@@ -15,7 +15,7 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
    setMessage('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี');form.reset();setFilename('');key.current='';router.refresh();
   }catch(error){setMessage(error instanceof Error?error.message:'เชื่อมต่อไม่สำเร็จ กรุณาลองอีกครั้ง');}finally{setBusy(false);}
  }
- return <section className="rounded-2xl border border-accent/30 p-5 space-y-3">
+ return <section id="payment-slip" tabIndex={-1} className="scroll-mt-44 outline-none rounded-2xl border border-accent/30 p-5 space-y-3">
   <h2 className="text-xl font-bold">โอนแล้ว แนบสลิปที่นี่</h2>
   <p>ร้านจะตรวจยอดเงินเข้าจริงก่อนเปลี่ยนสถานะเป็นรับเงินแล้ว</p>
   {count>0&&<p className="text-accent">ได้รับสลิปแล้ว {count} รูป · รอตรวจสอบ</p>}

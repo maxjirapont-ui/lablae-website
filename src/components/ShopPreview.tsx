@@ -175,6 +175,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
               <div><p className="text-sm text-primary/75">เต็มแพ็ก 500 กรัม</p><p className="mt-1 text-5xl font-bold tracking-tight text-accent">{money(SHOP_PRODUCT.priceBaht)} <span className="text-lg font-normal">บาท / แพ็ก</span></p></div>
               <span className="rounded-full border border-accent/35 px-3 py-2 text-sm text-primary">ปรุงสุก · ซีลสูญญากาศ</span>
             </div>
+            <a href="#shop-quantity-heading" className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-accent px-5 py-3 font-bold text-[#261810] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">เลือกจำนวนและดูยอดรวม</a>
             <figure>
               <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#f1e6d5]">
                 {imageFailed ? <div className="flex h-full items-center justify-center text-primary/80">ไส้อั่วลำลำลับแล · 500 กรัม</div> : (
@@ -232,7 +233,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
 
           <form onSubmit={review} noValidate className="space-y-7 rounded-2xl bg-[#fffaf3] p-5 text-stone-900 sm:p-8">
             <section aria-labelledby="shop-quantity-heading">
-              <h2 id="shop-quantity-heading" className="text-xl font-bold">1. เลือกชุดที่เหมาะกับคุณ</h2>
+              <h2 id="shop-quantity-heading" tabIndex={-1} className="scroll-mt-44 text-xl font-bold outline-none">1. เลือกชุดที่เหมาะกับคุณ</h2>
               <p className="mt-2 text-sm leading-relaxed text-stone-600">แพ็กละ 250 บาทเท่ากันทุกชุด ยิ่งรวมสั่ง ค่าส่งเฉลี่ยต่อแพ็กยิ่งน้อยลง</p>
               <fieldset className="mt-5 space-y-3" aria-describedby="shop-bundles-hint">
                 <legend className="sr-only">เลือกชุดไส้อั่ว</legend>
@@ -249,8 +250,8 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
                         {bundle.recommended && <span className="rounded-full bg-[#653c20] px-2.5 py-1 text-xs font-bold text-white">ชุดแนะนำ</span>}
                       </span>
                       <span id={`shop-bundle-price-${bundle.quantity}`} className="mt-3 block">
-                        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="text-3xl font-bold tracking-tight text-[#653c20]">{money(Number(bundle.averagePerPackBaht.toFixed(2)))}</span><span className="text-sm text-stone-700">บาท / แพ็ก รวมส่ง{Number.isInteger(bundle.averagePerPackBaht) ? "" : " (เฉลี่ย)"}</span></span>
-                        <span className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm"><span className="text-stone-600">สินค้า {money(bundle.goodsBaht)} + ส่ง {money(bundle.shippingBaseBaht)}</span><span className="font-bold">รวม {money(bundle.estimatedSubtotalBaht)} บาท</span></span>
+                        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="text-3xl font-bold tracking-tight text-[#653c20]">{money(bundle.estimatedSubtotalBaht)}</span><span className="text-sm text-stone-700">บาท รวมส่งแล้ว</span></span>
+                        <span className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm"><span className="text-stone-600">สินค้า {money(bundle.goodsBaht)} + ส่ง {money(bundle.shippingBaseBaht)}</span><span className="text-stone-600">เฉลี่ย {money(Number(bundle.averagePerPackBaht.toFixed(2)))} บาท / แพ็ก</span></span>
 
                       </span>
                     </label>
