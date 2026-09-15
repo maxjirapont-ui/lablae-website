@@ -10,7 +10,7 @@ export type ShopSlip={id:number;order_id:number;created_at:string};
 type StoredSlip=ShopSlip & {filename:string;digest:string};
 function directory(){return path.join(path.dirname(getDatabasePath()),'shop-slips');}
 export async function listShopSlips(orderId?:number):Promise<ShopSlip[]> {
- const db=await connectShopDb();try{return orderId===undefined ? await db.all<ShopSlip[]>('SELECT id,order_id,created_at FROM shop_order_slips WHERE order_id IN (SELECT id FROM shop_orders ORDER BY id DESC LIMIT 200) ORDER BY id DESC') : await db.all<ShopSlip[]>('SELECT id,order_id,created_at FROM shop_order_slips WHERE order_id=? ORDER BY id DESC',orderId);}finally{await db.close();}
+ const db=await connectShopDb();try{return orderId===undefined ? await db.all<ShopSlip[]>(`SELECT id,order_id,created_at FROM shop_order_slips WHERE order_id IN (SELECT id FROM shop_orders WHERE status IN ('requested','quoted','paid') OR id IN (SELECT id FROM shop_orders ORDER BY id DESC LIMIT 200)) ORDER BY id DESC`) : await db.all<ShopSlip[]>('SELECT id,order_id,created_at FROM shop_order_slips WHERE order_id=? ORDER BY id DESC',orderId);}finally{await db.close();}
 }
 export async function uploadShopSlip(token:string,key:string,file:File) {
  if(!/^[a-f0-9]{48}$/.test(token)|| !/^[a-f0-9]{48}$/.test(key))throw new OrderError('กรุณาเปิดลิงก์ออเดอร์ใหม่');

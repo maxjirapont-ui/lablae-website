@@ -99,7 +99,7 @@ export async function getShopOrder(token: string) {
 
 export async function listShopOrders(): Promise<ShopOrder[]> {
   const db = await connectShopDb();
-  try { return await db.all<ShopOrder[]>("SELECT * FROM shop_orders ORDER BY id DESC LIMIT 200"); }
+  try { return await db.all<ShopOrder[]>("SELECT * FROM shop_orders WHERE status IN ('requested','quoted','paid') OR id IN (SELECT id FROM shop_orders ORDER BY id DESC LIMIT 200) ORDER BY id DESC"); }
   finally { await db.close(); }
 }
 
@@ -145,4 +145,15 @@ export async function updateShopOrder(input: Record<string, unknown>) {
     await db.exec("COMMIT");
   } catch (error) { await db.exec("ROLLBACK"); throw error; }
   finally { await db.close(); }
+}
+
+export async function getShopFunnel() {
+  const db = await connectShopDb();
+  try {
+    return (await db.get<{created:number;withSlip:number;paid:number;shipped:number}>(`SELECT COUNT(*) AS created,
+      COALESCE(SUM(EXISTS(SELECT 1 FROM shop_order_slips s WHERE s.order_id=o.id)),0) AS withSlip,
+      COALESCE(SUM(status IN ('paid','shipped')),0) AS paid,
+      COALESCE(SUM(status='shipped'),0) AS shipped
+      FROM shop_orders o WHERE created_at >= datetime('now','-30 days')`))!;
+  } finally { await db.close(); }
 }

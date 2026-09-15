@@ -8,7 +8,7 @@ import { getShopShippingBaht, type ShopAddress } from "@/lib/shop";
 
 const field = "block w-full bg-white text-stone-900 border border-stone-400 rounded-xl px-3 py-3 mt-2";
 const button = "px-4 py-3 rounded-xl border border-accent text-accent disabled:opacity-40";
-export default function ShopOrderAdmin({order, paymentConfig, slips=[]}: {order:ShopOrder; paymentConfig?:ShopPaymentConfig; slips?:ShopSlip[]}) {
+export default function ShopOrderAdmin({order, paymentConfig, slips=[], onSaved}: {order:ShopOrder; paymentConfig?:ShopPaymentConfig; slips?:ShopSlip[]; onSaved?:(message:string)=>void}) {
   const qr = parsePaymentQr(order.payment_qr_json) || paymentConfig;
   const [useQr, setUseQr] = useState(Boolean(qr && (order.payment_qr_json || !order.payment_instructions)));
   const router = useRouter();
@@ -24,8 +24,9 @@ export default function ShopOrderAdmin({order, paymentConfig, slips=[]}: {order:
       const response = await fetch("/api/admin/shop-orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:order.id,version:order.version,action,...values})});
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "บันทึกไม่สำเร็จ");
+      onSaved?.(`ออเดอร์ LL-${order.id} · ${action === "paid" ? "ยืนยันรับเงินแล้ว" : action === "ship" ? "บันทึกการจัดส่งแล้ว" : action === "cancel" ? "ยกเลิกแล้ว" : "แจ้งยอดให้ลูกค้าแล้ว"}`);
       router.refresh();
-    } catch(error) { setError(error instanceof Error ? error.message : "เชื่อมต่อไม่สำเร็จ"); }
+    } catch(error) { setError(error instanceof TypeError ? "เชื่อมต่อไม่สำเร็จ กรุณาโหลดรายการล่าสุดเพื่อตรวจสถานะก่อนลองอีกครั้ง" : error instanceof Error ? error.message : "เชื่อมต่อไม่สำเร็จ"); }
     finally { setBusy(false); }
   }
   function quote(event:FormEvent<HTMLFormElement>) {

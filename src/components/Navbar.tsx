@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Utensils, Calendar } from "lucide-react";
@@ -22,6 +22,15 @@ export default function Navbar({
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const mobileMenu = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    mobileMenu.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+    const escape = (event:KeyboardEvent) => { if (event.key === "Escape") { setIsOpen(false); menuButton.current?.focus(); } };
+    window.addEventListener("keydown",escape);
+    return () => window.removeEventListener("keydown",escape);
+  },[isOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,9 +140,12 @@ export default function Navbar({
           {/* Mobile menu button */}
           <div className="lg:hidden">
             <button
+              ref={menuButton}
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-xl text-accent hover:text-[#fff7ed] bg-[#241710]/80 border border-accent/30 focus:outline-none cursor-pointer shadow-xs active:scale-95 transition-all"
-              aria-label="เปิดเมนู"
+              aria-expanded={isOpen}
+              aria-controls="restaurant-mobile-menu"
+              className="inline-flex items-center justify-center min-h-11 min-w-11 p-2 rounded-xl text-accent hover:text-[#fff7ed] bg-[#241710]/80 border border-accent/30 focus:outline-none cursor-pointer shadow-xs active:scale-95 transition-all"
+              aria-label={isOpen ? "ปิดเมนู" : "เปิดเมนู"}
             >
               {isOpen ? <X className="h-6 h-6" /> : <Menu className="h-6 h-6" />}
             </button>
@@ -143,6 +155,9 @@ export default function Navbar({
 
       {/* Mobile Menu */}
       <div
+        ref={mobileMenu}
+        id="restaurant-mobile-menu"
+        hidden={!isOpen}
         className={`lg:hidden transition-all duration-300 ease-in-out ${
           isOpen ? "max-h-screen opacity-100 py-4" : "max-h-0 opacity-0 overflow-hidden"
         } bg-[#261810] border-b border-accent/20`}

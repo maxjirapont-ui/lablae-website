@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { campaignParameters, isPublicAnalyticsPath, websiteLinkAction, trackWebsiteAction } from '../src/lib/website-analytics.ts';
 
 test('only public restaurant pages can be measured', () => {
-  for (const path of ['/', '/menu', '/directions', '/blog/chapter-22-khao-phan-phak', '/visit', '/visit/khantoke-for-two']) assert.equal(isPublicAnalyticsPath(path), true);
-  for (const path of ['/admin', '/admin/bookings', '/booking/ABC123', '/shop', '/api/bookings', '/blog/name@example.com']) assert.equal(isPublicAnalyticsPath(path), false);
+  for (const path of ['/', '/shop', '/menu', '/directions', '/blog/chapter-22-khao-phan-phak', '/visit', '/visit/khantoke-for-two']) assert.equal(isPublicAnalyticsPath(path), true);
+  for (const path of ['/admin', '/admin/bookings', '/booking/ABC123', '/shop/orders/'+'a'.repeat(48), '/api/bookings', '/blog/name@example.com']) assert.equal(isPublicAnalyticsPath(path), false);
 });
 
 test('campaign attribution drops unknown labels and personal query values', () => {
@@ -40,4 +40,18 @@ test('events exclude private routes, test hosts, queries and booking details', (
     if (previous === undefined) delete globalThis.window;
     else globalThis.window = previous;
   }
+});
+
+test('shop events use only public names and a clean public URL', () => {
+  const calls=[]; const previous=globalThis.window;
+  try {
+    globalThis.window={location:new URL('https://www.lablae.net/shop?phone=0812345678#review'),gtag:(...args)=>calls.push(args)};
+    for(const name of ['shop_begin_checkout','shop_review_order','shop_order_created']) trackWebsiteAction(name);
+    assert.equal(calls.length,3);
+    assert(calls.every(call=>call[2].page_location==='https://www.lablae.net/shop'));
+    assert(!JSON.stringify(calls).includes('0812345678'));
+    globalThis.window.location=new URL('https://www.lablae.net/shop/orders/'+'a'.repeat(48));
+    trackWebsiteAction('shop_order_created');
+    assert.equal(calls.length,3);
+  } finally { if(previous===undefined) delete globalThis.window; else globalThis.window=previous; }
 });

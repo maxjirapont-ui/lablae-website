@@ -65,6 +65,7 @@ async function main() {
   await context.addCookies([{name:'admin_session',value:cookie.slice('admin_session='.length),domain:'localhost',path:'/',httpOnly:true,sameSite:'Strict'}]);
   const page=await context.newPage();
   await page.goto(base+'/admin/shop');
+  await page.getByRole('button',{name:'ทั้งหมด',exact:true}).click();
   assert.equal(await page.getByLabel('ค่าส่ง (บาท)',{exact:true}).inputValue(),'200');
   assert.equal(await page.getByLabel('ค่าส่ง (บาท)',{exact:true}).getAttribute('readonly'),'');
   await page.getByLabel('ขนส่งและรอบส่งที่ยืนยัน',{exact:true}).fill('นิ่ม — รอบทดสอบ ห้ามส่งจริง');
@@ -94,6 +95,7 @@ async function main() {
   assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   // Mobile and desktop prices show the final total and the max quantity.
   await customer.goto(base+'/shop');
+  await customer.getByText('ชุดรวมสั่ง 3 / 5 / 9 แพ็ก · ดูราคา',{exact:true}).click();
   await customer.getByRole('link',{name:'เลือกจำนวนและดูยอดรวม',exact:true}).click();
   assert.equal(new URL(customer.url()).hash,'#shop-quantity-heading');
   for (const [quantity, title, total] of [[3,'กินที่บ้าน',950],[5,'แบ่งกันอร่อย',1450],[9,'รวมสั่งกับเพื่อน',2450]]) {
@@ -112,6 +114,7 @@ async function main() {
   await customer.setViewportSize({width:390,height:844});
   // A customer's click flow creates a separate request and a reload preserves it.
   await customer.goto(base+'/shop');
+  await customer.getByText('ชุดรวมสั่ง 3 / 5 / 9 แพ็ก · ดูราคา',{exact:true}).click();
   await customer.getByRole('radio',{name:'กินที่บ้าน 3 แพ็ก',exact:true}).check();
   await customer.getByRole('radio',{name:'รวมสั่งกับเพื่อน 9 แพ็ก',exact:true}).check();
   await customer.getByRole('button',{name:'เพิ่มจำนวน 1 แพ็ก',exact:true}).click();
@@ -203,16 +206,17 @@ async function main() {
   assert.equal((await db.get("SELECT COUNT(*) n FROM shop_line_outbox WHERE event_key=?",'slip:'+slipResults[0].id)).n,1);
   await customer.reload();assert.equal(await customer.getByLabel('รูปสลิป',{exact:true}).count(),1);
   await customer.goto(savedUrl);
+  await customer.getByText('ต้องการแนบสลิปเพิ่มเติม',{exact:true}).click();
   const pick=customer.waitForEvent('filechooser');
   await customer.getByRole('button',{name:'เลือกรูปสลิปจากมือถือ',exact:true}).click();
   await (await pick).setFiles({name:'test-slip.png',mimeType:'image/png',buffer:firstQr});
   assert(await customer.getByText('เลือกแล้ว: test-slip.png',{exact:true}).isVisible());
+  const browserSlipResponse=customer.waitForResponse(response=>response.url().endsWith('/slip')&&response.request().method()==='POST');
   await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
-  await customer.getByText('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี',{exact:true}).waitFor();
+  assert.equal((await browserSlipResponse).status(),200);
+  await customer.getByRole('button',{name:'เลือกรูปสลิปจากมือถือ',exact:true}).waitFor();
   await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
-  await customer.getByRole('link',{name:'ดูสถานะสลิป / แนบเพิ่ม',exact:true}).first().click();
-  assert.equal(new URL(customer.url()).hash,'#payment-slip');
-  assert(await customer.getByRole('heading',{name:'โอนแล้ว แนบสลิปที่นี่',exact:true}).isVisible());
+  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).isVisible(),false);
   await customer.screenshot({path:path.join(directory,'slip-received-mobile.png')});
   // Signed pairing is one-time and cannot overwrite the booking group.
   const lineAction=(action,authenticated=true)=>fetch(base+'/api/admin/shop-line',{method:'POST',headers:{origin:base,'content-type':'application/json',...(authenticated?{cookie}:{})},body:JSON.stringify({action})});
@@ -253,6 +257,89 @@ async function main() {
   assert.equal((await update({id:bulk.id,version:bulk.version,action:'paid',confirmed:true})).status,200);
   assert.equal((await fetch(savedUrl+'/payment-qr')).status,404);
   console.log('PASS: private QR setup, upload validation, original bytes, download, quoted-only access, immutable order payment details, stale settings and paid-order QR hiding.');
+  // Recover drafts, navigate back, and retry a committed request whose response was lost.
+  await customer.goto(base+'/shop');
+  await customer.locator('#shop-quantity').fill('3');
+  for(const [id,value] of Object.entries({...address,phone:'0860000042'})) await customer.locator('#shop-'+id).fill(value);
+  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  await customer.reload();
+  await customer.getByRole('heading',{name:'ตรวจสอบรายการของคุณ',exact:true}).waitFor();
+  await customer.goBack();
+  await customer.locator('#shop-name').waitFor();
+  assert.equal(await customer.locator('#shop-name').inputValue(),address.name);
+  assert.equal(await customer.locator('#shop-quantity').inputValue(),'3');
+  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  let committedUrl='';
+  await customer.route('**/api/shop/orders',async route=>{const response=await route.fetch();committedUrl=(await response.json()).url;await route.abort('internetdisconnected');});
+  await customer.getByRole('button',{name:'สั่งซื้อและดูช่องทางชำระเงิน',exact:true}).click();
+  await customer.getByText('เชื่อมต่อไม่สำเร็จ กดลองอีกครั้งได้ ระบบจะตรวจรายการเดิมให้โดยไม่สั่งซ้ำ',{exact:true}).waitFor();
+  await customer.unroute('**/api/shop/orders');
+  const beforeRecovery=(await db.get('SELECT COUNT(*) n FROM shop_orders WHERE phone=?','0860000042')).n;
+  assert.equal(beforeRecovery,1);
+  await customer.reload();
+  await customer.getByRole('button',{name:'ลองส่งรายการเดิมอีกครั้ง',exact:true}).click();
+  await customer.waitForURL(base+committedUrl);
+  assert.equal((await db.get('SELECT COUNT(*) n FROM shop_orders WHERE phone=?','0860000042')).n,1);
+  assert.equal(await customer.evaluate(()=>sessionStorage.getItem('lablae-shop-draft-v1')),null);
+  assert.equal(await customer.locator('script[src*="googletagmanager"]').count(),0);
+  await customer.getByLabel('รูปสลิป',{exact:true}).setInputFiles({name:'recovered-order-slip.png',mimeType:'image/png',buffer:firstQr});
+  await customer.route('**/slip',route=>route.abort('internetdisconnected'));
+  await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
+  await customer.getByText('เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกรูปใหม่',{exact:true}).waitFor();
+  await customer.unroute('**/slip');
+  await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
+  await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
+  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).isVisible(),false);
+  await customer.screenshot({path:path.join(directory,'received-default.png'),fullPage:true});
+  await customer.getByRole('button',{name:'เก็บลิงก์ออเดอร์นี้',exact:true}).click();
+  await customer.locator('[role="status"]').filter({hasText:/คัดลอก|แตะช่อง/}).waitFor();
+  await customer.goto(base+'/shop');
+  assert.equal(await customer.getByRole('link',{name:/กลับไปดูออเดอร์ล่าสุด/}).getAttribute('href'),committedUrl);
+  await customer.locator('#shop-quantity').fill('21');
+  for(const [id,value] of Object.entries({...address,phone:'0860000043'})) await customer.locator('#shop-'+id).fill(value);
+  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  assert(await customer.getByRole('button',{name:'ส่งออเดอร์ให้ร้านแจ้งค่าส่ง',exact:true}).isVisible());
+  // Queue counts reflect distinct orders, including slips on old active orders.
+  await page.reload();
+  const expectedReview=(await db.get("SELECT COUNT(*) n FROM shop_orders o WHERE status='quoted' AND EXISTS(SELECT 1 FROM shop_order_slips s WHERE s.order_id=o.id)")).n;
+  assert.equal(Number(await page.getByTestId('shop-count-review').innerText()),expectedReview);
+  await page.getByRole('button',{name:'รอตรวจสลิป',exact:true}).click();
+  assert.equal(await page.locator('section[id^="order-"]').count(),expectedReview);
+  console.log('PASS: draft reload/back, committed-response-loss retry without duplicate orders, private-page analytics isolation, recent order link, bulk CTA and slip-review queue counts.');
+  for(let i=0;i<205;i++) await db.run("INSERT INTO shop_orders(token,request_key,fingerprint,quantity,product_name,unit_price,goods_baht,address_json,phone,status) VALUES(?,?,?,1,'ทดสอบประวัติ',250,250,?,'0800000000','cancelled')",randomBytes(24).toString('hex'),randomBytes(24).toString('hex'),'test',JSON.stringify(address));
+  await page.reload();
+  await page.getByRole('button',{name:'รอตรวจสลิป',exact:true}).click();
+  assert.equal(Number(await page.getByTestId('shop-count-review').innerText()),expectedReview);
+  assert.equal(await page.locator('section[id^="order-"]').count(),expectedReview);
+  const ui=await browser.newPage({viewport:{width:390,height:844}});
+  await ui.goto(base+'/');
+  await ui.getByRole('button',{name:'เปิดเมนู',exact:true}).focus();
+  await ui.keyboard.press('Tab');
+  assert.equal(await ui.evaluate(()=>!!document.activeElement.closest('#restaurant-mobile-menu')),false);
+  await ui.getByRole('button',{name:'เปิดเมนู',exact:true}).click();
+  assert.equal(await ui.getByRole('button',{name:'ปิดเมนู',exact:true}).getAttribute('aria-expanded'),'true');
+  await ui.keyboard.press('Escape');
+  assert.equal(await ui.getByRole('button',{name:'เปิดเมนู',exact:true}).getAttribute('aria-expanded'),'false');
+  const layout=[];
+  for(const [width,height] of [[320,740],[390,844],[768,1024],[1440,1000]]) {
+    await ui.setViewportSize({width,height}); await ui.goto(base+'/shop');
+    await ui.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).waitFor();
+    assert(await ui.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+    layout.push(await ui.evaluate(()=>({width:innerWidth,height:document.documentElement.scrollHeight,quantity:document.querySelector('#shop-quantity').getBoundingClientRect().top,address:document.querySelector('#shop-name').getBoundingClientRect().top})));
+    await ui.screenshot({path:path.join(directory,`shop-default-${width}.png`),fullPage:width===390});
+  }
+  await ui.evaluate(()=>sessionStorage.setItem('lablae-shop-draft-v1',JSON.stringify({quantityText:'9',address:{name:'expired'},expiresAt:Date.now()-1,pending:null})));
+  await ui.reload();
+  assert.equal(await ui.locator('#shop-name').inputValue(),'');
+  assert.equal(await ui.locator('#shop-quantity').inputValue(),'1');
+  await ui.addInitScript(()=>Object.defineProperty(window,'sessionStorage',{get(){throw new Error('Storage blocked');}}));
+  await ui.reload();
+  for(const [id,value] of Object.entries(address)) await ui.locator('#shop-'+id).fill(value);
+  await ui.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  await ui.getByRole('heading',{name:'ตรวจสอบรายการของคุณ',exact:true}).waitFor();
+  console.log('PASS: active orders and slips older than 200 completed orders, keyboard menu/escape, 320–1440 px layouts, expired drafts and storage-disabled checkout.');
+  console.log('Layout: '+JSON.stringify(layout));
+  await ui.close();
   await db.close();
   console.log('PASS: closed production gate, validation, concurrent retries, server prices, authorization, stale edits, quote/payment/shipping workflow, private customer status, browser checkout, persistence, rate limiting and reservation isolation.');
 }
