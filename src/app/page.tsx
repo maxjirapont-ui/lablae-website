@@ -366,7 +366,7 @@ export default async function Home() {
                       )}
                       <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                         <div>
-                          <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-thai font-semibold border border-accent/25">
+                          <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-xs md:text-[10px] font-thai font-semibold border border-accent/25">
                             {dish.category}
                           </span>
                           <h3 className="font-thai font-bold text-base text-primary mt-2 line-clamp-1">
@@ -447,10 +447,10 @@ export default async function Home() {
                       <div className="p-5 flex flex-col flex-grow justify-between space-y-4">
                         <div>
                           <div className="flex items-center justify-between gap-1 flex-wrap">
-                            <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-[10px] font-thai font-semibold border border-accent/25">
+                            <span className="px-2.5 py-0.5 rounded-full bg-accent/20 text-accent text-xs md:text-[10px] font-thai font-semibold border border-accent/25">
                               {dish.category}
                             </span>
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/60 text-[9px] font-thai font-semibold">
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/60 text-xs md:text-[9px] font-thai font-semibold">
                               ตามฤดูกาล
                             </span>
                           </div>

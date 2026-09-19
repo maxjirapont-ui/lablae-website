@@ -276,3 +276,27 @@ body {
   color: #dbeafe !important;
 }
 
+
+/* Readable public pages on phones; keep desktop sizing and spacing unchanged. */
+@media (width < 48rem) {
+  .public-site {
+    --text-xs: 0.875rem;
+    --text-xs--line-height: 1.5;
+    --text-sm: 1rem;
+    --text-sm--line-height: 1.6;
+    --text-base: 1.125rem;
+    --text-base--line-height: 1.65;
+    --text-lg: 1.25rem;
+    --text-lg--line-height: 1.5;
+    font-size: var(--text-base);
+    line-height: 1.65;
+  }
+
+  .public-site :is(input, select, textarea) {
+    font-size: max(1rem, 1em);
+  }
+
+  .restaurant-site > footer {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
+  }
+}

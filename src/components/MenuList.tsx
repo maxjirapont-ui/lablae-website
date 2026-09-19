@@ -145,7 +145,7 @@ export default function MenuList({
             />
             {isOutOfStock && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <span className="text-[9px] sm:text-[10px] text-white font-bold bg-rose-900 px-1.5 py-0.5 rounded">หมด</span>
+                <span className="text-xs md:text-[10px] text-white font-bold bg-rose-900 px-1.5 py-0.5 rounded">หมด</span>
               </div>
             )}
           </div>
@@ -159,17 +159,17 @@ export default function MenuList({
             <h4 className={`font-bold text-lg sm:text-xl text-[#f7eee3] flex flex-wrap items-center gap-1.5 ${isOutOfStock ? 'opacity-50' : ''}`}>
               <span>{item.name}</span>
               {item.is_recommended === 1 && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] text-amber-300 bg-amber-950/70 border border-amber-600/40 px-1.5 py-0.5 rounded-full font-normal">
+                <span className="inline-flex items-center gap-0.5 text-xs md:text-[9px] text-amber-300 bg-amber-950/70 border border-amber-600/40 px-1.5 py-0.5 rounded-full font-normal">
                   <Sparkles className="w-2.5 h-2.5" /> แนะนำ
                 </span>
               )}
               {item.is_seasonal === 1 && (
-                <span className="inline-flex items-center gap-0.5 text-[9px] text-emerald-300 bg-emerald-950/70 border border-emerald-600/40 px-1.5 py-0.5 rounded-full font-normal">
+                <span className="inline-flex items-center gap-0.5 text-xs md:text-[9px] text-emerald-300 bg-emerald-950/70 border border-emerald-600/40 px-1.5 py-0.5 rounded-full font-normal">
                   ตามฤดูกาล
                 </span>
               )}
               {isOutOfStock && (
-                <span className="text-[9px] text-rose-300 bg-rose-950/70 border border-rose-600/40 px-1.5 py-0.5 rounded font-normal">
+                <span className="text-xs md:text-[9px] text-rose-300 bg-rose-950/70 border border-rose-600/40 px-1.5 py-0.5 rounded font-normal">
                   หมดชั่วคราว
                 </span>
               )}
@@ -222,7 +222,7 @@ export default function MenuList({
           <button
             key={group}
             onClick={() => setSelectedCategory(group)}
-            className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
+            className={`min-h-11 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
               selectedCategory === group
                 ? "bg-accent text-[#1c120c] font-bold shadow-md"
                 : "bg-[#261810] border border-accent/20 text-[#f5ece1]/80 hover:bg-accent/15 hover:text-accent"
@@ -311,12 +311,12 @@ export default function MenuList({
                         </span>
                         <div className="flex items-center gap-1">
                           {item.is_recommended === 1 && (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/50 text-[9px] font-bold">
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-amber-950/70 text-amber-300 border border-amber-800/50 text-xs md:text-[9px] font-bold">
                               ★ แนะนำ
                             </span>
                           )}
                           {item.is_seasonal === 1 && (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 text-[9px] font-bold">
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full bg-emerald-950/70 text-emerald-300 border border-emerald-800/50 text-xs md:text-[9px] font-bold">
                               ตามฤดูกาล
                             </span>
                           )}
