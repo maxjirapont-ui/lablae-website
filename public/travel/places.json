@@ -123,8 +123,8 @@
       ],
       "poster_number": 1,
       "hotspot": [
-        34,
-        28
+        31.342,
+        39.076
       ],
       "zone": "ทุ่งยั้ง",
       "photo": "/travel/LPL-001.webp",
@@ -270,8 +270,8 @@
       "photo_slots": [],
       "poster_number": 2,
       "hotspot": [
-        54,
-        28
+        52.706,
+        39.112
       ],
       "zone": "ทุ่งยั้ง",
       "photo": null,
@@ -387,8 +387,8 @@
       ],
       "poster_number": 8,
       "hotspot": [
-        11,
-        65
+        8.737,
+        76.356
       ],
       "zone": "ประตูเมือง",
       "photo": "/travel/LPL-003.webp",
@@ -566,8 +566,8 @@
       "photo_slots": [],
       "poster_number": 12,
       "hotspot": [
-        7,
-        70
+        21.477,
+        93.862
       ],
       "zone": "ประตูเมือง",
       "photo": null,
@@ -682,8 +682,8 @@
       "photo_slots": [],
       "poster_number": 13,
       "hotspot": [
-        27,
-        70
+        25.028,
+        52.298
       ],
       "zone": "ประตูเมือง",
       "photo": null,
@@ -845,8 +845,8 @@
       "photo_slots": [],
       "poster_number": 18,
       "hotspot": [
-        86,
-        70
+        65.389,
+        75.937
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -975,8 +975,8 @@
       ],
       "poster_number": 19,
       "hotspot": [
-        93,
-        75
+        87.542,
+        42.683
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -1100,8 +1100,8 @@
       ],
       "poster_number": 15,
       "hotspot": [
-        41,
-        96
+        34.611,
+        97.556
       ],
       "zone": "ประตูเมือง",
       "photo": "/travel/LPL-008.webp",
@@ -1234,8 +1234,8 @@
       ],
       "poster_number": 3,
       "hotspot": [
-        72,
-        45
+        73.844,
+        50.129
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": "/travel/LPL-009.webp",
@@ -1387,8 +1387,8 @@
       ],
       "poster_number": 4,
       "hotspot": [
-        86,
-        39
+        84.78,
+        45.835
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -1529,8 +1529,8 @@
       "photo_slots": [],
       "poster_number": 5,
       "hotspot": [
-        95,
-        39
+        91.432,
+        52.225
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -1661,8 +1661,8 @@
       "photo_slots": [],
       "poster_number": 10,
       "hotspot": [
-        69,
-        50
+        64.374,
+        46.814
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -1780,8 +1780,8 @@
       "photo_slots": [],
       "poster_number": 9,
       "hotspot": [
-        86,
-        90
+        80.891,
+        95.59
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": "/travel/LPL-013.webp",
@@ -1896,8 +1896,8 @@
       "photo_slots": [],
       "poster_number": 11,
       "hotspot": [
-        93,
-        50
+        77.114,
+        53.917
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -2024,8 +2024,8 @@
       "photo_slots": [],
       "poster_number": 7,
       "hotspot": [
-        58,
-        41
+        56.933,
+        43.959
       ],
       "zone": "ทุ่งยั้ง",
       "photo": null,
@@ -2171,8 +2171,8 @@
       "photo_slots": [],
       "poster_number": 6,
       "hotspot": [
-        38,
-        41
+        32.187,
+        56.807
       ],
       "zone": "ทุ่งยั้ง",
       "photo": null,
@@ -2289,8 +2289,8 @@
       "photo_slots": [],
       "poster_number": 17,
       "hotspot": [
-        78,
-        70
+        74.859,
+        75.495
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": null,
@@ -2393,8 +2393,8 @@
       "photo_slots": [],
       "poster_number": 14,
       "hotspot": [
-        4,
-        83
+        1.804,
+        91.382
       ],
       "zone": "ประตูเมือง",
       "photo": null,
@@ -2464,8 +2464,8 @@
       "photo_slots": [],
       "poster_number": 16,
       "hotspot": [
-        66,
-        70
+        59.921,
+        63.536
       ],
       "zone": "ดอนสัก–ฝายหลวง–แม่พูล",
       "photo": "/travel/LPL-019.webp",
