@@ -16,6 +16,7 @@ export default async function VisitPage() {
         <p className="text-lg text-primary/80">เรื่องกิน ที่เที่ยว และเรื่องน่ารู้ก่อนมาหาเรา</p>
         <p className="text-primary/65 leading-relaxed">มาสองคน มากับครอบครัว หรือกำลังหาเส้นทางเข้าร้าน ลองเลือกอ่านเรื่องที่อยากรู้ก่อนครับ</p>
       </header>
+      <Link href="/travel" className="block mb-8 rounded-2xl border border-accent/40 p-6 text-accent">เที่ยวลับแล → ดูแผนที่และเลือกที่เที่ยวตามย่าน</Link>
       <div className="grid md:grid-cols-2 gap-6">
         {visitArticles.map((article, index) => {
           const image = article.image || houseImage;
