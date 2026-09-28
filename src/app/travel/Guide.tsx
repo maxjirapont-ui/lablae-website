@@ -17,9 +17,9 @@ export default function Guide() {
       <nav aria-label="ส่วนต่าง ๆ ในคู่มือ" className="travel-actions"><a href="#illustration">ดูภาพรวม</a><a href="#places">เลือกที่เที่ยว</a><a href="#real-map">แผนที่หมุดจริง</a></nav>
     </header>
     <section id="illustration" aria-label="ภาพแนะนำสถานที่" className="travel-section">
-      <div className="travel-heading"><h2>ลับแลมีอะไรให้แวะบ้าง</h2><a href="/travel/laplae-map-v64.webp" target="_blank" rel="noreferrer">เปิดภาพใหญ่ ↗</a></div>
+      <div className="travel-heading"><h2>ลับแลมีอะไรให้แวะบ้าง</h2><a href="/travel/laplae-map-v65.webp" target="_blank" rel="noreferrer">เปิดภาพใหญ่ ↗</a></div>
       <div className="travel-poster">
-        <img src="/travel/laplae-map-v64.webp" width="3600" height="1800" alt="ภาพแนะนำที่เที่ยวลับแล แบ่งย่านทุ่งยั้ง ประตูเมือง และดอนสัก–ฝายหลวง–แม่พูล" fetchPriority="high" />
+        <img src="/travel/laplae-map-v65.webp" width="3600" height="1800" alt="ภาพแนะนำที่เที่ยวลับแล แบ่งย่านทุ่งยั้ง ประตูเมือง และดอนสัก–ฝายหลวง–แม่พูล" fetchPriority="high" />
         {data.places.map(p => <a key={p.id} href={`#${p.id}`} onClick={reveal} aria-label={`ดูรายละเอียด ${p.name}`} title={p.name} className="travel-hotspot" style={{ left: `${p.hotspot[0]}%`, top: `${p.hotspot[1]}%` }} />)}
       </div>
       <p className="travel-note">แตะหมายเลขในภาพเพื่ออ่านต่อ ภาพนี้ใช้แนะนำสถานที่ ไม่ได้แสดงระยะทางจริง บนมือถือเลือกจากรายชื่อด้านล่างจะอ่านง่ายกว่าครับ</p>
