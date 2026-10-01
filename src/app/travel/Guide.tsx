@@ -8,6 +8,13 @@ type PlaceHistory = { paragraphs: string[]; legend?: string; sources: { label: s
 const historyByNumber: Record<string, PlaceHistory> = histories;
 
 const zones = ['ทั้งหมด', 'ทุ่งยั้ง', 'ประตูเมือง', 'ดอนสัก–ฝายหลวง–แม่พูล'];
+// Keep the existing data keys while matching the owner's map headings.
+const zoneLabels: Record<string, string> = {
+  'ทั้งหมด': 'ทั้งหมด',
+  'ทุ่งยั้ง': 'ทุ่งยั้ง • สุโขทัย',
+  'ประตูเมือง': 'ย่านประตูเมือง',
+  'ดอนสัก–ฝายหลวง–แม่พูล': 'ฝายหลวง–แม่พูล • ล้านนา',
+};
 export default function Guide() {
   const [zone, setZone] = useState('ทั้งหมด');
   const [query, setQuery] = useState('');
@@ -23,7 +30,7 @@ export default function Guide() {
     <section id="illustration" aria-label="ภาพแนะนำสถานที่" className="travel-section">
       <div className="travel-heading"><h2>ลับแลมีอะไรให้แวะบ้าง</h2><a href="/travel/laplae-map-v65.webp" target="_blank" rel="noreferrer">เปิดภาพใหญ่ ↗</a></div>
       <div className="travel-poster">
-        <img src="/travel/laplae-map-v65.webp" width="3600" height="1800" alt="ภาพแนะนำที่เที่ยวลับแล แบ่งย่านทุ่งยั้ง ประตูเมือง และดอนสัก–ฝายหลวง–แม่พูล" fetchPriority="high" />
+        <img src="/travel/laplae-map-v65.webp" width="3600" height="1800" alt="ภาพแนะนำที่เที่ยวลับแล แบ่งโซนทุ่งยั้ง • สุโขทัย ย่านประตูเมือง และฝายหลวง–แม่พูล • ล้านนา" fetchPriority="high" />
         {data.places.map(p => <a key={p.id} href={`#${p.id}`} onClick={reveal} aria-label={`ดูรายละเอียด ${p.name}`} title={p.name} className="travel-hotspot" style={{ left: `${p.hotspot[0]}%`, top: `${p.hotspot[1]}%` }} />)}
       </div>
       <p className="travel-note">แตะหมายเลขในภาพเพื่ออ่านต่อ ภาพนี้ใช้แนะนำสถานที่ ไม่ได้แสดงระยะทางจริง บนมือถือเลือกจากรายชื่อด้านล่างจะอ่านง่ายกว่าครับ</p>
@@ -31,11 +38,11 @@ export default function Guide() {
     </div>
     <section id="places" className="travel-section">
       <div className="travel-heading"><div><p className="travel-kicker">วัด ตลาด บ้านเก่า และธรรมชาติ</p><h2>เลือกที่เที่ยวตามย่าน</h2></div><span>19 จุดน่าแวะ</span></div>
-      <div className="travel-filters" aria-label="กรองตามย่าน">{zones.map(z => <button key={z} onClick={() => setZone(z)} aria-pressed={zone === z}>{z}</button>)}</div>
+      <div className="travel-filters" aria-label="กรองตามย่าน">{zones.map(z => <button key={z} onClick={() => setZone(z)} aria-pressed={zone === z}>{zoneLabels[z]}</button>)}</div>
       <label className="travel-search">ค้นหาสถานที่<input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="เช่น วัดดอนสัก หรือ ตลาด" /></label>
       <p className="travel-note" role="status">พบ {places.length} สถานที่ · ข้อมูลสถานที่ตรวจจากแหล่งเผยแพร่วันที่ 20 กันยายน 2569 เวลาเปิดอาจเปลี่ยนได้</p>
       {!places.length && <div className="travel-empty"><p>ยังไม่พบชื่อนี้ ลองค้นคำสั้น ๆ หรือเลือกทุกย่านครับ</p><button onClick={reveal}>ดูทั้งหมด</button></div>}
-      {zones.slice(1).filter(z => places.some(p => p.zone === z)).map((z) => <section className="travel-zone" key={z} aria-label={`ย่าน${z}`}><header className="travel-zone-heading"><h3>ย่าน{z}</h3><p>{z === "ทุ่งยั้ง" ? "พระบรมธาตุ วัดเก่า และร่องรอยเมืองทุ่งยั้ง" : z === "ประตูเมือง" ? "ซุ้มประตู พิพิธภัณฑ์ ตลาด และบ้านเรา" : "บานประตูแกะสลัก ผ้าทอ จุดชมเมือง และธรรมชาติ"}</p></header><div className="travel-cards">{places.filter(p => p.zone === z).map(p => <article key={p.id} id={p.id} className={`travel-card ${p.photo ? "has-photo" : "text-only"}`}>
+      {zones.slice(1).filter(z => places.some(p => p.zone === z)).map((z) => <section className="travel-zone" key={z} aria-label={zoneLabels[z]}><header className="travel-zone-heading"><h3>{zoneLabels[z]}</h3><p>{z === "ทุ่งยั้ง" ? "พระบรมธาตุ วัดเก่า และร่องรอยเมืองทุ่งยั้ง" : z === "ประตูเมือง" ? "ซุ้มประตู พิพิธภัณฑ์ ตลาด และบ้านเรา" : "บานประตูแกะสลัก ผ้าทอ จุดชมเมือง และธรรมชาติ"}</p></header><div className="travel-cards">{places.filter(p => p.zone === z).map(p => <article key={p.id} id={p.id} className={`travel-card ${p.photo ? "has-photo" : "text-only"}`}>
         {p.photo && <div className={`travel-photo ${p.id === "LPL-013" ? "travel-photo-rotate" : ""}`}><img src={p.photo} alt={p.name} loading="lazy" width="1000" height="750" /></div>}
         <div className="travel-card-body"><p className="travel-kicker">{p.category}</p><h4><span className="travel-number">{p.poster_number}</span>{p.name}</h4><p>{p.description}</p>
         {historyByNumber[p.poster_number] && (
