@@ -2,6 +2,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import data from './places.json';
+import histories from './histories.json';
+
+type PlaceHistory = { paragraphs: string[]; legend?: string; sources: { label: string; url: string }[] };
+const historyByNumber: Record<string, PlaceHistory> = histories;
 
 const zones = ['ทั้งหมด', 'ทุ่งยั้ง', 'ประตูเมือง', 'ดอนสัก–ฝายหลวง–แม่พูล'];
 export default function Guide() {
@@ -34,6 +38,21 @@ export default function Guide() {
       {zones.slice(1).filter(z => places.some(p => p.zone === z)).map((z) => <section className="travel-zone" key={z} aria-label={`ย่าน${z}`}><header className="travel-zone-heading"><h3>ย่าน{z}</h3><p>{z === "ทุ่งยั้ง" ? "พระบรมธาตุ วัดเก่า และร่องรอยเมืองทุ่งยั้ง" : z === "ประตูเมือง" ? "ซุ้มประตู พิพิธภัณฑ์ ตลาด และบ้านเรา" : "บานประตูแกะสลัก ผ้าทอ จุดชมเมือง และธรรมชาติ"}</p></header><div className="travel-cards">{places.filter(p => p.zone === z).map(p => <article key={p.id} id={p.id} className={`travel-card ${p.photo ? "has-photo" : "text-only"}`}>
         {p.photo && <div className={`travel-photo ${p.id === "LPL-013" ? "travel-photo-rotate" : ""}`}><img src={p.photo} alt={p.name} loading="lazy" width="1000" height="750" /></div>}
         <div className="travel-card-body"><p className="travel-kicker">{p.category}</p><h4><span className="travel-number">{p.poster_number}</span>{p.name}</h4><p>{p.description}</p>
+        {historyByNumber[p.poster_number] && (
+          <section className="travel-history" aria-label={`ประวัติ ${p.name}`}>
+            <h5>ประวัติและเรื่องของที่นี่</h5>
+            {historyByNumber[p.poster_number].paragraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
+            {historyByNumber[p.poster_number].legend && (
+              <p className="travel-legend"><strong>ตำนานท้องถิ่น</strong> {historyByNumber[p.poster_number].legend}</p>
+            )}
+            <details className="travel-history-sources">
+              <summary>ที่มาของประวัติ</summary>
+              <ul>{historyByNumber[p.poster_number].sources.map(source => (
+                <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a></li>
+              ))}</ul>
+            </details>
+          </section>
+        )}
         <details><summary>เวลาเปิด ที่จอด และข้อมูลก่อนแวะ</summary><dl><dt>เวลาเปิด</dt><dd>{p.hours_display}</dd><dt>ที่จอดรถ</dt><dd>{p.parking?.text || 'ยังไม่มีข้อมูลที่ยืนยันได้'}</dd></dl><p className="travel-note">{p.navigation_note}</p><p className="travel-sources">แหล่งข้อมูล: {p.source_urls.filter(url => /^https:\/\//.test(url) && !url.includes('drive.google.com')).slice(0, 3).map((url, i) => <a key={url} href={url} target="_blank" rel="noreferrer">แหล่งที่ {i + 1}</a>)}</p></details>
         {p.navigation_url ? <a className="travel-map-link" href={p.navigation_url} target="_blank" rel="noreferrer">เปิดสถานที่ใน Google Maps ↗</a> : <p className="travel-note">ฝายหลวง: ยังรอยืนยันหมุดตัวฝาย จึงยังไม่มีปุ่มนำทาง</p>}
         </div>
