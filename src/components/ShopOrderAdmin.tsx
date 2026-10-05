@@ -50,7 +50,7 @@ export default function ShopOrderAdmin({order, paymentConfig, slips=[], onSaved}
     <p className="whitespace-pre-wrap break-words">{address.address}<br/>{address.subdistrict} {address.district} {address.province} {address.postcode}</p>
     {address.note && <p className="break-words">หมายเหตุ: {address.note}</p>}
     <p>ค่าสินค้า {order.goods_baht} บาท · ค่าส่ง {order.shipping_baht === null ? "ยังไม่ยืนยัน" : `${order.shipping_baht} บาท`}</p>
-    {slips.length>0 && <div className="border rounded-xl p-4 space-y-2"><h3 className="font-bold">สลิปจากลูกค้า {slips.length} รูป</h3><p>ตรวจเงินเข้าบัญชีจริงก่อนกดยืนยันรับเงิน</p>{slips.map(slip=><a key={slip.id} href={`/api/admin/shop-orders/${order.id}/slip/${slip.id}`} target="_blank" rel="noreferrer" className="block text-accent underline py-2">เปิดสลิป #{slip.id}</a>)}</div>}
+    {slips.length>0 && <div className="border rounded-xl p-4 space-y-2"><h3 className="font-bold">สลิปจากลูกค้า {slips.length} ไฟล์</h3><p>ตรวจเงินเข้าบัญชีจริงก่อนกดยืนยันรับเงิน</p>{slips.map(slip=><a key={slip.id} href={`/api/admin/shop-orders/${order.id}/slip/${slip.id}`} target="_blank" rel="noreferrer" className="block text-accent underline py-2">เปิดสลิป #{slip.id}</a>)}</div>}
     <a href={`/shop/orders/${order.token}`} target="_blank" rel="noreferrer" className="inline-block text-accent underline py-2">เปิดหน้าติดตามของลูกค้า</a>
 
     {order.status === "quoted" && <div className="space-y-3 border-t border-accent/20 pt-4">

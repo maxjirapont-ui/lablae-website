@@ -47,7 +47,7 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
     </section>
     {order.status === "quoted" && (slips.length ? <>
       <section id="payment-slip" className="scroll-mt-24 rounded-2xl border border-accent/30 p-5 space-y-3">
-        <h2 className="text-xl font-bold">ได้รับสลิปแล้ว {slips.length} รูป</h2>
+        <h2 className="text-xl font-bold">ได้รับสลิปแล้ว {slips.length} ไฟล์</h2>
         <p className="text-sm text-primary/80">รับล่าสุด {new Intl.DateTimeFormat("th-TH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"}).format(new Date(slips[0].created_at.replace(" ","T")+"Z"))}</p>
         <details><summary className="cursor-pointer py-3 text-accent">ต้องการแนบสลิปเพิ่มเติม</summary><ShopSlipUpload token={order.token} count={slips.length}/></details>
       </section>

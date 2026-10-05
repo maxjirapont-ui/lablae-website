@@ -187,8 +187,8 @@ async function main() {
   assert.deepEqual(Buffer.from(await qrResponse.arrayBuffer()),firstQr);
   // Slips stay private, idempotent, and never mark an order paid.
   const slipKey=randomBytes(24).toString('hex');
-  const uploadSlip=(bytes,key=slipKey,token=bulk.token,origin=base)=>{
-    const form=new FormData();form.set('requestKey',key);form.set('file',new File([bytes],'slip.png',{type:'image/png'}));
+  const uploadSlip=(bytes,key=slipKey,token=bulk.token,origin=base,fileOptions={})=>{
+    const form=new FormData();form.set('requestKey',key);form.set('file',new File([bytes],fileOptions.name||'slip.png',{type:fileOptions.type===undefined?'image/png':fileOptions.type}));
     return fetch(base+'/api/shop/orders/'+token+'/slip',{method:'POST',headers:{origin},body:form});
   };
   assert.equal((await uploadSlip(firstQr,slipKey,bulk.token,'https://example.com')).status,403);
@@ -204,20 +204,104 @@ async function main() {
   assert(privateSlip.headers.get('cache-control').includes('no-store'));assert.deepEqual(Buffer.from(await privateSlip.arrayBuffer()),firstQr);
   assert.equal((await db.get('SELECT status FROM shop_orders WHERE id=?',bulk.id)).status,'quoted');
   assert.equal((await db.get("SELECT COUNT(*) n FROM shop_line_outbox WHERE event_key=?",'slip:'+slipResults[0].id)).n,1);
-  await customer.reload();assert.equal(await customer.getByLabel('รูปสลิป',{exact:true}).count(),1);
+  await customer.reload();assert.equal(await customer.getByLabel('รูปหรือไฟล์สลิป',{exact:true}).count(),1);
   await customer.goto(savedUrl);
   await customer.getByText('ต้องการแนบสลิปเพิ่มเติม',{exact:true}).click();
+  const slipInput=customer.getByLabel('รูปหรือไฟล์สลิป',{exact:true});
+  assert(await slipInput.isVisible());
   const pick=customer.waitForEvent('filechooser');
-  await customer.getByRole('button',{name:'เลือกรูปสลิปจากมือถือ',exact:true}).click();
-  await (await pick).setFiles({name:'test-slip.png',mimeType:'image/png',buffer:firstQr});
+  await slipInput.click();
+  await (await pick).setFiles({name:'test-slip.png',mimeType:'image/png',buffer:nextQr});
   assert(await customer.getByText('เลือกแล้ว: test-slip.png',{exact:true}).isVisible());
+  // Cancelling/clearing the native picker must not lose the previously selected File.
+  const cancelPick=customer.waitForEvent('filechooser');
+  await slipInput.click();
+  await (await cancelPick).setFiles([]);
+  assert(await customer.getByText('เลือกแล้ว: test-slip.png',{exact:true}).isVisible());
+  assert.equal(await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).isDisabled(),false);
+  // The server can commit an upload before the connection is lost. A retry must
+  // retain the File and request key and produce one slip and one notification.
+  const slipAttempts=[];
+  await customer.route('**/slip',async route=>{
+    const payload=route.request().postDataBuffer().toString('latin1');
+    slipAttempts.push({key:payload.match(/name="requestKey"\r\n\r\n([a-f0-9]{48})/)?.[1],hasFilename:payload.includes('filename="test-slip.png"')});
+    await route.fetch();
+    await route.abort('internetdisconnected');
+  });
+  await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
+  await customer.getByText(/เชื่อมต่อไม่สำเร็จ/).waitFor();
+  assert(await customer.getByText('เลือกแล้ว: test-slip.png',{exact:true}).isVisible());
+  const slipCountBeforeRetry=(await db.get('SELECT COUNT(*) n FROM shop_order_slips WHERE order_id=?',bulk.id)).n;
+  assert.equal(slipCountBeforeRetry,2);
+  await customer.unroute('**/slip');
+  await customer.route('**/slip',async route=>{
+    const payload=route.request().postDataBuffer().toString('latin1');
+    slipAttempts.push({key:payload.match(/name="requestKey"\r\n\r\n([a-f0-9]{48})/)?.[1],hasFilename:payload.includes('filename="test-slip.png"')});
+    await route.continue();
+  });
   const browserSlipResponse=customer.waitForResponse(response=>response.url().endsWith('/slip')&&response.request().method()==='POST');
   await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
   assert.equal((await browserSlipResponse).status(),200);
-  await customer.getByRole('button',{name:'เลือกรูปสลิปจากมือถือ',exact:true}).waitFor();
+  await customer.unroute('**/slip');
+  assert.equal(slipAttempts.length,2);assert(slipAttempts.every(attempt=>attempt.hasFilename));
+  assert.match(slipAttempts[0].key,/^[a-f0-9]{48}$/);assert.equal(slipAttempts[0].key,slipAttempts[1].key);
+  assert.equal((await db.get('SELECT COUNT(*) n FROM shop_order_slips WHERE order_id=?',bulk.id)).n,slipCountBeforeRetry);
+  assert.equal((await db.get("SELECT COUNT(*) n FROM shop_line_outbox WHERE event_key LIKE 'slip:%' AND order_id=?",bulk.id)).n,slipCountBeforeRetry);
+  assert.equal((await db.get('SELECT status FROM shop_orders WHERE id=?',bulk.id)).status,'quoted');
   await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
   assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).isVisible(),false);
   await customer.screenshot({path:path.join(directory,'slip-received-mobile.png')});
+  // Bank apps may export a WebP image, a PDF, or an image without its MIME type.
+  const validationRes=await post({...input,quantity:1,requestKey:randomBytes(24).toString('hex'),address:{...address,phone:'0860000050'}});
+  assert.equal(validationRes.status,201);
+  const validationOrder=await db.get('SELECT * FROM shop_orders WHERE token=?',(await validationRes.json()).url.split('/').pop());
+  const formatUpload=(bytes,options)=>uploadSlip(bytes,randomBytes(24).toString('hex'),validationOrder.token,base,options);
+  assert.equal((await formatUpload(Buffer.from('not a PDF'),{name:'slip.pdf',type:'application/pdf'})).status,400);
+  assert.equal((await formatUpload(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>'),{name:'slip.svg',type:'image/svg+xml'})).status,400);
+  const gif=await sharp(firstQr).gif().toBuffer();
+  assert.equal((await formatUpload(gif,{name:'slip.gif',type:'image/gif'})).status,400);
+  assert.equal((await formatUpload(Buffer.alloc(10*1024*1024+1),{name:'large.png',type:'image/png'})).status,400);
+  const unknownMimeResponse=await formatUpload(firstQr,{name:'bank-slip.png',type:''});
+  assert.equal(unknownMimeResponse.status,200);
+  const webp=await sharp(nextQr).webp().toBuffer();
+  const webpResponse=await formatUpload(webp,{name:'bank-slip.webp',type:'image/webp'});
+  assert.equal(webpResponse.status,200);
+  const webpId=(await webpResponse.json()).id;
+  const webpRead=await fetch(base+'/api/admin/shop-orders/'+validationOrder.id+'/slip/'+webpId,{headers:{cookie}});
+  assert.equal(webpRead.headers.get('content-type'),'image/webp');
+  assert.deepEqual(Buffer.from(await webpRead.arrayBuffer()),webp);
+  const pdfObjects=[
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] /Contents 4 0 R >>',
+    '<< /Length 0 >>\nstream\n\nendstream',
+  ];
+  let pdfText='%PDF-1.4\n';const offsets=[0];
+  for(let i=0;i<pdfObjects.length;i++){offsets.push(Buffer.byteLength(pdfText));pdfText+=`${i+1} 0 obj\n${pdfObjects[i]}\nendobj\n`;}
+  const xrefOffset=Buffer.byteLength(pdfText);
+  pdfText+='xref\n0 5\n0000000000 65535 f \n'+offsets.slice(1).map(offset=>String(offset).padStart(10,'0')+' 00000 n \n').join('');
+  pdfText+=`trailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+  const pdf=Buffer.from(pdfText);
+  const pdfResponse=await formatUpload(pdf,{name:'bank-slip.pdf',type:'application/pdf'});
+  assert.equal(pdfResponse.status,200);
+  const pdfId=(await pdfResponse.json()).id;
+  const pdfUrl=base+'/api/admin/shop-orders/'+validationOrder.id+'/slip/'+pdfId;
+  assert.equal((await fetch(pdfUrl)).status,401);
+  const pdfRead=await fetch(pdfUrl,{headers:{cookie}});
+  assert.equal(pdfRead.status,200);assert.equal(pdfRead.headers.get('content-type'),'application/pdf');
+  assert(pdfRead.headers.get('content-disposition').includes('attachment'));
+  assert(pdfRead.headers.get('content-security-policy').includes('sandbox'));
+  assert.equal(pdfRead.headers.get('x-content-type-options'),'nosniff');
+  assert(pdfRead.headers.get('cache-control').includes('no-store'));
+  assert.deepEqual(Buffer.from(await pdfRead.arrayBuffer()),pdf);
+  assert.equal((await formatUpload(nextQr,{name:'fourth.png',type:'image/png'})).status,429);
+  assert.equal((await db.get('SELECT status FROM shop_orders WHERE id=?',validationOrder.id)).status,'quoted');
+  const largeRes=await post({...input,quantity:1,requestKey:randomBytes(24).toString('hex'),address:{...address,phone:'0860000051'}});
+  assert.equal(largeRes.status,201);const largeToken=(await largeRes.json()).url.split('/').pop();
+  const overOldLimit=Buffer.concat([firstQr,Buffer.alloc(5*1024*1024)]);
+  assert(overOldLimit.length>5*1024*1024&&overOldLimit.length<10*1024*1024);
+  assert.equal((await uploadSlip(overOldLimit,randomBytes(24).toString('hex'),largeToken)).status,200);
+  console.log('PASS: visible native slip picker, retained selection after cancel/failure, committed-upload retry without duplicate slips, WebP/PDF/unknown-MIME image acceptance, 10 MB file validation and private PDF attachment delivery.');
   // Signed pairing is one-time and cannot overwrite the booking group.
   const lineAction=(action,authenticated=true)=>fetch(base+'/api/admin/shop-line',{method:'POST',headers:{origin:base,'content-type':'application/json',...(authenticated?{cookie}:{})},body:JSON.stringify({action})});
   assert.equal((await lineAction('pair',false)).status,401);
@@ -282,10 +366,10 @@ async function main() {
   assert.equal((await db.get('SELECT COUNT(*) n FROM shop_orders WHERE phone=?','0860000042')).n,1);
   assert.equal(await customer.evaluate(()=>sessionStorage.getItem('lablae-shop-draft-v1')),null);
   assert.equal(await customer.locator('script[src*="googletagmanager"]').count(),0);
-  await customer.getByLabel('รูปสลิป',{exact:true}).setInputFiles({name:'recovered-order-slip.png',mimeType:'image/png',buffer:firstQr});
+  await customer.getByLabel('รูปหรือไฟล์สลิป',{exact:true}).setInputFiles({name:'recovered-order-slip.png',mimeType:'image/png',buffer:firstQr});
   await customer.route('**/slip',route=>route.abort('internetdisconnected'));
   await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
-  await customer.getByText('เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกรูปใหม่',{exact:true}).waitFor();
+  await customer.getByText('เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกไฟล์ใหม่',{exact:true}).waitFor();
   await customer.unroute('**/slip');
   await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
   await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
