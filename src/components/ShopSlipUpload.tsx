@@ -1,6 +1,5 @@
 "use client";
 import {useEffect,useRef,useState,type FormEvent} from 'react';
-import {useRouter} from 'next/navigation';
 import {SHOP_SLIP_ACCEPT,SHOP_SLIP_FILE_HELP,SHOP_SLIP_MAX_BYTES} from '@/lib/shop-slip-policy';
 
 async function prepareSlip(file:File):Promise<File> {
@@ -20,7 +19,7 @@ async function prepareSlip(file:File):Promise<File> {
 }
 
 export default function ShopSlipUpload({token,count}:{token:string;count:number}) {
- const router=useRouter();const fileInput=useRef<HTMLInputElement>(null);const [selected,setSelected]=useState<File|null>(null);const prepared=useRef<File|null>(null);const key=useRef('');const sending=useRef(false);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [preview,setPreview]=useState('');
+ const fileInput=useRef<HTMLInputElement>(null);const [selected,setSelected]=useState<File|null>(null);const prepared=useRef<File|null>(null);const key=useRef('');const sending=useRef(false);const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [preview,setPreview]=useState('');
  useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview);},[preview]);
  async function submit(event:FormEvent<HTMLFormElement>){
   event.preventDefault();if(sending.current)return;
@@ -35,7 +34,11 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
    const data=new FormData();data.set('file',file,file.name);data.set('requestKey',key.current);
    const response=await fetch(`/api/shop/orders/${token}/slip`,{method:'POST',body:data,signal:controller.signal});const result=await response.json().catch(()=>({error:response.status===413?'ไฟล์ใหญ่เกิน 10 MB กรุณาใช้รูปสลิปที่บันทึกจากแอปธนาคาร':'ส่งไม่สำเร็จ กรุณากดส่งอีกครั้ง หรือโทรหาร้าน'}));
    if(!response.ok)throw new Error(result.error||'ส่งสลิปไม่สำเร็จ');
-   setMessage('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี');if(fileInput.current)fileInput.current.value='';setSelected(null);setPreview('');prepared.current=null;key.current='';router.refresh();
+   setMessage('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี');
+   // A fresh document shows the receipt even when refreshing would retain a lower scroll position.
+   // Keep the selected file/request key until navigation so a retry cannot create another upload.
+   window.location.replace(`/shop/orders/${token}?slip-received=${Date.now()}#order-status`);
+   return;
   }catch(error){setMessage(controller.signal.aborted?'รอนานกว่าปกติ ยังตรวจผลไม่ได้ กดส่งสลิปเดิมอีกครั้งได้ ไม่ต้องโอนซ้ำ':error instanceof TypeError?'เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกไฟล์ใหม่':error instanceof Error?error.message:'ส่งสลิปไม่สำเร็จ กรุณากดส่งอีกครั้ง');}finally{clearTimeout(timeout);sending.current=false;setBusy(false);}
  }
  return <section id={count>0?"payment-slip-more":"payment-slip"} tabIndex={-1} className="scroll-mt-24 outline-none rounded-2xl border border-accent/30 p-5 space-y-3">

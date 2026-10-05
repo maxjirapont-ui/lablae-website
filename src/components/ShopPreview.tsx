@@ -221,7 +221,10 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
             <p className="mt-2 whitespace-pre-wrap leading-relaxed">{address.address}<br />{address.subdistrict} · {address.district}<br />{address.province} {address.postcode}</p>
             {address.note.trim() && <p className="mt-3 whitespace-pre-wrap text-stone-600">หมายเหตุ: {address.note}</p>}
           </div>
-          <p className="rounded-xl bg-amber-100 p-4 text-sm leading-relaxed text-amber-950">{estimate.shippingBaseBaht === null ? "ร้านจะโทรแจ้งค่าส่งตามจำนวนและที่อยู่ของคุณก่อนชำระเงิน" : "ชำระผ่าน QR แล้วแนบสลิป ร้านตรวจเงินแล้วโทรติดต่อเรื่องจัดส่ง"}</p>
+          <div className="rounded-xl bg-amber-100 p-4 space-y-2 text-sm leading-relaxed text-amber-950">
+            <p>{estimate.shippingBaseBaht === null ? "ร้านจะโทรแจ้งค่าส่งและตกลงวันส่งก่อนชำระเงิน" : "ชำระผ่าน QR แล้วแนบสลิป ร้านตรวจเงินแล้วโทรตกลงวันส่ง"}</p>
+            <a href="tel:0956283125" className="inline-block min-h-11 py-2 underline underline-offset-4">โทรถามวันส่งก่อนชำระเงิน</a>
+          </div>
           {pendingAttempt && !sending && <p className="text-sm text-stone-700">มีรายการที่รอตรวจผลการส่ง กดลองอีกครั้งเพื่อเปิดออเดอร์เดิมก่อนแก้ไขข้อมูล</p>}
           {submitError && <p role="alert" className="text-red-800">{submitError}</p>}
           <button type="button" disabled={sending} onClick={()=>void submitOrder()} className={`${buttonClass} w-full bg-[#653c20] px-4 py-4 font-bold text-white`}>{sending ? "กำลังบันทึก…" : pendingAttempt ? "ลองส่งรายการเดิมอีกครั้ง" : estimate.shippingBaseBaht === null ? "ส่งออเดอร์ให้ร้านแจ้งค่าส่ง" : "สั่งซื้อและดูช่องทางชำระเงิน"}</button>

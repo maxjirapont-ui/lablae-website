@@ -20,6 +20,8 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
   const paymentQr = parsePaymentQr(order.payment_qr_json);
   const address = JSON.parse(order.address_json) as ShopAddress;
   const total = (order.goods_baht + (order.shipping_baht || 0)).toLocaleString("th-TH");
+  const showDeliveryInPayment = order.status === "quoted" && !hasSubmittedSlip;
+  const paymentDeliveryNote = showDeliveryInPayment && <p className="text-base leading-relaxed whitespace-pre-wrap break-words">{order.dispatch_note || <>วันส่งตกลงทางโทรศัพท์ · <a href="tel:0956283125" className="inline-block min-h-11 py-2 font-medium text-[#653c20] underline underline-offset-4">โทรถามวันส่งก่อนโอน</a></>}</p>;
   const keepOrderLinkNotice = !hasSubmittedSlip && <p className="text-base leading-relaxed">ก่อนออกไปโอน กด “คัดลอกลิงก์ออเดอร์” ด้านบน แล้วเก็บไว้ในโน้ตหรือแชตส่วนตัว จะได้กลับมาแนบสลิปและดูสถานะ</p>;
   const paymentPanel = <section className="rounded-2xl bg-[#fffaf3] text-stone-900 p-5 space-y-4">
     <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -34,27 +36,42 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
     {paymentQr && <div className="space-y-4">
       <p>สแกน QR แล้วใส่ยอด {total} บาท</p>
       <ShopPaymentQrImage src={`/shop/orders/${order.token}/payment-qr`} recipient={paymentQr.recipient} />
+      {paymentDeliveryNote}
       {keepOrderLinkNotice}
       <a href={`/shop/orders/${order.token}/payment-qr?download=1`} download className="block rounded-xl bg-[#653c20] px-4 py-3 text-center font-bold text-white">บันทึกรูป QR เพื่อโอนเงิน</a>
       <details className="rounded-xl border border-stone-300 px-4 py-2">
         <summary className="cursor-pointer py-2 font-medium">ใช้มือถือเครื่องเดียวโอนอย่างไร</summary>
-        <div className="space-y-3 pb-2">
-          <p className="text-base leading-relaxed">บันทึกรูป QR แล้วเลือกสแกนจากรูปในแอปธนาคาร หากแอปรองรับ ตรวจชื่อผู้รับและยอดรวมก่อนยืนยันโอน</p>
-          <p className="text-base leading-relaxed">บน iPhone รูปที่ดาวน์โหลดอาจอยู่ในไฟล์ (Files) หากแอปธนาคารเลือกได้เฉพาะรูปภาพ (Photos) ให้เปิด QR เต็มจอแล้วบันทึกภาพ หรือถ่ายภาพหน้าจอให้เห็น QR ครบ</p>
+        <div className="space-y-3 pb-2 text-base leading-relaxed">
+          <ol className="list-decimal space-y-2 pl-5">
+            <li>บันทึกรูป QR</li>
+            <li>เปิดแอปธนาคาร เลือกสแกนจากรูปถ้าแอปรองรับ แล้วใส่ยอด {total} บาท</li>
+            <li>ตรวจชื่อผู้รับและยอดก่อนโอน แล้วบันทึกสลิป</li>
+            <li>กลับมาหน้านี้ เลือกสลิป แล้วกดส่งให้ร้านตรวจสอบ</li>
+          </ol>
+          <p>บน iPhone รูปอาจอยู่ในไฟล์ (Files) ถ้าแอปธนาคารหาไม่เจอ ให้เปิด QR เต็มจอแล้วถ่ายภาพหน้าจอให้เห็น QR ครบ</p>
         </div>
       </details>
     </div>}
-    {!paymentQr && keepOrderLinkNotice}
+    {!paymentQr && <>{paymentDeliveryNote}{keepOrderLinkNotice}</>}
     {!hasSubmittedSlip && <a href="#payment-slip" className="block rounded-xl bg-[#653c20] px-4 py-3 text-center font-bold text-white">โอนแล้ว กดแนบสลิป</a>}
   </section>;
   return <div className="max-w-2xl mx-auto p-4 sm:p-8 font-thai space-y-5 text-primary">
     <ShopStatusRefresh />
-    <h1 className="text-3xl font-bold">ออเดอร์ LL-{order.id}</h1>
-    <p className="text-xl text-accent" role="status">{order.status === "quoted" && slips.length > 0 ? "ได้รับสลิปแล้ว · รอร้านตรวจเงิน" : order.status === "quoted" && unreadableSlipCount > 0 ? "รอแนบสลิปใหม่ · ร้านยังไม่ยืนยันรับเงิน" : ORDER_STATUS[order.status]}</p>
-    {order.status === "quoted" && slips.length > 0 && <p className="rounded-xl bg-[#f1e6d5] p-4 text-stone-900">ไม่ต้องโอนซ้ำครับ ร้านจะตรวจเงินเข้าบัญชีแล้วโทรติดต่อเรื่องจัดส่ง</p>}
-    {order.status === "quoted" && unreadableSlipCount > 0 && <p role="alert" className="rounded-xl bg-[#f1e6d5] p-4 leading-relaxed text-stone-900">{slips.length > 0 ? "มีสลิปบางไฟล์ที่เปิดไม่ได้ แต่ได้รับสลิปใหม่แล้ว ร้านจะตรวจเงินเข้าบัญชี ไม่ต้องโอนซ้ำ" : "มีสลิปเดิมที่เปิดไม่ได้ กรุณาแนบรูปสลิปใหม่ ร้านยังต้องตรวจเงินเข้าบัญชี ไม่ต้องโอนซ้ำ"}</p>}
+    <section id="order-status" tabIndex={-1} aria-labelledby="order-heading" className="scroll-mt-24 space-y-5 outline-none">
+      <h1 id="order-heading" className="text-3xl font-bold">ออเดอร์ LL-{order.id}</h1>
+      <p className="text-xl text-accent" role="status">{order.status === "quoted" && slips.length > 0 ? "ได้รับสลิปแล้ว · รอร้านตรวจเงิน" : order.status === "quoted" && unreadableSlipCount > 0 ? "รอแนบสลิปใหม่ · ร้านยังไม่ยืนยันรับเงิน" : ORDER_STATUS[order.status]}</p>
+      {order.status === "quoted" && slips.length > 0 && <p className="rounded-xl bg-[#f1e6d5] p-4 text-stone-900">ไม่ต้องโอนซ้ำครับ ร้านจะตรวจเงินเข้าบัญชีแล้วโทรติดต่อเรื่องจัดส่ง</p>}
+      {order.status === "quoted" && unreadableSlipCount > 0 && <p role="alert" className="rounded-xl bg-[#f1e6d5] p-4 leading-relaxed text-stone-900">{slips.length > 0 ? "มีสลิปบางไฟล์ที่เปิดไม่ได้ แต่ได้รับสลิปใหม่แล้ว ร้านจะตรวจเงินเข้าบัญชี ไม่ต้องโอนซ้ำ" : "มีสลิปเดิมที่เปิดไม่ได้ กรุณาแนบรูปสลิปใหม่ ร้านยังต้องตรวจเงินเข้าบัญชี ไม่ต้องโอนซ้ำ"}</p>}
+    </section>
     <ShopOrderLink token={order.token} beforePayment={order.status === "quoted" && !hasSubmittedSlip} />
     {order.status === "requested" && <p className="leading-relaxed">ได้รับออเดอร์แล้วครับ ร้านจะโทรแจ้งค่าส่งและรายละเอียดจัดส่งก่อนชำระเงิน กรุณาเก็บลิงก์นี้ไว้ดูความคืบหน้า</p>}
+    {order.status !== "cancelled" && !showDeliveryInPayment && <section className="rounded-2xl border border-accent/30 p-4 space-y-2">
+      <h2 className="text-lg font-bold">การจัดส่ง</h2>
+      {order.dispatch_note ? <p className="whitespace-pre-wrap break-words">{order.dispatch_note}</p> : <>
+        <p>วันส่งตกลงกับร้านทางโทรศัพท์</p>
+        {order.status === "requested" && <a href="tel:0956283125" className="inline-block min-h-11 py-2 font-medium text-accent underline underline-offset-4">โทรถามวันส่งก่อนชำระเงิน</a>}
+      </>}
+    </section>}
     {order.status === "quoted" && (hasSubmittedSlip ? <>
       <section id={slips.length > 0 ? "payment-slip" : "payment-slip-status"} className="scroll-mt-24 rounded-2xl border border-accent/30 p-5 space-y-3">
         {slips.length > 0 ? <>
@@ -70,7 +87,6 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
       <p>{order.quantity} แพ็ก · แพ็กละ 500 กรัม · {order.unit_price} บาท/แพ็ก</p>
       <p>ค่าสินค้า {order.goods_baht.toLocaleString("th-TH")} บาท · ค่าจัดส่ง {order.shipping_baht === null ? "รอร้านยืนยัน" : `${order.shipping_baht} บาท`}</p>
       {order.shipping_baht !== null && <p className="text-2xl font-bold text-accent">ยอดรวม {total} บาท</p>}
-      {order.dispatch_note && <p className="whitespace-pre-wrap">{order.dispatch_note}</p>}
     </section>
     {order.tracking && <section className="border border-accent/30 rounded-2xl p-5 space-y-3"><h2 className="font-bold text-xl">ข้อมูลจัดส่ง</h2><p className="break-words whitespace-pre-wrap">{order.tracking}</p><ShopCopyText value={order.tracking} label="คัดลอกข้อมูลพัสดุ" success="คัดลอกข้อมูลพัสดุแล้ว" /></section>}
     <section className="space-y-2"><h2 className="font-bold text-xl">ส่งถึง</h2><p>{address.name} · {address.phone}</p><p className="whitespace-pre-wrap break-words">{address.address}<br/>{address.subdistrict} · {address.district}<br/>{address.province} {address.postcode}</p>{address.note && <p className="break-words">หมายเหตุ: {address.note}</p>}</section>
