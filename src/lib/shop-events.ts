@@ -17,7 +17,8 @@ export const SHOP_EVENTS_SCHEMA = `
  );
  CREATE TABLE IF NOT EXISTS shop_order_slips (
    id INTEGER PRIMARY KEY AUTOINCREMENT, order_id INTEGER NOT NULL, request_key TEXT NOT NULL,
-   filename TEXT NOT NULL, digest TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+   filename TEXT NOT NULL, digest TEXT NOT NULL, validation_state TEXT NOT NULL DEFAULT 'unchecked',
+   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
    UNIQUE(order_id,request_key)
  );`;
 

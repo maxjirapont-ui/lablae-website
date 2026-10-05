@@ -7,9 +7,9 @@ import type { ShopSlip } from "@/lib/shop-slips";
 
 const filters = { work:"งานค้าง", review:"รอตรวจสลิป", paid:"รอจัดส่ง", requested:"รอยืนยันค่าส่ง", unpaid:"รอลูกค้าจ่าย", shipped:"จัดส่งแล้ว", cancelled:"ยกเลิก", all:"ทั้งหมด" };
 type Filter = keyof typeof filters;
-export default function ShopOrdersBoard({orders,paymentConfig,slips}:{orders:ShopOrder[];paymentConfig?:ShopPaymentConfig;slips:ShopSlip[]}) {
-  const [filter,setFilter]=useState<Filter>("work");
-  const [query,setQuery]=useState("");
+export default function ShopOrdersBoard({orders,paymentConfig,slips,initialQuery=""}:{orders:ShopOrder[];paymentConfig?:ShopPaymentConfig;slips:ShopSlip[];initialQuery?:string}) {
+  const [filter,setFilter]=useState<Filter>(initialQuery ? "all" : "work");
+  const [query,setQuery]=useState(initialQuery);
   const [message,setMessage]=useState("");
   const hasSlip = new Set(slips.map(slip=>slip.order_id));
   const group=(order:ShopOrder):Filter => order.status==="quoted" ? hasSlip.has(order.id)?"review":"unpaid" : order.status;
@@ -23,8 +23,11 @@ export default function ShopOrdersBoard({orders,paymentConfig,slips}:{orders:Sho
     </div>
     <label className="block text-sm">ค้นหาเลขออเดอร์ ชื่อ หรือเบอร์ลูกค้า<input type="search" value={query} onChange={event=>setQuery(event.target.value)} className="mt-2 block w-full rounded-xl border border-accent/40 p-3 text-base" placeholder="เช่น LL-12 หรือเบอร์โทร"/></label>
     {message&&<p role="status" className="rounded-xl border border-accent/40 p-3 text-accent">{message}</p>}
-    <p className="text-sm text-primary/70">แสดง {visible.length} รายการ · เรียงงานตรวจสลิปและจัดส่งก่อน</p>
+    <p aria-live="polite" className="text-sm text-primary/70">แสดง {visible.length} รายการ · เรียงงานตรวจสลิปและจัดส่งก่อน</p>
     {visible.map(order=><ShopOrderAdmin key={`${order.id}-${order.version}`} order={order} paymentConfig={paymentConfig} slips={slips.filter(slip=>slip.order_id===order.id)} onSaved={setMessage}/>)}
-    {!visible.length&&<p className="rounded-xl border border-accent/20 p-6">{query ? "ไม่พบรายการที่ค้นหา ลองตรวจเลขออเดอร์หรือเลือกทั้งหมด" : "ไม่มีออเดอร์ในกลุ่มนี้"}</p>}
+    {!visible.length&&<div className="rounded-xl border border-accent/20 p-6 space-y-3">
+      <p>{query.trim() ? filter === "all" ? "ไม่พบรายการที่ค้นหา ลองตรวจเลขออเดอร์ ชื่อ หรือเบอร์โทรอีกครั้ง หน้านี้แสดงงานค้างทั้งหมดและประวัติล่าสุด 200 รายการ" : `ไม่พบรายการที่ค้นหาในกลุ่ม “${filters[filter]}”` : "ไม่มีออเดอร์ในกลุ่มนี้"}</p>
+      {query.trim() && filter !== "all" && <button type="button" className="rounded-xl border border-accent px-4 py-3 text-accent" onClick={()=>setFilter("all")}>ค้นหาทุกสถานะ</button>}
+    </div>}
   </section>;
 }

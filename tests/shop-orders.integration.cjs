@@ -375,7 +375,7 @@ async function main() {
   await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
   assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).isVisible(),false);
   await customer.screenshot({path:path.join(directory,'received-default.png'),fullPage:true});
-  await customer.getByRole('button',{name:'เก็บลิงก์ออเดอร์นี้',exact:true}).click();
+  await customer.getByRole('button',{name:'คัดลอกลิงก์ออเดอร์',exact:true}).click();
   await customer.locator('[role="status"]').filter({hasText:/คัดลอก|แตะช่อง/}).waitFor();
   await customer.goto(base+'/shop');
   assert.equal(await customer.getByRole('link',{name:/กลับไปดูออเดอร์ล่าสุด/}).getAttribute('href'),committedUrl);

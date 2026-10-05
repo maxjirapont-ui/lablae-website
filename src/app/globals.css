@@ -193,12 +193,13 @@ body {
 .admin-scope textarea {
   background-color: #140b06 !important;
   color: #f5ece1 !important;
-  border: 1px solid rgba(212, 163, 115, 0.28) !important;
+  border: 1px solid #9e7954 !important;
 }
 
 .admin-scope input::placeholder,
 .admin-scope textarea::placeholder {
-  color: rgba(245, 236, 225, 0.35) !important;
+  color: #b7a697 !important;
+  opacity: 1;
 }
 
 .admin-scope input:focus,
@@ -207,6 +208,24 @@ body {
   border-color: #d4a373 !important;
   box-shadow: 0 0 0 2px rgba(212, 163, 115, 0.25) !important;
   outline: none !important;
+}
+
+@media (max-width: 639px) {
+  .admin-scope .shop-admin-page {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .admin-scope .shop-admin-page .text-sm {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .admin-scope .shop-admin-page input:not([type="checkbox"]):not([type="radio"]),
+  .admin-scope .shop-admin-page select,
+  .admin-scope .shop-admin-page textarea {
+    font-size: 1.125rem;
+  }
 }
 
 /* Tables */

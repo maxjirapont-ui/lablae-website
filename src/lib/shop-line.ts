@@ -5,7 +5,8 @@ import type { ShopOrder } from "./shop-order-types";
 
 interface Config {group_id:string; pair_hash:string; pair_expires:number}
 interface Job {id:number; order_id:number; kind:string; retry_key:string; recipient:string; payload:string; first_attempt:number; attempts:number}
-export type ShopLineStatus = {configured:boolean; connected:boolean; live:boolean; pending:number; failed:number; accepted:number};
+export type ShopLineIssue = {id:number;orderId:number;kind:string;state:'failed'|'expired';error:string};
+export type ShopLineStatus = {configured:boolean; connected:boolean; live:boolean; pending:number; failed:number; accepted:number;issues:ShopLineIssue[]};
 function liveMode() { return process.env.NODE_ENV === "production" || process.env.SHOP_LINE_NOTIFICATIONS_ENABLED === "1"; }
 function siteBase() {
   try { const url=new URL(process.env.SITE_URL || "https://www.lablae.net");return url.protocol === "https:" ? url.origin : null; } catch {return null;}
@@ -16,7 +17,8 @@ export async function getShopLineStatus():Promise<ShopLineStatus> {
     const cfg=await db.get<Config>("SELECT * FROM shop_line_config WHERE id=1");
     const counts=await db.all<{state:string;count:number}[]>("SELECT state,COUNT(*) AS count FROM shop_line_outbox GROUP BY state");
     const count=(states:string[])=>counts.filter(row=>states.includes(row.state)).reduce((sum,row)=>sum+row.count,0);
-    return {configured:isShopLineConfigured(),connected:Boolean(cfg?.group_id),live:liveMode(),pending:count(['pending','retry']),failed:count(['failed','expired']),accepted:count(['accepted'])};
+    const issues = await db.all<ShopLineIssue[]>("SELECT id,order_id AS orderId,kind,state,error FROM shop_line_outbox WHERE state IN ('failed','expired') ORDER BY id DESC LIMIT 50");
+    return {configured:isShopLineConfigured(),connected:Boolean(cfg?.group_id),live:liveMode(),pending:count(['pending','retry']),failed:count(['failed','expired']),accepted:count(['accepted']),issues};
   } finally {await db.close();}
 }
 export async function makeShopPairingCode() {

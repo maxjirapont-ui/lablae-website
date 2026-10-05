@@ -2,7 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { ensureRuntimeStorage, getDatabasePath } from "./storage";
-import { SHOP_PRODUCT, SHOP_MAX_PACKS, getShopShippingBaht, validateShopAddress, normalizeShopDigits, type ShopAddress } from "./shop";
+import { SHOP_PRODUCT, SHOP_MAX_PACKS, getShopShippingBaht, validateShopAddress, normalizeShopDigits, normalizeShopPhone, type ShopAddress } from "./shop";
 import { parsePaymentQr, type ShopOrder, type OrderStatus } from "./shop-order-types";
 
 import { SHOP_PAYMENT_SCHEMA, type ShopPaymentConfig } from "./shop-payment";
@@ -41,6 +41,11 @@ export async function connectShopDb() {
     try { await db.exec("ALTER TABLE shop_orders ADD COLUMN payment_qr_json TEXT NOT NULL DEFAULT ''"); }
     catch (error) { if (!(error instanceof Error) || !error.message.includes("duplicate column name")) { await db.close(); throw error; } }
   }
+  const slipColumns = await db.all<{name:string}[]>("PRAGMA table_info(shop_order_slips)");
+  if (!slipColumns.some(column => column.name === "validation_state")) {
+    try { await db.exec("ALTER TABLE shop_order_slips ADD COLUMN validation_state TEXT NOT NULL DEFAULT 'unchecked'"); }
+    catch (error) { if (!(error instanceof Error) || !error.message.includes("duplicate column name")) { await db.close(); throw error; } }
+  }
   return db;
 }
 
@@ -56,7 +61,7 @@ export async function createShopOrder(input: unknown): Promise<ShopOrder> {
     if (typeof raw[key] !== "string") throw new OrderError("กรุณาตรวจข้อมูลผู้รับ");
     address[key] = raw[key].trim();
   }
-  address.phone = normalizeShopDigits(address.phone).replace(/[\s()-]/g, "");
+  address.phone = normalizeShopPhone(address.phone);
   address.postcode = normalizeShopDigits(address.postcode);
   const errors = validateShopAddress(address);
   if (Object.keys(errors).length) throw new OrderError(Object.values(errors)[0]!);
@@ -103,6 +108,13 @@ export async function listShopOrders(): Promise<ShopOrder[]> {
   finally { await db.close(); }
 }
 
+export async function getShopOrderById(id:number) {
+  if (!Number.isSafeInteger(id) || id < 1) return undefined;
+  const db = await connectShopDb();
+  try { return await db.get<ShopOrder>("SELECT * FROM shop_orders WHERE id = ?", id); }
+  finally { await db.close(); }
+}
+
 export async function updateShopOrder(input: Record<string, unknown>) {
   if (!Number.isSafeInteger(input.id) || !Number.isSafeInteger(input.version)) throw new OrderError("รายการไม่ถูกต้อง");
   const db = await connectShopDb();
@@ -138,6 +150,8 @@ export async function updateShopOrder(input: Record<string, unknown>) {
       if (typeof input.tracking !== "string" || input.tracking.trim().length < 4 || input.tracking.length > 200) throw new OrderError("กรอกชื่อขนส่งและเลขพัสดุ");
       tracking = input.tracking.trim(); status = "shipped";
     } else if (input.action === "cancel" && ["requested", "quoted"].includes(status)) {
+      const slip = await db.get("SELECT id FROM shop_order_slips WHERE order_id = ? LIMIT 1", order.id);
+      if (slip && input.acknowledgedPaymentCheck !== true) throw new OrderError("ออเดอร์นี้มีสลิปแล้ว กรุณาตรวจเงินเข้าจริงและการคืนเงินก่อนยืนยันยกเลิก", 409);
       status = "cancelled";
     } else throw new OrderError("เปลี่ยนสถานะนี้ไม่ได้ กรุณาตรวจรายการและการรับเงินจริง", 409);
     await db.run(`UPDATE shop_orders SET status=?, shipping_baht=?, payment_instructions=?, payment_qr_json=?, dispatch_note=?, tracking=?, version=version+1, updated_at=CURRENT_TIMESTAMP WHERE id=?`, [status, shipping, payment, paymentQr, dispatch, tracking, order.id]);

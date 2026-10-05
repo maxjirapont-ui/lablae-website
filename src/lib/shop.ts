@@ -89,12 +89,16 @@ export function normalizeShopDigits(value: string): string {
   return value.replace(/[๐-๙]/g, (digit) => String(digit.charCodeAt(0) - 0x0e50));
 }
 
+export function normalizeShopPhone(value:string):string {
+  return normalizeShopDigits(value).trim().replace(/[\s()-]/g, "").replace(/^\+66/, "0");
+}
+
 export function validateShopAddress(value: ShopAddress): ShopAddressErrors {
   const errors: ShopAddressErrors = {};
   if (value.name.trim().length < 2 || value.name.trim().length > 100) {
     errors.name = "กรุณาใส่ชื่อผู้รับ 2–100 ตัวอักษร";
   }
-  const phone = normalizeShopDigits(value.phone).replace(/[\s()-]/g, "");
+  const phone = normalizeShopPhone(value.phone);
   if (!/^(?:0[689]\d{8}|0[2-7]\d{7})$/.test(phone)) {
     errors.phone = "กรุณาใส่เบอร์โทรศัพท์ไทยให้ครบ เช่น 0812345678";
   }

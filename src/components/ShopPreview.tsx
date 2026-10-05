@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowRight, Minus, Plus, Snowflake } from "lucide-react";
-import { SHOP_DRAFT_KEY, finishShopDraft, readRecentShopOrder, readShopDraft, saveShopDraft, type ShopAttempt } from "@/lib/shop-draft";
+import { SHOP_DRAFT_KEY, clearRecentShopOrder, finishShopDraft, readRecentShopOrder, readShopDraft, saveShopDraft, type ShopAttempt } from "@/lib/shop-draft";
 import { trackWebsiteAction } from "@/lib/website-analytics";
 import {
   estimateShopOrder,
   getShopBundleEstimates,
   normalizeShopDigits,
+  normalizeShopPhone,
   SHOP_MAX_PACKS,
   SHOP_PRODUCT,
   validateShopAddress,
@@ -40,12 +41,14 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
   async function submitOrder() {
     if (sending || !estimate) return;
     setSending(true); setSubmitError("");
-    const attempt = pendingRef.current || {requestKey:Array.from(crypto.getRandomValues(new Uint8Array(24)), value=>value.toString(16).padStart(2,"0")).join(""),quantity,address};
+    const attempt = pendingRef.current || {requestKey:Array.from(crypto.getRandomValues(new Uint8Array(24)), value=>value.toString(16).padStart(2,"0")).join(""),quantity,address:{...address,phone:normalizeShopPhone(address.phone)}};
     pendingRef.current = attempt;
     setPendingAttempt(attempt);
     saveShopDraft({quantityText:String(attempt.quantity),address:attempt.address,pending:attempt});
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(),30_000);
     try {
-      const response = await fetch("/api/shop/orders", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(attempt)});
+      const response = await fetch("/api/shop/orders", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(attempt),signal:controller.signal});
       const data = await response.json();
       if (!response.ok) {
         if (response.status >= 400 && response.status < 500) { pendingRef.current=null; setPendingAttempt(null); saveShopDraft({quantityText,address,pending:null}); }
@@ -59,8 +62,8 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
       // A full navigation keeps the public analytics script out of the private order page.
       window.location.replace(data.url);
     } catch {
-      setSubmitError("เชื่อมต่อไม่สำเร็จ กดลองอีกครั้งได้ ระบบจะตรวจรายการเดิมให้โดยไม่สั่งซ้ำ"); setSending(false);
-    }
+      setSubmitError(controller.signal.aborted ? "รอนานกว่าปกติ ยังตรวจผลไม่ได้ กดลองส่งรายการเดิมอีกครั้งได้โดยไม่สั่งซ้ำ" : "เชื่อมต่อไม่สำเร็จ กดลองอีกครั้งได้ ระบบจะตรวจรายการเดิมให้โดยไม่สั่งซ้ำ"); setSending(false);
+    } finally { clearTimeout(timeout); }
   }
   const hydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
   const [quantityText, setQuantityText] = useState("1");
@@ -200,7 +203,11 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
         </p>
       </div>
 
-      {recentOrder && !reviewing && <a href={recentOrder.url} className="mb-5 block rounded-xl border border-accent/40 px-4 py-3 text-accent">กลับไปดูออเดอร์ล่าสุด {recentOrder.number}</a>}
+      {recentOrder && !reviewing && <div className="mb-5 rounded-xl border border-accent/40 p-4 space-y-2">
+        <a href={recentOrder.url} className="block min-h-11 py-2 font-bold text-accent underline">กลับไปดูออเดอร์ล่าสุด {recentOrder.number}</a>
+        <p className="text-sm text-primary/80">จำลิงก์ไว้ในเครื่องนี้ 30 วัน หากใช้เครื่องร่วมกับคนอื่น ลบลิงก์ที่จำไว้ได้ครับ</p>
+        <button type="button" onClick={()=>{clearRecentShopOrder();setRecentOrder(null);}} className="min-h-11 rounded-lg px-3 py-2 text-sm text-accent underline focus-visible:outline-2 focus-visible:outline-offset-2">ลบลิงก์ที่จำไว้ในเครื่องนี้</button>
+      </div>}
       {reviewing && estimate ? (
         <section aria-label="สรุปรายการ" className="mx-auto max-w-2xl space-y-6 rounded-2xl bg-[#fffaf3] p-5 text-stone-900 sm:p-8">
           <div className="flex items-center gap-4 border-b border-stone-200 pb-5">

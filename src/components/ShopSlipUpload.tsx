@@ -26,16 +26,17 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
   event.preventDefault();if(sending.current)return;
   if(!selected){setMessage('กรุณาเลือกรูปหรือไฟล์สลิปก่อนส่ง');return;}
   sending.current=true;setBusy(true);setMessage('');
+  const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),30_000);
   try{
    if(!key.current)key.current=Array.from(crypto.getRandomValues(new Uint8Array(24)),v=>v.toString(16).padStart(2,'0')).join('');
    if(!prepared.current)prepared.current=await prepareSlip(selected);
    const file=prepared.current;if(file.size>SHOP_SLIP_MAX_BYTES)throw new Error('ไฟล์ใหญ่เกิน 10 MB กรุณาใช้รูปสลิปที่บันทึกจากแอปธนาคาร');
    // A disabled native input is omitted by FormData(form), so use the retained File explicitly.
    const data=new FormData();data.set('file',file,file.name);data.set('requestKey',key.current);
-   const response=await fetch(`/api/shop/orders/${token}/slip`,{method:'POST',body:data});const result=await response.json().catch(()=>({error:response.status===413?'ไฟล์ใหญ่เกิน 10 MB กรุณาใช้รูปสลิปที่บันทึกจากแอปธนาคาร':'ส่งไม่สำเร็จ กรุณากดส่งอีกครั้ง หรือโทรหาร้าน'}));
+   const response=await fetch(`/api/shop/orders/${token}/slip`,{method:'POST',body:data,signal:controller.signal});const result=await response.json().catch(()=>({error:response.status===413?'ไฟล์ใหญ่เกิน 10 MB กรุณาใช้รูปสลิปที่บันทึกจากแอปธนาคาร':'ส่งไม่สำเร็จ กรุณากดส่งอีกครั้ง หรือโทรหาร้าน'}));
    if(!response.ok)throw new Error(result.error||'ส่งสลิปไม่สำเร็จ');
    setMessage('ได้รับสลิปแล้วครับ รอร้านตรวจเงินเข้าบัญชี');if(fileInput.current)fileInput.current.value='';setSelected(null);setPreview('');prepared.current=null;key.current='';router.refresh();
-  }catch(error){setMessage(error instanceof TypeError?'เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกไฟล์ใหม่':error instanceof Error?error.message:'ส่งสลิปไม่สำเร็จ กรุณากดส่งอีกครั้ง');}finally{sending.current=false;setBusy(false);}
+  }catch(error){setMessage(controller.signal.aborted?'รอนานกว่าปกติ ยังตรวจผลไม่ได้ กดส่งสลิปเดิมอีกครั้งได้ ไม่ต้องโอนซ้ำ':error instanceof TypeError?'เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกไฟล์ใหม่':error instanceof Error?error.message:'ส่งสลิปไม่สำเร็จ กรุณากดส่งอีกครั้ง');}finally{clearTimeout(timeout);sending.current=false;setBusy(false);}
  }
  return <section id={count>0?"payment-slip-more":"payment-slip"} tabIndex={-1} className="scroll-mt-24 outline-none rounded-2xl border border-accent/30 p-5 space-y-3">
   <h2 className="text-xl font-bold">โอนแล้ว แนบสลิปที่นี่</h2>
@@ -43,12 +44,16 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
   {count>0&&<p className="text-accent">ได้รับสลิปแล้ว {count} ไฟล์ · รอตรวจสอบ</p>}
   {count<3&&<form onSubmit={submit} className="space-y-3" aria-busy={busy}>
    <label className="block space-y-2"><span className="font-bold">รูปหรือไฟล์สลิป</span>
-    <input ref={fileInput} name="file" type="file" accept={SHOP_SLIP_ACCEPT} disabled={busy} aria-describedby="slip-file-help" onChange={event=>{
+    <span className="relative flex min-h-16 flex-wrap items-center gap-3 rounded-xl border-2 border-accent bg-[#fffaf3] p-3 text-[#261810] focus-within:ring-2 focus-within:ring-accent focus-within:ring-offset-2">
+    <input ref={fileInput} name="file" type="file" accept={SHOP_SLIP_ACCEPT} disabled={busy} aria-label="รูปหรือไฟล์สลิป" aria-describedby="slip-file-help" onChange={event=>{
      const file=event.target.files?.[0];if(!file)return;
      key.current='';prepared.current=null;setMessage('');
      if(!file.size||file.size>SHOP_SLIP_MAX_BYTES){event.target.value='';setSelected(null);setPreview('');setMessage(!file.size?'ไฟล์นี้ว่าง กรุณาเลือกไฟล์ใหม่':'ไฟล์ใหญ่เกิน 10 MB กรุณาใช้รูปสลิปที่บันทึกจากแอปธนาคาร');return;}
      setSelected(file);setPreview(/^image\//.test(file.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)?URL.createObjectURL(file):'');
-    }} className="block w-full min-h-14 min-w-0 rounded-xl border-2 border-accent bg-[#fffaf3] text-[#261810] p-3 text-base file:mr-3 file:rounded-lg file:border-0 file:bg-[#653c20] file:px-4 file:py-3 file:font-bold file:text-white disabled:opacity-50"/>
+    }} className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-wait"/>
+    <span aria-hidden="true" className="pointer-events-none rounded-lg bg-[#653c20] px-4 py-3 font-bold text-white">เลือกสลิป</span>
+    <span aria-hidden="true" className="pointer-events-none text-sm">{selected?'เลือกไฟล์แล้ว':'ยังไม่ได้เลือกไฟล์'}</span>
+    </span>
    </label>
    <p id="slip-file-help" className="text-sm break-words" aria-live="polite">{selected?`เลือกแล้ว: ${selected.name}`:SHOP_SLIP_FILE_HELP}</p>
    {preview&&<div className="rounded-xl bg-white p-2"><img src={preview} alt="ตัวอย่างสลิปที่เลือก ยังไม่ได้ส่ง" onError={()=>setPreview('')} className="mx-auto max-h-64 max-w-full object-contain"/></div>}

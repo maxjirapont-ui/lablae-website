@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SHOP_MAX_PACKS, getShopShippingBaht, estimateShopOrder, getShopBundleEstimates, getShopBundleSuggestion, normalizeShopDigits, validateShopAddress } from "../src/lib/shop.ts";
+import { SHOP_MAX_PACKS, getShopShippingBaht, estimateShopOrder, getShopBundleEstimates, getShopBundleSuggestion, normalizeShopDigits, normalizeShopPhone, validateShopAddress } from "../src/lib/shop.ts";
 
 test("bundle cards derive prices and per-pack averages from the same estimate", () => {
   const bundles = getShopBundleEstimates();
@@ -53,6 +53,15 @@ test("valid address and Thai digits work without requiring notes", () => {
   assert.deepEqual(validateShopAddress({ ...address, phone: "๐๘๑๒๓๔๕๖๗๘", postcode: "๑๐๑๑๐" }), {});
   assert.equal(normalizeShopDigits("๐๑๒๓๔๕๖๗๘๙"), "0123456789");
   assert.deepEqual(validateShopAddress({ ...address, phone: "02-123-4567" }), {});
+});
+
+test("Thai international phone formats normalize to the domestic number", () => {
+  for (const phone of ['+66 81-234-5678','+๖๖๘๑๒๓๔๕๖๗๘','+66 (2) 123-4567']) {
+    assert.deepEqual(validateShopAddress({...address,phone}),{});
+  }
+  assert.equal(normalizeShopPhone('+66 81-234-5678'),'0812345678');
+  assert.equal(normalizeShopPhone('+66 (2) 123-4567'),'021234567');
+  for (const phone of ['+65 812345678','+66 0812345678','+66 123']) assert.ok(validateShopAddress({...address,phone}).phone);
 });
 
 test("missing and oversized fields, invalid phone and postcode are rejected", () => {
