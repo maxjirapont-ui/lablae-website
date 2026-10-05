@@ -1,5 +1,7 @@
 "use client";
 
+import ShopContactButtons from "./ShopContactButtons";
+
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { ArrowRight, Minus, Plus, Snowflake } from "lucide-react";
@@ -195,7 +197,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
 
       <div className="mb-5">
         <p className="mb-2 text-sm text-accent">จากครัวลำลำลับแล</p>
-        <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-24 text-3xl font-bold leading-snug text-primary outline-none sm:text-4xl">
+        <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-32 text-3xl font-bold leading-snug text-primary outline-none sm:scroll-mt-24 sm:text-4xl">
           {reviewing ? "ตรวจสอบรายการของคุณ" : "ไส้อั่ว ส่งถึงบ้าน"}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-primary/80">
@@ -223,7 +225,8 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
           </div>
           <div className="rounded-xl bg-amber-100 p-4 space-y-2 text-sm leading-relaxed text-amber-950">
             <p>{estimate.shippingBaseBaht === null ? "ร้านจะโทรแจ้งค่าส่งและตกลงวันส่งก่อนชำระเงิน" : "ชำระผ่าน QR แล้วแนบสลิป ร้านตรวจเงินแล้วโทรตกลงวันส่ง"}</p>
-            <a href="tel:0956283125" className="inline-block min-h-11 py-2 underline underline-offset-4">โทรถามวันส่งก่อนชำระเงิน</a>
+            <p>ถามวันส่งก่อนชำระเงิน</p>
+            <ShopContactButtons light />
           </div>
           {pendingAttempt && !sending && <p className="text-sm text-stone-700">มีรายการที่รอตรวจผลการส่ง กดลองอีกครั้งเพื่อเปิดออเดอร์เดิมก่อนแก้ไขข้อมูล</p>}
           {submitError && <p role="alert" className="text-red-800">{submitError}</p>}
@@ -252,7 +255,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
 
           <form onSubmit={review} onChangeCapture={markStarted} noValidate className="space-y-7 rounded-2xl bg-[#fffaf3] p-5 text-stone-900 sm:p-8">
             <section aria-labelledby="shop-quantity-heading">
-              <h2 id="shop-quantity-heading" tabIndex={-1} className="scroll-mt-24 text-xl font-bold outline-none">1. เลือกจำนวนแพ็ก</h2>
+              <h2 id="shop-quantity-heading" tabIndex={-1} className="scroll-mt-32 text-xl font-bold outline-none sm:scroll-mt-24">1. เลือกจำนวนแพ็ก</h2>
               <p className="mt-2 text-sm text-stone-600">เริ่มได้ตั้งแต่ 1 แพ็ก · 450 บาทรวมส่ง</p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <label className="sr-only" htmlFor="shop-quantity">จำนวนแพ็ก</label>
@@ -324,7 +327,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
         </div>
       )}
       {!reviewing && <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <details className="rounded-2xl border border-accent/30 p-5 text-primary"><summary className="cursor-pointer py-1 text-lg font-bold">การจัดส่งและการรับสินค้า</summary><div className="mt-3 space-y-3 text-sm leading-relaxed"><p>จัดส่งแบบแช่แข็ง ร้านตรวจเงินแล้วจะโทรติดต่อเรื่องจัดส่งตามเบอร์ที่ระบุในออเดอร์</p><p>เกิน 20 แพ็ก ร้านจะแจ้งค่าส่งก่อนชำระเงิน หากต้องการเช็กพื้นที่หรือกำหนดวันรับสินค้า โทร <a className="underline" href="tel:0956283125">095-628-3125</a></p><p>สอบถามเรื่องการเก็บรักษา อายุสินค้า หรือส่วนผสมเพิ่มเติมได้ทางโทรศัพท์ก่อนสั่ง</p></div></details>
+        <details className="rounded-2xl border border-accent/30 p-5 text-primary"><summary className="cursor-pointer py-1 text-lg font-bold">การจัดส่งและการรับสินค้า</summary><div className="mt-3 space-y-3 text-base leading-relaxed"><p>จัดส่งแบบแช่แข็ง ร้านตรวจเงินแล้วจะโทรติดต่อเรื่องจัดส่งตามเบอร์ที่ระบุในออเดอร์</p><p>เกิน 20 แพ็ก ร้านจะแจ้งค่าส่งก่อนชำระเงิน ถามเรื่องพื้นที่จัดส่ง วันรับสินค้า การเก็บรักษา หรือส่วนผสมได้ก่อนสั่งครับ</p><ShopContactButtons /></div></details>
             <details className="rounded-2xl border border-accent/30 p-5 text-primary">
               <summary className="cursor-pointer text-lg font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">อุ่นไส้อั่วที่บ้าน</summary>
               <div className="mt-4 space-y-5 text-sm leading-relaxed text-primary/85">

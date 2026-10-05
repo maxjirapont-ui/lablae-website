@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Navbar from "./Navbar";
 import MobileQuickBar from "./MobileQuickBar";
+import ShopContactButtons from "./ShopContactButtons";
 
 interface AppShellProps {
   children: ReactNode;
@@ -32,7 +33,12 @@ export default function AppShell({
   }
 
   if (isShop) return <div className="public-site contents">
-    <header className="sticky top-0 z-50 border-b border-accent/20 bg-[#1a100a]/95 backdrop-blur-md"><nav aria-label="เมนูสั่งซื้อ" className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-3 px-4"><Link href="/" className="inline-flex min-h-12 items-center text-sm text-accent">← ลำลำลับแล บ้าน 100 ปี</Link><a href={`tel:${phone}`} className="inline-flex min-h-12 items-center rounded-lg px-3 text-sm text-accent underline">โทรหาร้าน</a></nav></header>
+    <header className="sticky top-0 z-50 border-b border-accent/20 bg-[#1a100a]/95 backdrop-blur-md">
+      <nav aria-label="เมนูสั่งซื้อ" className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-2 sm:min-h-16 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <Link href="/" className="inline-flex min-h-10 items-center text-base text-accent">← ลำลำลับแล บ้าน 100 ปี</Link>
+        <ShopContactButtons phoneHref={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="w-full [&>a]:flex-1 [&>a]:px-3 sm:w-auto sm:[&>a]:flex-none" />
+      </nav>
+    </header>
     <main className="flex-grow pb-6">{children}</main>
     <footer className="border-t border-accent/20 px-4 py-6 text-center text-sm text-primary/70">ลำลำลับแล บ้าน 100 ปี · <Link href="/" className="inline-flex min-h-11 items-center text-accent underline">กลับหน้าร้าน</Link></footer>
   </div>;

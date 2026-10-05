@@ -6,6 +6,7 @@ import type { ShopAddress } from "@/lib/shop";
 import ShopStatusRefresh from "@/components/ShopStatusRefresh";
 import ShopOrderLink, { ShopCopyText, ShopPaymentQrImage } from "@/components/ShopOrderLink";
 import ShopSlipUpload from "@/components/ShopSlipUpload";
+import ShopContactButtons from "@/components/ShopContactButtons";
 import { getUnreadableShopSlipCount, listShopSlips } from "@/lib/shop-slips";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,11 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
   const address = JSON.parse(order.address_json) as ShopAddress;
   const total = (order.goods_baht + (order.shipping_baht || 0)).toLocaleString("th-TH");
   const showDeliveryInPayment = order.status === "quoted" && !hasSubmittedSlip;
-  const paymentDeliveryNote = showDeliveryInPayment && <p className="text-base leading-relaxed whitespace-pre-wrap break-words">{order.dispatch_note || <>วันส่งตกลงทางโทรศัพท์ · <a href="tel:0956283125" className="inline-block min-h-11 py-2 font-medium text-[#653c20] underline underline-offset-4">โทรถามวันส่งก่อนโอน</a></>}</p>;
+  const paymentDeliveryNote = showDeliveryInPayment && <div className="space-y-2">
+    <p className="text-base leading-relaxed whitespace-pre-wrap break-words">{order.dispatch_note || "วันส่งตกลงกับร้าน"}</p>
+    <p className="text-base">ถามวันส่งก่อนโอน</p>
+    <ShopContactButtons light />
+  </div>;
   const keepOrderLinkNotice = !hasSubmittedSlip && <p className="text-base leading-relaxed">ก่อนออกไปโอน กด “คัดลอกลิงก์ออเดอร์” ด้านบน แล้วเก็บไว้ในโน้ตหรือแชตส่วนตัว จะได้กลับมาแนบสลิปและดูสถานะ</p>;
   const paymentPanel = <section className="rounded-2xl bg-[#fffaf3] text-stone-900 p-5 space-y-4">
     <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -57,7 +62,7 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
   </section>;
   return <div className="max-w-2xl mx-auto p-4 sm:p-8 font-thai space-y-5 text-primary">
     <ShopStatusRefresh />
-    <section id="order-status" tabIndex={-1} aria-labelledby="order-heading" className="scroll-mt-24 space-y-5 outline-none">
+    <section id="order-status" tabIndex={-1} aria-labelledby="order-heading" className="scroll-mt-32 space-y-5 outline-none sm:scroll-mt-24">
       <h1 id="order-heading" className="text-3xl font-bold">ออเดอร์ LL-{order.id}</h1>
       <p className="text-xl text-accent" role="status">{order.status === "quoted" && slips.length > 0 ? "ได้รับสลิปแล้ว · รอร้านตรวจเงิน" : order.status === "quoted" && unreadableSlipCount > 0 ? "รอแนบสลิปใหม่ · ร้านยังไม่ยืนยันรับเงิน" : ORDER_STATUS[order.status]}</p>
       {order.status === "quoted" && slips.length > 0 && <p className="rounded-xl bg-[#f1e6d5] p-4 text-stone-900">ไม่ต้องโอนซ้ำครับ ร้านจะตรวจเงินเข้าบัญชีแล้วโทรติดต่อเรื่องจัดส่ง</p>}
@@ -68,12 +73,12 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
     {order.status !== "cancelled" && !showDeliveryInPayment && <section className="rounded-2xl border border-accent/30 p-4 space-y-2">
       <h2 className="text-lg font-bold">การจัดส่ง</h2>
       {order.dispatch_note ? <p className="whitespace-pre-wrap break-words">{order.dispatch_note}</p> : <>
-        <p>วันส่งตกลงกับร้านทางโทรศัพท์</p>
-        {order.status === "requested" && <a href="tel:0956283125" className="inline-block min-h-11 py-2 font-medium text-accent underline underline-offset-4">โทรถามวันส่งก่อนชำระเงิน</a>}
+        <p>วันส่งตกลงกับร้าน</p>
+        {order.status === "requested" && <div className="space-y-2"><p>ถามวันส่งก่อนชำระเงิน</p><ShopContactButtons /></div>}
       </>}
     </section>}
     {order.status === "quoted" && (hasSubmittedSlip ? <>
-      <section id={slips.length > 0 ? "payment-slip" : "payment-slip-status"} className="scroll-mt-24 rounded-2xl border border-accent/30 p-5 space-y-3">
+      <section id={slips.length > 0 ? "payment-slip" : "payment-slip-status"} className="scroll-mt-32 rounded-2xl border border-accent/30 p-5 space-y-3 sm:scroll-mt-24">
         {slips.length > 0 ? <>
           <h2 className="text-xl font-bold">ได้รับสลิปแล้ว {slips.length} ไฟล์</h2>
           <p className="text-sm text-primary/80">รับล่าสุด {new Intl.DateTimeFormat("th-TH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Bangkok"}).format(new Date(slips[0].created_at.replace(" ","T")+"Z"))}</p>
@@ -90,7 +95,10 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
     </section>
     {order.tracking && <section className="border border-accent/30 rounded-2xl p-5 space-y-3"><h2 className="font-bold text-xl">ข้อมูลจัดส่ง</h2><p className="break-words whitespace-pre-wrap">{order.tracking}</p><ShopCopyText value={order.tracking} label="คัดลอกข้อมูลพัสดุ" success="คัดลอกข้อมูลพัสดุแล้ว" /></section>}
     <section className="space-y-2"><h2 className="font-bold text-xl">ส่งถึง</h2><p>{address.name} · {address.phone}</p><p className="whitespace-pre-wrap break-words">{address.address}<br/>{address.subdistrict} · {address.district}<br/>{address.province} {address.postcode}</p>{address.note && <p className="break-words">หมายเหตุ: {address.note}</p>}</section>
-    <div className="flex flex-wrap gap-3"><a href={`/shop/orders/${order.token}`} className="border border-accent px-4 py-3 rounded-xl">อัปเดตสถานะ</a><a href="tel:0956283125" className="border border-accent px-4 py-3 rounded-xl">โทรหาร้าน</a><Link href="/shop" className="px-4 py-3 text-accent">กลับหน้าสินค้า</Link></div>
+    <div className="space-y-3">
+      <ShopContactButtons />
+      <div className="flex flex-wrap gap-3"><a href={`/shop/orders/${order.token}`} className="border border-accent px-4 py-3 rounded-xl">อัปเดตสถานะ</a><Link href="/shop" className="px-4 py-3 text-accent">กลับหน้าสินค้า</Link></div>
+    </div>
     <p className="text-sm text-primary/65">ลิงก์นี้มีข้อมูลผู้รับ กรุณาเก็บไว้เป็นส่วนตัว</p>
   </div>;
 }

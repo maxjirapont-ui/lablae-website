@@ -1,4 +1,6 @@
 "use client";
+
+import ShopContactButtons from "./ShopContactButtons";
 import {useEffect,useRef,useState,type FormEvent} from 'react';
 import {SHOP_SLIP_ACCEPT,SHOP_SLIP_FILE_HELP,SHOP_SLIP_MAX_BYTES} from '@/lib/shop-slip-policy';
 
@@ -41,7 +43,7 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
    return;
   }catch(error){setMessage(controller.signal.aborted?'รอนานกว่าปกติ ยังตรวจผลไม่ได้ กดส่งสลิปเดิมอีกครั้งได้ ไม่ต้องโอนซ้ำ':error instanceof TypeError?'เชื่อมต่อไม่สำเร็จ กดส่งสลิปอีกครั้งได้ ไม่ต้องเลือกไฟล์ใหม่':error instanceof Error?error.message:'ส่งสลิปไม่สำเร็จ กรุณากดส่งอีกครั้ง');}finally{clearTimeout(timeout);sending.current=false;setBusy(false);}
  }
- return <section id={count>0?"payment-slip-more":"payment-slip"} tabIndex={-1} className="scroll-mt-24 outline-none rounded-2xl border border-accent/30 p-5 space-y-3">
+ return <section id={count>0?"payment-slip-more":"payment-slip"} tabIndex={-1} className="scroll-mt-32 outline-none rounded-2xl border border-accent/30 p-5 space-y-3 sm:scroll-mt-24">
   <h2 className="text-xl font-bold">โอนแล้ว แนบสลิปที่นี่</h2>
   <p>ร้านจะตรวจยอดเงินเข้าจริงก่อนเปลี่ยนสถานะเป็นรับเงินแล้ว</p>
   {count>0&&<p className="text-accent">ได้รับสลิปแล้ว {count} ไฟล์ · รอตรวจสอบ</p>}
@@ -62,7 +64,7 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
    {preview&&<div className="rounded-xl bg-white p-2"><img src={preview} alt="ตัวอย่างสลิปที่เลือก ยังไม่ได้ส่ง" onError={()=>setPreview('')} className="mx-auto max-h-64 max-w-full object-contain"/></div>}
    <button type="submit" disabled={busy||!selected} className="w-full rounded-xl bg-accent text-[#261810] font-bold px-5 py-4 disabled:opacity-50">{busy?'กำลังส่ง…':'ส่งสลิปให้ร้านตรวจสอบ'}</button>
   </form>}
-  {count>=3&&<p>หากต้องแก้ไขสลิปเพิ่มเติม กรุณาโทรหาร้าน</p>}
+  {count>=3&&<div className="space-y-2"><p>หากต้องแก้ไขสลิปเพิ่มเติม ติดต่อร้านได้ครับ</p><ShopContactButtons /></div>}
   {message&&<p role="status">{message}</p>}
  </section>;
 }

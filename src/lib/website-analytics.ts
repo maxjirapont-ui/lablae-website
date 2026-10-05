@@ -1,6 +1,6 @@
 export const WEBSITE_MEASUREMENT_ID = "G-8ZCYCYC7JY";
 
-export type WebsiteAction = "menu_click" | "directions_click" | "phone_click" | "booking_click" | "booking_request_submitted" | "shop_begin_checkout" | "shop_review_order" | "shop_order_created";
+export type WebsiteAction = "menu_click" | "directions_click" | "phone_click" | "messenger_click" | "booking_click" | "booking_request_submitted" | "shop_begin_checkout" | "shop_review_order" | "shop_order_created";
 
 const publicPaths = new Set(["/", "/menu", "/about", "/directions", "/lablae", "/blog", "/visit", "/shop"]);
 
@@ -28,6 +28,7 @@ export function websiteLinkAction(href: string, origin: string): WebsiteAction |
   try {
     const url = new URL(href, origin);
     if (!["http:", "https:"].includes(url.protocol)) return null;
+    if (url.hostname === "m.me" && url.pathname.replace(/\/$/, "") === "/lumlumlablae") return "messenger_click";
     if (url.origin === origin) {
       if (url.pathname === "/menu") return "menu_click";
       if (url.pathname === "/directions") return "directions_click";
