@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports -- Standalone Node integration runner. */
-// Run against a built, isolated copy: NODE_PATH=<runtime packages> node tests/shop-orders.integration.cjs
+// Run after the production build: NODE_PATH=<runtime packages> node tests/shop-orders.integration.cjs
+// Uses the built original checkout, temporary databases, and local test servers.
 // Creates only temporary databases and local test servers. Never sends LINE messages or payments.
 const {chromium} = require('playwright');
 const {spawn} = require('node:child_process');
@@ -13,6 +14,23 @@ const assert = require('node:assert/strict');
 const children = [];
 let browser;
 const password = '1555';
+async function fillShippingAddress(page, values) {
+  for (const [id, value] of Object.entries(values)) {
+    const field = page.locator('#shop-' + id);
+    if (id === 'note' && !(await field.isVisible())) {
+      await page.getByText('เพิ่มหมายเหตุ (ถ้ามี)', {exact: true}).click();
+    }
+    await field.fill(value);
+  }
+}
+async function assertCheckoutLocked(page) {
+  for (const id of ['quantity', 'name', 'phone', 'address', 'subdistrict', 'district', 'province', 'postcode', 'note', 'bundle-3', 'bundle-6', 'bundle-9']) {
+    assert(await page.locator('#shop-' + id).isDisabled(), `Pending order locks ${id}`);
+  }
+  for (const name of ['เลือกชุด 3 แพ็ก', 'เพิ่มจำนวน 1 แพ็ก', 'ลดจำนวน 1 แพ็ก']) {
+    assert(await page.getByRole('button', {name, exact: true}).isDisabled(), `Pending order locks ${name}`);
+  }
+}
 async function main() {
   const directory=mkdtempSync(path.join(tmpdir(),'lablae-orders-'));
   const databasePath=path.join(directory,'test.db');
@@ -107,7 +125,7 @@ async function main() {
   }
   await customer.locator('#shop-quantity').fill('2');
   assert.equal(await customer.getByTestId('shop-total').innerText(),'878 บาท');
-  await customer.getByRole('button',{name:'เปลี่ยนเป็น 3 แพ็ก',exact:true}).click();
+  await customer.getByRole('button',{name:'เลือก 3 แพ็ก',exact:true}).click();
   assert.equal(await customer.locator('#shop-quantity').inputValue(),'3');
   assert.equal(await customer.getByTestId('shop-total').innerText(),'999 บาท');
   await customer.locator('#shop-quantity').fill('9');
@@ -130,9 +148,14 @@ async function main() {
   await customer.locator('#shop-quantity').fill('20');
   assert.equal(await customer.getByTestId('shop-total').innerText(),'6,672 บาท');
   assert.equal(await customer.getByText('รอร้านยืนยัน',{exact:true}).count(),0);
-  for(const [id,value] of Object.entries({...address,phone:'0891234567'})) await customer.locator('#shop-'+id).fill(value);
-  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
-  await customer.getByRole('button',{name:'สั่งซื้อและดูช่องทางชำระเงิน',exact:true}).click();
+  const beforeInvalidSubmit=(await db.get('SELECT COUNT(*) AS count FROM shop_orders')).count;
+  await customer.getByRole('button',{name:'สั่งซื้อ · ไปชำระเงิน',exact:true}).click();
+  await customer.waitForFunction(()=>document.activeElement?.id==='shop-name');
+  assert(await customer.locator('#shop-name').getAttribute('aria-invalid')==='true');
+  assert.equal((await db.get('SELECT COUNT(*) AS count FROM shop_orders')).count,beforeInvalidSubmit);
+  await fillShippingAddress(customer,{...address,phone:'0891234567'});
+  // Enter in an address input submits directly; no separate review page intervenes.
+  await customer.locator('#shop-postcode').press('Enter');
   await customer.waitForURL('**/shop/orders/*');
   const savedUrl=customer.url();await customer.reload();assert.equal(customer.url(),savedUrl);
   assert.equal(await customer.getByRole('status').innerText(),'รอร้านยืนยันสินค้าและรอบส่ง');
@@ -185,7 +208,7 @@ async function main() {
   const qrImage=customer.getByRole('img',{name:'QR พร้อมเพย์ของ ชื่อผู้รับทดสอบเท่านั้น',exact:true});
   await qrImage.waitFor();
   assert.equal(await qrImage.evaluate(async img=>{await img.decode();return img.naturalWidth>0;}),true);
-  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).count(),1);
+  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR',exact:true}).count(),1);
   let qrResponse=await fetch(savedUrl+'/payment-qr?download=1');
   assert(qrResponse.headers.get('cache-control').includes('no-store'));
   assert(qrResponse.headers.get('content-disposition').includes('attachment'));
@@ -259,7 +282,7 @@ async function main() {
   assert.equal((await db.get("SELECT COUNT(*) n FROM shop_line_outbox WHERE event_key LIKE 'slip:%' AND order_id=?",bulk.id)).n,slipCountBeforeRetry);
   assert.equal((await db.get('SELECT status FROM shop_orders WHERE id=?',bulk.id)).status,'quoted');
   await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
-  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).isVisible(),false);
+  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR',exact:true}).isVisible(),false);
   await customer.screenshot({path:path.join(directory,'slip-received-mobile.png')});
   // Bank apps may export a WebP image, a PDF, or an image without its MIME type.
   const validationRes=await post({...input,quantity:1,requestKey:randomBytes(24).toString('hex'),address:{...address,phone:'0860000050'}});
@@ -351,28 +374,65 @@ async function main() {
   assert.equal((await update({id:bulk.id,version:bulk.version,action:'paid',confirmed:true})).status,200);
   assert.equal((await fetch(savedUrl+'/payment-qr')).status,404);
   console.log('PASS: private QR setup, upload validation, original bytes, download, quoted-only access, immutable order payment details, stale settings and paid-order QR hiding.');
-  // Recover drafts, navigate back, and retry a committed request whose response was lost.
+  // Recover drafts and legacy review links, then retry a committed request whose response was lost.
   await customer.goto(base+'/shop');
   await customer.locator('#shop-quantity').fill('3');
-  for(const [id,value] of Object.entries({...address,phone:'0860000042'})) await customer.locator('#shop-'+id).fill(value);
-  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  const recoveryAddress={...address,phone:'0860000042'};
+  await fillShippingAddress(customer,recoveryAddress);
+  await customer.waitForFunction(()=>JSON.parse(sessionStorage.getItem('lablae-shop-draft-v1')||'null')?.address?.phone==='0860000042');
   await customer.reload();
-  await customer.getByRole('heading',{name:'ตรวจสอบรายการของคุณ',exact:true}).waitFor();
-  await customer.goBack();
-  await customer.locator('#shop-name').waitFor();
+  await customer.waitForFunction(()=>document.querySelector('#shop-phone')?.value==='0860000042');
   assert.equal(await customer.locator('#shop-name').inputValue(),address.name);
   assert.equal(await customer.locator('#shop-quantity').inputValue(),'3');
-  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  for(const [id,value] of Object.entries(recoveryAddress)) assert.equal(await customer.locator('#shop-'+id).inputValue(),value);
+  await customer.goto(base+'/');
+  await customer.goBack();
+  await customer.waitForFunction(()=>document.querySelector('#shop-phone')?.value==='0860000042');
+  assert.equal(await customer.locator('#shop-quantity').inputValue(),'3');
+  for(const [id,value] of Object.entries(recoveryAddress)) assert.equal(await customer.locator('#shop-'+id).inputValue(),value);
+  await customer.goto(base+'/shop#review');
+  await customer.reload(); // A legacy link can arrive as a full page load.
+  await customer.waitForFunction(()=>document.activeElement?.id==='shop-summary');
+  assert.equal(await customer.getByRole('heading',{name:'ตรวจสอบรายการของคุณ',exact:true}).count(),0);
+  assert.equal(await customer.locator('#shop-phone').inputValue(),'0860000042');
+  assert.equal(await customer.getByTestId('shop-total').innerText(),'999 บาท');
+  await customer.goto(base+'/shop');
   let committedUrl='';
-  await customer.route('**/api/shop/orders',async route=>{const response=await route.fetch();committedUrl=(await response.json()).url;await route.abort('internetdisconnected');});
-  await customer.getByRole('button',{name:'สั่งซื้อและดูช่องทางชำระเงิน',exact:true}).click();
+  let releaseLostResponse;
+  let reportCommitted;
+  const committed=new Promise(resolve=>{reportCommitted=resolve;});
+  const orderAttempts=[];
+  await customer.route('**/api/shop/orders',async route=>{
+    orderAttempts.push(JSON.parse(route.request().postData()));
+    const response=await route.fetch();committedUrl=(await response.json()).url;
+    await new Promise(resolve=>{releaseLostResponse=resolve;reportCommitted();});
+    await route.abort('internetdisconnected');
+  });
+  await customer.getByRole('button',{name:'สั่งซื้อ · ไปชำระเงิน',exact:true}).click();
+  await Promise.race([committed,new Promise((_,reject)=>{
+    const timeout=setTimeout(()=>reject(new Error('The isolated order did not commit within 20 seconds')),20_000);
+    timeout.unref();
+  })]);
+  await assertCheckoutLocked(customer);
+  assert(await customer.getByRole('button',{name:'กำลังบันทึก…',exact:true}).isDisabled());
+  releaseLostResponse();
   await customer.getByText('เชื่อมต่อไม่สำเร็จ กดลองอีกครั้งได้ ระบบจะตรวจรายการเดิมให้โดยไม่สั่งซ้ำ',{exact:true}).waitFor();
+  await assertCheckoutLocked(customer);
+  assert(await customer.getByRole('button',{name:'ลองส่งรายการเดิมอีกครั้ง',exact:true}).isEnabled());
   await customer.unroute('**/api/shop/orders');
   const beforeRecovery=(await db.get('SELECT COUNT(*) n FROM shop_orders WHERE phone=?','0860000042')).n;
   assert.equal(beforeRecovery,1);
   await customer.reload();
+  await customer.getByRole('button',{name:'ลองส่งรายการเดิมอีกครั้ง',exact:true}).waitFor();
+  await assertCheckoutLocked(customer);
+  for(const [id,value] of Object.entries(recoveryAddress)) assert.equal(await customer.locator('#shop-'+id).inputValue(),value);
+  await customer.route('**/api/shop/orders',async route=>{orderAttempts.push(JSON.parse(route.request().postData()));await route.continue();});
   await customer.getByRole('button',{name:'ลองส่งรายการเดิมอีกครั้ง',exact:true}).click();
   await customer.waitForURL(base+committedUrl);
+  await customer.unroute('**/api/shop/orders');
+  assert.equal(orderAttempts.length,2);
+  assert.match(orderAttempts[0].requestKey,/^[a-f0-9]{48}$/);
+  assert.deepEqual(orderAttempts[1],orderAttempts[0]);
   assert.equal((await db.get('SELECT COUNT(*) n FROM shop_orders WHERE phone=?','0860000042')).n,1);
   assert.equal(await customer.evaluate(()=>sessionStorage.getItem('lablae-shop-draft-v1')),null);
   assert.equal(await customer.locator('script[src*="googletagmanager"]').count(),0);
@@ -383,24 +443,27 @@ async function main() {
   await customer.unroute('**/slip');
   await customer.getByRole('button',{name:'ส่งสลิปให้ร้านตรวจสอบ',exact:true}).click();
   await customer.getByText('ได้รับสลิปแล้ว · รอร้านตรวจเงิน',{exact:true}).waitFor();
-  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR เพื่อโอนเงิน',exact:true}).isVisible(),false);
+  assert.equal(await customer.getByRole('link',{name:'บันทึกรูป QR',exact:true}).isVisible(),false);
   await customer.screenshot({path:path.join(directory,'received-default.png'),fullPage:true});
   await customer.getByRole('button',{name:'คัดลอกลิงก์ออเดอร์',exact:true}).click();
   await customer.locator('[role="status"]').filter({hasText:/คัดลอก|แตะช่อง/}).waitFor();
   await customer.goto(base+'/shop');
-  assert.equal(await customer.getByRole('link',{name:/กลับไปดูออเดอร์ล่าสุด/}).getAttribute('href'),committedUrl);
+  assert.equal(await customer.getByRole('link',{name:/ดูออเดอร์ล่าสุด/}).getAttribute('href'),committedUrl);
   await customer.locator('#shop-quantity').fill('21');
-  for(const [id,value] of Object.entries({...address,phone:'0860000043'})) await customer.locator('#shop-'+id).fill(value);
-  await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
+  await fillShippingAddress(customer,{...address,phone:'0860000043'});
   assert.equal(await customer.getByTestId('shop-total').innerText(),'6,993 บาท');
-  assert(await customer.getByRole('button',{name:'สั่งซื้อและดูช่องทางชำระเงิน',exact:true}).isVisible());
+  assert(await customer.getByRole('button',{name:'สั่งซื้อ · ไปชำระเงิน',exact:true}).isVisible());
+  await customer.getByRole('button',{name:'สั่งซื้อ · ไปชำระเงิน',exact:true}).click();
+  await customer.waitForURL('**/shop/orders/*');
+  const largeRequest=await db.get('SELECT * FROM shop_orders WHERE phone=?','0860000043');
+  assert.equal(largeRequest.quantity,21);assert.equal(largeRequest.goods_baht,6993);assert.equal(largeRequest.shipping_baht,0);
   // Queue counts reflect distinct orders, including slips on old active orders.
   await page.reload();
   const expectedReview=(await db.get("SELECT COUNT(*) n FROM shop_orders o WHERE status='quoted' AND EXISTS(SELECT 1 FROM shop_order_slips s WHERE s.order_id=o.id)")).n;
   assert.equal(Number(await page.getByTestId('shop-count-review').innerText()),expectedReview);
   await page.getByRole('button',{name:'รอตรวจสลิป',exact:true}).click();
   assert.equal(await page.locator('section[id^="order-"]').count(),expectedReview);
-  console.log('PASS: draft reload/back, committed-response-loss retry without duplicate orders, private-page analytics isolation, recent order link, bulk CTA and slip-review queue counts.');
+  console.log('PASS: draft reload/legacy review link, sending/uncertain locks, immutable retry without duplicate orders, private-page analytics isolation, recent order link, bulk submission and slip-review queue counts.');
   for(let i=0;i<205;i++) await db.run("INSERT INTO shop_orders(token,request_key,fingerprint,quantity,product_name,unit_price,goods_baht,address_json,phone,status) VALUES(?,?,?,1,'ทดสอบประวัติ',250,250,?,'0800000000','cancelled')",randomBytes(24).toString('hex'),randomBytes(24).toString('hex'),'test',JSON.stringify(address));
   await page.reload();
   await page.getByRole('button',{name:'รอตรวจสลิป',exact:true}).click();
@@ -418,7 +481,7 @@ async function main() {
   const layout=[];
   for(const [width,height] of [[320,740],[390,844],[768,1024],[1440,1000]]) {
     await ui.setViewportSize({width,height}); await ui.goto(base+'/shop');
-    await ui.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).waitFor();
+    await ui.getByRole('button',{name:'สั่งซื้อ · ไปชำระเงิน',exact:true}).waitFor();
     assert(await ui.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
     layout.push(await ui.evaluate(()=>({width:innerWidth,height:document.documentElement.scrollHeight,quantity:document.querySelector('#shop-quantity').getBoundingClientRect().top,address:document.querySelector('#shop-name').getBoundingClientRect().top})));
     await ui.screenshot({path:path.join(directory,`shop-default-${width}.png`),fullPage:width===390});
@@ -429,9 +492,11 @@ async function main() {
   assert.equal(await ui.locator('#shop-quantity').inputValue(),'3');
   await ui.addInitScript(()=>Object.defineProperty(window,'sessionStorage',{get(){throw new Error('Storage blocked');}}));
   await ui.reload();
-  for(const [id,value] of Object.entries(address)) await ui.locator('#shop-'+id).fill(value);
-  await ui.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
-  await ui.getByRole('heading',{name:'ตรวจสอบรายการของคุณ',exact:true}).waitFor();
+  await fillShippingAddress(ui,{...address,phone:'0860000044'});
+  await ui.getByRole('button',{name:'สั่งซื้อ · ไปชำระเงิน',exact:true}).click();
+  await ui.waitForURL('**/shop/orders/*');
+  const storageDisabledOrder=await db.get('SELECT * FROM shop_orders WHERE phone=?','0860000044');
+  assert.equal(storageDisabledOrder.quantity,3);assert.equal(storageDisabledOrder.goods_baht,999);assert.equal(storageDisabledOrder.shipping_baht,0);assert.equal(storageDisabledOrder.status,'quoted');
   console.log('PASS: active orders and slips older than 200 completed orders, keyboard menu/escape, 320–1440 px layouts, expired drafts and storage-disabled checkout.');
   console.log('Layout: '+JSON.stringify(layout));
   await ui.close();

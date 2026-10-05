@@ -4,7 +4,7 @@ import ShopContactButtons from "./ShopContactButtons";
 
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { ArrowRight, Minus, Plus, Snowflake } from "lucide-react";
+import { ArrowRight, Minus, Plus } from "lucide-react";
 import { SHOP_DRAFT_KEY, clearRecentShopOrder, finishShopDraft, readRecentShopOrder, readShopDraft, saveShopDraft, type ShopAttempt } from "@/lib/shop-draft";
 import { trackWebsiteAction } from "@/lib/website-analytics";
 import {
@@ -73,11 +73,8 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
   const [quantityText, setQuantityText] = useState(String(SHOP_PROMOTION.quantity));
   const [address, setAddress] = useState<ShopAddress>(emptyAddress);
   const [errors, setErrors] = useState<ShopAddressErrors>({});
-  const [reviewStep, setReviewing] = useState(false);
-  const reviewing = reviewStep || Boolean(pendingAttempt);
-  const [hasNavigated, setHasNavigated] = useState(false);
+  const locked = sending || Boolean(pendingAttempt);
   const [imageFailed, setImageFailed] = useState(false);
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const quantity = /^\d+$/.test(quantityText) ? Number(quantityText) : NaN;
   const estimate = estimateShopOrder(quantity);
   const bundleSuggestion = getShopBundleSuggestion(quantity);
@@ -95,29 +92,21 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
       if (restored) {
         setQuantityText(restored.quantityText); setAddress(restored.address);
         pendingRef.current=restored.pending; setPendingAttempt(restored.pending);
-        setReviewing(Boolean(restored.pending) || (location.hash === "#review" && Boolean(estimateShopOrder(Number(restored.quantityText))) && !Object.keys(validateShopAddress(restored.address)).length));
+        if (location.hash === "#review" || restored.pending) {
+          requestAnimationFrame(() => {
+            const summary = document.getElementById("shop-summary");
+            summary?.focus({ preventScroll: true });
+            summary?.scrollIntoView({ block: "center", behavior: "instant" });
+          });
+        }
       }
       setDraftReady(true);
     });
-    const onBack = () => { setReviewing(location.hash === "#review"); setHasNavigated(true); };
-    window.addEventListener("popstate",onBack);
-    return () => { active=false; window.removeEventListener("popstate",onBack); };
+    return () => { active=false; };
   }, []);
   useEffect(() => {
     if (draftReady && !completed.current) saveShopDraft({quantityText,address,pending:pendingAttempt});
   }, [quantityText,address,pendingAttempt,draftReady]);
-  function editOrder() {
-    if (window.history.state?.shopReview) window.history.back();
-    else { window.history.replaceState(null,"",location.pathname); setReviewing(false); }
-  }
-
-  useEffect(() => {
-    if (!hasNavigated) return;
-    const target = reviewing ? headingRef.current : document.getElementById("shop-quantity");
-    target?.focus({ preventScroll: true });
-    target?.scrollIntoView({ block: reviewing ? "start" : "center", behavior: "instant" });
-  }, [reviewing, hasNavigated]);
-
   function updateAddress(key: keyof ShopAddress, value: string) {
     markStarted();
     setAddress((previous) => ({ ...previous, [key]: value }));
@@ -125,6 +114,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
   }
 
   function choosePromotion() {
+    if (locked) return;
     markStarted();
     setQuantityText(String(SHOP_PROMOTION.quantity));
     requestAnimationFrame(() => {
@@ -134,8 +124,11 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
     });
   }
 
-  function review(event: FormEvent<HTMLFormElement>) {
+  function order(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (sending) return;
+    // An uncertain request must be retried with its original saved payload.
+    if (pendingAttempt) { void submitOrder(); return; }
     if (!estimate) {
       const field = document.getElementById("shop-quantity");
       field?.focus({ preventScroll: true });
@@ -149,6 +142,8 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
       // Wait for inline error messages before moving keyboard/screen-reader focus.
       requestAnimationFrame(() => {
         const field = document.getElementById(`shop-${firstError}`);
+        const details = field?.closest("details");
+        if (details) details.open = true;
         field?.focus({ preventScroll: true });
         field?.scrollIntoView({ block: "center", behavior: "instant" });
       });
@@ -156,9 +151,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
     }
     markStarted();
     trackWebsiteAction("shop_review_order");
-    window.history.pushState({shopReview:true},"","#review");
-    setHasNavigated(true);
-    setReviewing(true);
+    void submitOrder();
   }
 
   function renderField(key: keyof ShopAddress, label: string, autoComplete: string, maxLength: number) {
@@ -181,23 +174,24 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
   }
 
   function totals() {
-    if (!estimate) return <p role="status">กรุณาระบุจำนวนแพ็กเป็นจำนวนเต็มตั้งแต่ 1 ขึ้นไปและไม่มากเกินกว่าระบบจะคำนวณได้</p>;
+    if (!estimate) return <p role="status">กรุณาใส่จำนวนแพ็กเป็นจำนวนเต็มตั้งแต่ 1 ขึ้นไป</p>;
     return (
       <div aria-live="polite" aria-atomic="true" className="space-y-3">
         <div className="rounded-xl bg-[#f1e6d5] p-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <p className="font-medium">{estimate.estimatedSubtotalBaht === null ? "ค่าสินค้า" : "ยอดรวม"} {quantity} แพ็ก</p>
+            <p className="font-medium">{quantity} แพ็ก · ยอดรวม</p>
             <p data-testid="shop-total" className="text-2xl font-bold">{money(estimate.estimatedSubtotalBaht ?? estimate.goodsBaht)} บาท</p>
           </div>
-          <p className="mt-1 text-sm text-stone-700">{estimate.shippingBaseBaht === 0 ? "ส่งแช่แข็งฟรี" : estimate.estimatedSubtotalBaht === null ? "ยังไม่รวมค่าส่ง · ร้านจะแจ้งก่อนชำระเงิน" : "รวมค่าส่งแช่แข็งแล้ว"}</p>
-          {quantity > 1 && estimate.estimatedSubtotalBaht !== null && <p className="mt-2 text-sm text-stone-700">เฉลี่ยประมาณ {money(Number((estimate.estimatedSubtotalBaht / quantity).toFixed(2)))} บาท / แพ็ก รวมส่ง</p>}
+          <p className="mt-1 text-sm text-stone-700">{estimate.shippingBaseBaht === 0 ? "ส่งแช่แข็งฟรี" : estimate.shippingBaseBaht === null ? "ยังไม่รวมค่าส่ง · ร้านจะแจ้งก่อนชำระเงิน" : `รวมค่าส่งแช่แข็ง ${money(estimate.shippingBaseBaht)} บาทแล้ว`}</p>
         </div>
-        <dl className="space-y-2 text-sm text-stone-700">
-          <div className="flex justify-between gap-4"><dt>ไส้อั่ว {quantity} แพ็ก</dt><dd className="shrink-0">{money(estimate.goodsBeforeDiscountBaht)} บาท</dd></div>
-          {estimate.discountBaht > 0 && <div className="flex justify-between gap-4"><dt>ส่วนลดโปร {SHOP_PROMOTION.quantity} แพ็ก{estimate.bundleCount > 1 && ` × ${estimate.bundleCount} ชุด`}</dt><dd className="shrink-0">−{money(estimate.discountBaht)} บาท</dd></div>}
-          <div className="flex justify-between gap-4"><dt>ค่าส่งแช่แข็ง</dt><dd className="shrink-0 font-medium">{estimate.shippingBaseBaht === 0 ? "ส่งฟรี" : estimate.shippingBaseBaht === null ? "รอร้านยืนยัน" : `${money(estimate.shippingBaseBaht)} บาท`}</dd></div>
-        </dl>
-        <p className="text-sm leading-relaxed text-stone-600">{SHOP_PROMOTION.quantity} แพ็ก {money(SHOP_PROMOTION.priceBaht)} บาท · ตั้งแต่ {SHOP_PROMOTION.freeShippingMinPacks} แพ็กส่งฟรี</p>
+        <details className="text-sm text-stone-700">
+          <summary className="cursor-pointer min-h-11 py-3 underline underline-offset-4">ดูรายละเอียดราคา</summary>
+          <dl className="space-y-2 pb-2">
+            <div className="flex justify-between gap-4"><dt>ไส้อั่ว {quantity} แพ็ก</dt><dd className="shrink-0">{money(estimate.goodsBeforeDiscountBaht)} บาท</dd></div>
+            {estimate.discountBaht > 0 && <div className="flex justify-between gap-4"><dt>ส่วนลดโปร {SHOP_PROMOTION.quantity} แพ็ก{estimate.bundleCount > 1 && ` × ${estimate.bundleCount} ชุด`}</dt><dd className="shrink-0">−{money(estimate.discountBaht)} บาท</dd></div>}
+            <div className="flex justify-between gap-4"><dt>ค่าส่งแช่แข็ง</dt><dd className="shrink-0">{estimate.shippingBaseBaht === 0 ? "ส่งฟรี" : estimate.shippingBaseBaht === null ? "รอร้านยืนยัน" : `${money(estimate.shippingBaseBaht)} บาท`}</dd></div>
+          </dl>
+        </details>
       </div>
     );
   }
@@ -211,134 +205,105 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
 
       <div className="mb-5">
         <p className="mb-2 text-sm text-accent">จากครัวลำลำลับแล</p>
-        <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-32 text-3xl font-bold leading-snug text-primary outline-none sm:scroll-mt-24 sm:text-4xl">
-          {reviewing ? "ตรวจสอบรายการของคุณ" : SHOP_PRODUCT.name}
-        </h1>
-        <p className="mt-3 text-base leading-relaxed text-primary/80">
-          {reviewing ? (estimate?.shippingBaseBaht === null ? "ตรวจรายการ แล้วส่งให้ร้านแจ้งค่าส่ง" : "ตรวจรายการ แล้วไปชำระเงิน") : "แพ็กละ 500 กรัม · ปรุงสุก · ซีลสูญญากาศ"}
-        </p>
+        <h1 className="text-3xl font-bold leading-snug text-primary sm:text-4xl">{SHOP_PRODUCT.name}</h1>
+        <p className="mt-2 text-base text-primary/80">แพ็กละ 500 กรัม · ปรุงสุก · ซีลสูญญากาศ</p>
       </div>
 
-      {recentOrder && !reviewing && <div className="mb-5 rounded-xl border border-accent/40 p-4 space-y-2">
-        <a href={recentOrder.url} className="block min-h-11 py-2 font-bold text-accent underline">กลับไปดูออเดอร์ล่าสุด {recentOrder.number}</a>
-        <p className="text-sm text-primary/80">จำลิงก์ไว้ในเครื่องนี้ 30 วัน หากใช้เครื่องร่วมกับคนอื่น ลบลิงก์ที่จำไว้ได้ครับ</p>
-        <button type="button" onClick={()=>{clearRecentShopOrder();setRecentOrder(null);}} className="min-h-11 rounded-lg px-3 py-2 text-sm text-accent underline focus-visible:outline-2 focus-visible:outline-offset-2">ลบลิงก์ที่จำไว้ในเครื่องนี้</button>
+      {recentOrder && <div className="mb-5 rounded-xl border border-accent/40 px-4 py-2">
+        <a href={recentOrder.url} className="block min-h-11 py-2 font-bold text-accent underline">ดูออเดอร์ล่าสุด {recentOrder.number}</a>
+        <details className="text-sm text-primary/80">
+          <summary className="cursor-pointer min-h-11 py-3">ลิงก์ที่จำไว้ในเครื่องนี้</summary>
+          <p>จำลิงก์ไว้ 30 วัน หากใช้เครื่องร่วมกับคนอื่น ลบลิงก์ได้ครับ</p>
+          <button type="button" onClick={()=>{clearRecentShopOrder();setRecentOrder(null);}} className="min-h-11 rounded-lg py-2 text-accent underline focus-visible:outline-2 focus-visible:outline-offset-2">ลบลิงก์ที่จำไว้</button>
+        </details>
       </div>}
-      {reviewing && estimate ? (
-        <section aria-label="สรุปรายการ" className="mx-auto max-w-2xl space-y-6 rounded-2xl bg-[#fffaf3] p-5 text-stone-900 sm:p-8">
-          <div className="flex items-center gap-4 border-b border-stone-200 pb-5">
-            <Snowflake className="shrink-0 text-sky-800" aria-hidden="true" />
-            <div><h2 className="text-xl font-bold">{SHOP_PRODUCT.name} {quantity} แพ็ก</h2><p className="mt-1 text-stone-600">แพ็กละ 500 กรัม · จัดส่งแช่แข็ง</p></div>
+      <div className="grid items-start gap-6 md:grid-cols-[1fr_1.1fr] lg:gap-10">
+        <section aria-label="รายละเอียดไส้อั่ว" className="space-y-4 md:sticky md:top-24">
+          <div className="rounded-2xl border border-accent/40 bg-[#f1e6d5] p-5 text-[#482a18] sm:p-6">
+            <p className="text-lg font-bold">โปร {SHOP_PROMOTION.quantity} แพ็ก</p>
+            <p className="mt-1 text-5xl font-bold leading-tight tracking-tight sm:text-6xl">{money(SHOP_PROMOTION.priceBaht)} <span className="text-2xl font-medium">บาท</span></p>
+            <p className="mt-2 inline-flex rounded-full bg-[#653c20] px-4 py-1.5 text-lg font-bold text-white">ส่งฟรี</p>
+            <p className="mt-3 text-base">แพ็กละ {money(SHOP_PRODUCT.priceBaht)} บาท</p>
           </div>
-          {totals()}
-          <div className="break-words border-t border-stone-200 pt-5">
-            <h2 className="mb-2 font-bold">ข้อมูลผู้รับ</h2>
-            <p>{address.name}</p><p className="mt-1">โทร. {address.phone}</p>
-            <p className="mt-2 whitespace-pre-wrap leading-relaxed">{address.address}<br />{address.subdistrict} · {address.district}<br />{address.province} {address.postcode}</p>
-            {address.note.trim() && <p className="mt-3 whitespace-pre-wrap text-stone-600">หมายเหตุ: {address.note}</p>}
+          <button type="button" onClick={choosePromotion} disabled={!hydrated || !draftReady || locked} className={`${buttonClass} inline-flex min-h-12 w-full items-center justify-center gap-2 bg-accent px-5 py-3 font-bold text-[#261810] hover:bg-accent/85`}>เลือกชุด {SHOP_PROMOTION.quantity} แพ็ก<ArrowRight size={18} aria-hidden="true" /></button>
+          <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#f1e6d5]">
+            {imageFailed ? <div className="flex h-full items-center justify-center text-stone-700">ไส้อั่วลำลำลับแล · 500 กรัม</div> : (
+              <Image src={SHOP_PRODUCT.image} alt={SHOP_PRODUCT.imageAlt} fill sizes="(min-width: 1280px) 489px, (min-width: 768px) 45vw, calc(100vw - 32px)" className="object-contain" loading="eager" onError={() => setImageFailed(true)} />
+            )}
           </div>
-          <div className="rounded-xl bg-amber-100 p-4 space-y-2 text-sm leading-relaxed text-amber-950">
-            <p>{estimate.shippingBaseBaht === null ? "ร้านจะโทรแจ้งค่าส่งและตกลงวันส่งก่อนชำระเงิน" : "ชำระผ่าน QR แล้วแนบสลิป ร้านตรวจเงินแล้วโทรตกลงวันส่ง"}</p>
-            <p>ถามวันส่งก่อนชำระเงิน</p>
-            <ShopContactButtons light />
-          </div>
-          {pendingAttempt && !sending && <p className="text-sm text-stone-700">มีรายการที่รอตรวจผลการส่ง กดลองอีกครั้งเพื่อเปิดออเดอร์เดิมก่อนแก้ไขข้อมูล</p>}
-          {submitError && <p role="alert" className="text-red-800">{submitError}</p>}
-          <button type="button" disabled={sending} onClick={()=>void submitOrder()} className={`${buttonClass} w-full bg-[#653c20] px-4 py-4 font-bold text-white`}>{sending ? "กำลังบันทึก…" : pendingAttempt ? "ลองส่งรายการเดิมอีกครั้ง" : estimate.shippingBaseBaht === null ? "ส่งออเดอร์ให้ร้านแจ้งค่าส่ง" : "สั่งซื้อและดูช่องทางชำระเงิน"}</button>
-          <button type="button" disabled={sending || Boolean(pendingAttempt)} onClick={editOrder} className={`${buttonClass} w-full border border-stone-400 px-4 py-3 font-bold hover:bg-stone-100`}>กลับไปแก้ไขจำนวนหรือที่อยู่</button>
-          <p className="text-center text-sm text-stone-600">ชื่อ เบอร์โทร และที่อยู่จะส่งให้ร้านเพื่อจัดการออเดอร์และการจัดส่ง</p>
         </section>
-      ) : (
-        <div className="grid items-start gap-8 md:grid-cols-[1fr_1.1fr] lg:gap-12">
-          <section aria-label="รายละเอียดไส้อั่ว" className="space-y-4 md:sticky md:top-24">
-            <div className="rounded-2xl border border-accent/40 bg-[#f1e6d5] p-5 text-[#482a18] sm:p-6">
-              <p className="text-lg font-bold">โปร {SHOP_PROMOTION.quantity} แพ็ก</p>
-              <p className="mt-1 text-5xl font-bold leading-tight tracking-tight sm:text-6xl">{money(SHOP_PROMOTION.priceBaht)} <span className="text-2xl font-medium">บาท</span></p>
-              <p className="mt-2 inline-flex rounded-full bg-[#653c20] px-4 py-1.5 text-lg font-bold text-white">ส่งฟรี</p>
-              <p className="mt-3 text-base">แพ็กละ {money(SHOP_PRODUCT.priceBaht)} บาท · 500 กรัม</p>
-            </div>
-            <button type="button" onClick={choosePromotion} disabled={!hydrated || !draftReady} className={`${buttonClass} inline-flex min-h-12 w-full items-center justify-center gap-2 bg-accent px-5 py-3 font-bold text-[#261810] hover:bg-accent/85`}>เลือกชุด {SHOP_PROMOTION.quantity} แพ็ก<ArrowRight size={18} aria-hidden="true" /></button>
-            <figure>
-              <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#f1e6d5]">
-                {imageFailed ? <div className="flex h-full items-center justify-center text-stone-700">ไส้อั่วลำลำลับแล · 500 กรัม</div> : (
-                  <Image src={SHOP_PRODUCT.image} alt={SHOP_PRODUCT.imageAlt} fill sizes="(min-width: 1280px) 489px, (min-width: 768px) 45vw, calc(100vw - 32px)" className="object-contain" loading="eager" onError={() => setImageFailed(true)} />
-                )}
-              </div>
-              <figcaption className="mt-2 text-sm text-primary/70">ไส้อั่วลำลำลับแล · แพ็กละ 500 กรัม</figcaption>
-            </figure>
-            <p className="text-sm leading-relaxed text-primary/80">ส่งแช่แข็ง · ตั้งแต่ {SHOP_PROMOTION.freeShippingMinPacks} แพ็กส่งฟรี · 1–2 แพ็ก ค่าส่ง 200 บาท</p>
-          </section>
 
-          <form onSubmit={review} onChangeCapture={markStarted} noValidate className="space-y-7 rounded-2xl bg-[#fffaf3] p-5 text-stone-900 sm:p-8">
+        <form onSubmit={order} onChangeCapture={markStarted} noValidate className="space-y-5 rounded-2xl bg-[#fffaf3] p-4 text-stone-900 sm:p-6">
+          <fieldset disabled={locked} className={`min-w-0 space-y-5 ${locked ? "opacity-70" : ""}`}>
+            <legend className="sr-only">เลือกไส้อั่วและข้อมูลจัดส่ง</legend>
             <section aria-labelledby="shop-quantity-heading">
-              <h2 id="shop-quantity-heading" tabIndex={-1} className="scroll-mt-32 text-xl font-bold outline-none sm:scroll-mt-24">1. เลือกจำนวนแพ็ก</h2>
-              <p className="mt-2 text-sm text-stone-600">โปร {SHOP_PROMOTION.quantity} แพ็ก {money(SHOP_PROMOTION.priceBaht)} บาท ส่งฟรี · สั่งได้ตั้งแต่ 1 แพ็ก</p>
-              <div className="mt-2 flex flex-wrap items-center gap-3">
-                <label className="sr-only" htmlFor="shop-quantity">จำนวนแพ็ก</label>
+              <h2 id="shop-quantity-heading" tabIndex={-1} className="scroll-mt-32 text-xl font-bold outline-none sm:scroll-mt-24">เลือกจำนวน</h2>
+              <fieldset className="mt-3">
+                <legend className="sr-only">เลือกชุดไส้อั่ว</legend>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  {bundleEstimates.map((bundle) => {
+                    const selected = quantity === bundle.quantity;
+                    return (
+                      <label key={bundle.quantity} className={`block min-w-0 cursor-pointer rounded-xl border-2 px-2 py-3 text-center focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-800 ${selected ? "border-[#653c20] bg-[#f1e6d5]" : "border-stone-300 bg-white hover:border-stone-500"}`}>
+                        <input id={`shop-bundle-${bundle.quantity}`} type="radio" name="shop-bundle" value={bundle.quantity} checked={selected} onChange={() => setQuantityText(String(bundle.quantity))} aria-label={`${bundle.quantity} แพ็ก`} aria-describedby={`shop-bundle-price-${bundle.quantity}`} className="sr-only" />
+                        <span className="block text-lg font-bold">{bundle.quantity} แพ็ก</span>
+                        <span id={`shop-bundle-price-${bundle.quantity}`} className="mt-1 block text-lg font-bold tracking-tight text-[#653c20] sm:text-xl">{money(bundle.estimatedSubtotalBaht)} <span className="block text-sm font-normal">บาท · ส่งฟรี</span></span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <label htmlFor="shop-quantity" className="text-base">จำนวนแพ็ก</label>
                 <div className="inline-flex items-center rounded-xl border border-stone-400 bg-white p-1">
                   <button type="button" aria-label="ลดจำนวน 1 แพ็ก" disabled={Boolean(estimate && quantity <= 1)} onClick={() => { markStarted(); setQuantityText(String(estimate ? Math.max(1, quantity - 1) : 1)); }} className={`${buttonClass} flex h-11 w-11 items-center justify-center hover:bg-stone-100`}><Minus size={20} aria-hidden="true" /></button>
                   <input id="shop-quantity" type="text" inputMode="numeric" value={quantityText}
                     onChange={(event) => { markStarted(); setQuantityText(normalizeShopDigits(event.target.value)); }}
-                    className="h-11 w-28 rounded-lg text-center text-xl font-bold focus:outline-2 focus:outline-amber-700"
-                    aria-invalid={!estimate} aria-describedby="shop-quantity-hint" />
+                    className="h-11 w-20 rounded-lg text-center text-xl font-bold focus:outline-2 focus:outline-amber-700"
+                    aria-invalid={!estimate} aria-describedby={!estimate ? "shop-quantity-hint" : undefined} />
                   <button type="button" aria-label="เพิ่มจำนวน 1 แพ็ก" disabled={Boolean(estimate && quantity >= SHOP_MAX_PACKS)} onClick={() => { markStarted(); setQuantityText(String(estimate ? Math.min(SHOP_MAX_PACKS, quantity + 1) : 1)); }} className={`${buttonClass} flex h-11 w-11 items-center justify-center hover:bg-stone-100`}><Plus size={20} aria-hidden="true" /></button>
                 </div>
-                <span>แพ็ก</span>
               </div>
-              <p id="shop-quantity-hint" className={`mt-2 text-sm ${estimate ? "text-stone-600" : "text-red-800"}`}>{estimate ? "พิมพ์จำนวนที่ต้องการได้เลย" : "กรุณาใส่จำนวนเต็มตั้งแต่ 1 ขึ้นไปและไม่มากเกินกว่าระบบจะคำนวณได้"}</p>
-              <fieldset className="mt-5" aria-describedby="shop-bundles-hint">
-                <legend className="sr-only">เลือกชุดไส้อั่ว</legend>
-                <p id="shop-bundles-hint" className="mb-3 text-sm leading-relaxed text-stone-700">เลือก 3 / 6 / 9 แพ็ก ส่งฟรีทุกชุด</p>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {bundleEstimates.map((bundle) => {
-                  const selected = quantity === bundle.quantity;
-                  return (
-                    <label key={bundle.quantity} className={`block min-w-0 cursor-pointer rounded-xl border-2 px-2 py-3 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-800 sm:p-4 ${selected ? "border-[#653c20] bg-[#f1e6d5]" : "border-stone-300 bg-white hover:border-stone-500"}`}>
-                      <input id={`shop-bundle-${bundle.quantity}`} type="radio" name="shop-bundle" value={bundle.quantity} checked={selected} onChange={() => setQuantityText(String(bundle.quantity))} aria-label={`${bundle.quantity} แพ็ก`} aria-describedby={`shop-bundle-price-${bundle.quantity}`} className="sr-only" />
-                      <span className="block text-lg font-bold">{bundle.quantity} แพ็ก</span>
-                      <span id={`shop-bundle-price-${bundle.quantity}`} className="mt-1 block text-xl font-bold tracking-tight text-[#653c20] sm:text-2xl">{money(bundle.estimatedSubtotalBaht)} <span className="block text-sm font-normal">บาท · ส่งฟรี</span></span>
-                      {bundle.recommended && <span className="mt-2 inline-block rounded-full bg-[#653c20] px-2 py-1 text-xs font-bold text-white">แนะนำ</span>}
-                    </label>
-                  );
-                })}
-                </div>
-              </fieldset>
-              {bundleSuggestion && <div className="mt-4 rounded-xl border border-amber-800/30 bg-[#f1e6d5] p-4 text-sm leading-relaxed">
-                <p>เพิ่มอีก {bundleSuggestion.extraPacks} แพ็ก จ่ายเพิ่ม {money(bundleSuggestion.extraTotalBaht)} บาท เป็น {bundleSuggestion.quantity} แพ็ก {money(bundleSuggestion.estimatedSubtotalBaht)} บาท ส่งฟรี</p>
-                <button type="button" onClick={choosePromotion} className={`${buttonClass} mt-2 min-h-11 px-3 py-2 font-bold text-[#653c20] underline underline-offset-4`}>เปลี่ยนเป็น {SHOP_PROMOTION.quantity} แพ็ก</button>
-              </div>}
+              {!estimate && <p id="shop-quantity-hint" role="status" className="mt-2 text-sm text-red-800">กรุณาใส่จำนวนเต็มตั้งแต่ 1 ขึ้นไปและไม่มากเกินกว่าระบบจะคำนวณได้</p>}
+              {bundleSuggestion && <p className="mt-3 text-sm text-stone-700">เพิ่มอีก {bundleSuggestion.extraPacks} แพ็ก จ่ายเพิ่ม {money(bundleSuggestion.extraTotalBaht)} บาท ส่งฟรี <button type="button" onClick={choosePromotion} className={`${buttonClass} min-h-11 px-2 py-2 font-bold text-[#653c20] underline underline-offset-4`}>เลือก 3 แพ็ก</button></p>}
             </section>
 
-            <section aria-label="ยอดรวมก่อนกรอกที่อยู่" className="border-t border-stone-200 pt-6">{totals()}</section>
-
-            <section aria-labelledby="shop-address-heading" className="space-y-4 border-t border-stone-200 pt-6">
-              <h2 id="shop-address-heading" className="text-xl font-bold">2. ส่งให้ใคร ที่ไหน</h2>
-              <p className="text-sm text-stone-600">ร้านใช้ข้อมูลนี้เพื่อติดต่อเรื่องออเดอร์และจัดส่งสินค้า</p>
-              <div className="grid gap-4 sm:grid-cols-2">
+            <section aria-labelledby="shop-address-heading" className="space-y-3 border-t border-stone-200 pt-5">
+              <h2 id="shop-address-heading" className="text-xl font-bold">ข้อมูลจัดส่ง</h2>
+              <div className="grid gap-3 sm:grid-cols-2">
                 {renderField("name", "ชื่อผู้รับ", "name", 100)}
-                {renderField("phone", "เบอร์โทรศัพท์", "tel-national", 20)}
+                {renderField("phone", "เบอร์โทร", "tel-national", 20)}
               </div>
               {renderField("address", "บ้านเลขที่ ถนน / หมู่บ้าน", "address-line1", 300)}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-3">
                 {renderField("subdistrict", "ตำบล / แขวง", "address-level3", 100)}
                 {renderField("district", "อำเภอ / เขต", "address-level2", 100)}
                 {renderField("province", "จังหวัด", "address-level1", 100)}
                 {renderField("postcode", "รหัสไปรษณีย์", "postal-code", 5)}
               </div>
-              <div>
-                <label htmlFor="shop-note" className="font-medium">หมายเหตุ <span className="font-normal text-stone-600">(ไม่บังคับ)</span></label>
+              <details>
+                <summary className="cursor-pointer min-h-11 py-3 text-sm text-stone-700">เพิ่มหมายเหตุ (ถ้ามี)</summary>
+                <label className="sr-only" htmlFor="shop-note">หมายเหตุ</label>
                 <textarea id="shop-note" rows={2} maxLength={500} value={address.note} onChange={(event) => updateAddress("note", event.target.value)} className={fieldClass} placeholder="เช่น จุดสังเกตสำหรับส่งของ" />
-              </div>
+              </details>
             </section>
-            {estimate && <p className="border-t border-stone-200 pt-5 text-center font-bold">{quantity} แพ็ก · {estimate.estimatedSubtotalBaht === null ? "ค่าสินค้า" : "ยอดรวม"} {money(estimate.estimatedSubtotalBaht ?? estimate.goodsBaht)} บาท{estimate.estimatedSubtotalBaht === null && " · ยังไม่รวมค่าส่ง"}</p>}
-            {Object.values(errors).some(Boolean) && <p role="alert" className="text-sm text-red-800">กรุณาตรวจข้อมูลในช่องที่มีข้อความสีแดง</p>}
-            <button type="submit" disabled={!hydrated || !draftReady} className={`${buttonClass} flex w-full items-center justify-center gap-2 bg-[#653c20] px-4 py-4 text-base font-bold text-white hover:bg-[#4b2c18]`}>ตรวจรายการก่อนส่ง<ArrowRight size={18} aria-hidden="true" /></button>
-            <p className="text-center text-sm text-stone-600">ไม่ต้องสมัครสมาชิก · เก็บร่างไว้ในแท็บนี้ชั่วคราว</p>
-            <noscript><p className="text-red-800">กรุณาเปิด JavaScript เพื่อเลือกสินค้าและสั่งซื้อและดูช่องทางชำระเงิน</p></noscript>
-          </form>
-        </div>
-      )}
-      {!reviewing && <div className="mt-8 grid gap-4 md:grid-cols-2">
+          </fieldset>
+
+          <section id="shop-summary" tabIndex={-1} aria-label="สรุปก่อนสั่งซื้อ" className="scroll-mt-32 border-t border-stone-200 pt-5 outline-none sm:scroll-mt-24">{totals()}</section>
+          {pendingAttempt && !sending && <p className="text-sm text-stone-700">ยังตรวจผลการสั่งไม่ได้ กดลองรายการเดิมก่อนแก้ข้อมูล</p>}
+          {submitError && <p role="alert" className="text-red-800">{submitError}</p>}
+          {Object.values(errors).some(Boolean) && <p role="alert" className="text-sm text-red-800">กรุณาตรวจช่องที่มีข้อความสีแดง</p>}
+          <button type="submit" disabled={!hydrated || !draftReady || sending} className={`${buttonClass} flex w-full items-center justify-center gap-2 bg-[#653c20] px-4 py-4 text-base font-bold text-white hover:bg-[#4b2c18]`}>{sending ? "กำลังบันทึก…" : pendingAttempt ? "ลองส่งรายการเดิมอีกครั้ง" : "สั่งซื้อ · ไปชำระเงิน"}<ArrowRight size={18} aria-hidden="true" /></button>
+          <p className="text-center text-sm leading-relaxed text-stone-600">ชำระผ่าน QR แล้วแนบสลิป ร้านตรวจเงินแล้วโทรนัดวันส่ง</p>
+          <details className="text-sm text-stone-700">
+            <summary className="cursor-pointer min-h-11 py-3">ถามวันส่ง / ติดต่อร้าน</summary>
+            <ShopContactButtons light />
+          </details>
+          <p className="text-sm text-stone-500">ร้านใช้ชื่อ เบอร์ และที่อยู่เพื่อติดต่อและจัดส่ง</p>
+          <noscript><p className="text-red-800">กรุณาเปิด JavaScript เพื่อสั่งซื้อ</p></noscript>
+        </form>
+      </div>
+      <div className="mt-8 grid gap-4 md:grid-cols-2">
         <details className="rounded-2xl border border-accent/30 p-5 text-primary"><summary className="cursor-pointer py-1 text-lg font-bold">การจัดส่งและการรับสินค้า</summary><div className="mt-3 space-y-3 text-base leading-relaxed"><p>จัดส่งแบบแช่แข็ง ตั้งแต่ {SHOP_PROMOTION.freeShippingMinPacks} แพ็กส่งฟรี ส่วน 1–2 แพ็ก ค่าส่ง 200 บาท</p><p>ร้านตรวจเงินแล้วจะโทรติดต่อเรื่องจัดส่งตามเบอร์ที่ระบุในออเดอร์ ถามเรื่องพื้นที่จัดส่ง วันรับสินค้า การเก็บรักษา หรือส่วนผสมได้ก่อนสั่งครับ</p><ShopContactButtons /></div></details>
             <details className="rounded-2xl border border-accent/30 p-5 text-primary">
               <summary className="cursor-pointer text-lg font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">อุ่นไส้อั่วที่บ้าน</summary>
@@ -374,7 +339,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
                 <p className="text-xs text-primary/70">อ้างอิง: <a href="https://ask.fsis.usda.gov/article/How-do-I-reheat-leftovers-safely" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">USDA: การอุ่นอาหาร</a> · <a href="https://www.fsis.usda.gov/food-safety/safe-food-handling-and-preparation/food-safety-basics/freezing-and-food-safety" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">การละลายอาหารแช่แข็ง</a> · <a href="https://johnsonville.com/products/smoked-brats/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">คำแนะนำผู้ผลิตไส้กรอกปรุงสุก</a></p>
               </div>
             </details>
-      </div>}
+      </div>
     </div>
   );
 }
