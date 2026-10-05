@@ -266,19 +266,66 @@ async function main() {
   }), 200, 'Sign into the isolated server');
   cookie = login.headers.get('set-cookie').split(';')[0];
 
-  const concurrentInput = {requestKey: key(), quantity: 3, address: address(), goodsBaht: 1, status: 'paid'};
+  const concurrentInput = {requestKey: key(), quantity: 3, address: address(), goodsBaht: 1, shippingBaht: 200, unitPrice: 1, status: 'paid'};
   const concurrentResponses = await Promise.all([postOrder(concurrentInput), postOrder(concurrentInput), postOrder(concurrentInput)]);
   for (const response of concurrentResponses) await expectStatus(response, 201, 'Concurrent order retry');
   const concurrentResults = await Promise.all(concurrentResponses.map(response => response.json()));
   assert(concurrentResults.every(result => result.url === concurrentResults[0].url));
   const concurrentOrder = await db.get('SELECT * FROM shop_orders WHERE request_key=?', concurrentInput.requestKey);
   assert.equal((await db.get('SELECT COUNT(*) AS n FROM shop_orders WHERE request_key=?', concurrentInput.requestKey)).n, 1);
-  assert.equal(concurrentOrder.goods_baht, 750);
-  assert.equal(concurrentOrder.shipping_baht, 200);
+  assert.equal(concurrentOrder.unit_price, 339);
+  assert.equal(concurrentOrder.goods_baht, 999);
+  assert.equal(concurrentOrder.shipping_baht, 0);
   assert.equal(concurrentOrder.status, 'requested');
   assert.equal((await db.get('SELECT COUNT(*) AS n FROM shop_line_outbox WHERE order_id=?', concurrentOrder.id)).n, 1);
   assert((await db.all('PRAGMA table_info(shop_order_slips)')).some(column => column.name === 'validation_state'));
   pass('Schema migration, concurrent order retry, server prices, and unpaid state');
+
+  for (const [quantity, goods, shipping] of [
+    [1, 339, 200], [2, 678, 200], [3, 999, 0], [4, 1338, 0],
+    [5, 1677, 0], [6, 1998, 0], [9, 2997, 0], [10, 3336, 0],
+    [20, 6672, 0], [21, 6993, 0], [100, 33306, 0],
+  ]) {
+    const promotionOrder = await createOrder({quantity, goodsBaht: 1, shippingBaht: 4999, unitPrice: 1, discountBaht: 9999, status: 'paid'});
+    assert.equal(promotionOrder.quantity, quantity);
+    assert.equal(promotionOrder.unit_price, 339);
+    assert.equal(promotionOrder.goods_baht, goods);
+    assert.equal(promotionOrder.shipping_baht, shipping);
+    assert.equal(promotionOrder.status, 'requested');
+    const incorrectShipping = shipping === 0 ? 200 : 0;
+    await expectStatus(await updateOrder(promotionOrder, {action: 'quote', shippingBaht: incorrectShipping}), 400, 'Reject a shipping amount that differs from the order snapshot');
+    const unchanged = await db.get('SELECT * FROM shop_orders WHERE id=?', promotionOrder.id);
+    assert.equal(unchanged.version, promotionOrder.version);
+    assert.equal(unchanged.goods_baht, goods);
+    assert.equal(unchanged.shipping_baht, shipping);
+  }
+  pass('Server promotion repeats for three-pack groups, accepts bulk quantities, and ignores client prices');
+
+  for (const [quantity, goods, shipping] of [[3, 750, 200], [10, 2500, 400], [21, 5250, null]]) {
+    const legacyInput = {requestKey: key(), quantity, address: address()};
+    const fingerprint = digest(Buffer.from(JSON.stringify({quantity, address: legacyInput.address})));
+    const legacyToken = key();
+    await db.run(`INSERT INTO shop_orders (token, request_key, fingerprint, quantity, product_name, unit_price, goods_baht, address_json, phone, shipping_baht)
+      VALUES (?, ?, ?, ?, 'ไส้อั่วลำลำลับแล', 250, ?, ?, ?, ?)`, legacyToken, legacyInput.requestKey, fingerprint, quantity, goods, JSON.stringify(legacyInput.address), legacyInput.address.phone, shipping);
+    const legacyOrder = await db.get('SELECT * FROM shop_orders WHERE token=?', legacyToken);
+    const retry = await expectStatus(await postOrder({...legacyInput, goodsBaht: 1, shippingBaht: 0}), 201, 'Retry a pre-promotion order');
+    assert.equal((await retry.json()).url, `/shop/orders/${legacyToken}`);
+    assert.deepEqual(await db.get('SELECT * FROM shop_orders WHERE id=?', legacyOrder.id), legacyOrder, 'Reopening the database and retrying must preserve every old order field');
+    if (shipping !== null) {
+      await expectStatus(await updateOrder(legacyOrder, {action: 'quote', shippingBaht: 0}), 400, 'The new free shipping must not replace old saved shipping');
+      assert.deepEqual(await db.get('SELECT * FROM shop_orders WHERE id=?', legacyOrder.id), legacyOrder);
+    }
+    await expectStatus(await updateOrder(legacyOrder, {
+      action: 'quote', shippingBaht: shipping ?? 600,
+      paymentInstructions: 'บัญชีทดสอบในเครื่องเท่านั้น ห้ามโอนเงินจริง',
+      dispatchNote: 'รอบทดสอบในเครื่องเท่านั้น ห้ามจัดส่ง', confirmed: true,
+    }), 200, 'Confirm a legacy order using its saved prices');
+    const quoted = await db.get('SELECT * FROM shop_orders WHERE id=?', legacyOrder.id);
+    assert.equal(quoted.unit_price, 250);
+    assert.equal(quoted.goods_baht, goods);
+    assert.equal(quoted.shipping_baht, shipping ?? 600);
+  }
+  pass('Old order retries and quotations retain original unit prices, goods totals, and shipping');
 
   const validationOrder = await quoteOrder(await createOrder());
   for (const [bytes, name, type] of [

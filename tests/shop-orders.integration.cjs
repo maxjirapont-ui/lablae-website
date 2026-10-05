@@ -54,7 +54,7 @@ async function main() {
   assert.equal((await post({...input,quantity:4})).status,409);
   let order=await db.get('SELECT * FROM shop_orders');
   assert.equal((await db.get('SELECT COUNT(*) AS count FROM shop_orders')).count,1);
-  assert.equal(order.goods_baht,750);assert.equal(order.shipping_baht,200);assert.equal(order.status,'requested');
+  assert.equal(order.unit_price,339);assert.equal(order.goods_baht,999);assert.equal(order.shipping_baht,0);assert.equal(order.status,'requested');
   const update=(body,authenticated=true,origin=base)=>fetch(base+'/api/admin/shop-orders',{method:'POST',headers:{origin,'content-type':'application/json',...(authenticated?{cookie}:{})},body:JSON.stringify({id:order.id,version:order.version,...body})});
   assert.equal((await update({action:'paid',confirmed:true},false)).status,401);
   assert.equal((await update({action:'paid',confirmed:true},true,'https://example.com')).status,403);
@@ -66,7 +66,7 @@ async function main() {
   const page=await context.newPage();
   await page.goto(base+'/admin/shop');
   await page.getByRole('button',{name:'ทั้งหมด',exact:true}).click();
-  assert.equal(await page.getByLabel('ค่าส่ง (บาท)',{exact:true}).inputValue(),'200');
+  assert.equal(await page.getByLabel('ค่าส่ง (บาท)',{exact:true}).inputValue(),'0');
   assert.equal(await page.getByLabel('ค่าส่ง (บาท)',{exact:true}).getAttribute('readonly'),'');
   await page.getByLabel('ขนส่งและรอบส่งที่ยืนยัน',{exact:true}).fill('นิ่ม — รอบทดสอบ ห้ามส่งจริง');
   await page.getByLabel('ช่องทางรับเงินและชื่อบัญชี',{exact:true}).fill('ช่องทางทดสอบเท่านั้น ไม่ใช่บัญชีรับเงินจริง');
@@ -78,12 +78,12 @@ async function main() {
   assert(await page.getByRole('button',{name:'ยืนยันยอดให้ลูกค้า',exact:true}).isVisible());
   await page.getByText('แก้ไขยอดหรือข้อมูลจัดส่ง',{exact:true}).click();
   assert.equal((await update({action:'cancel'})).status,409); // stale version
-  order=await db.get('SELECT * FROM shop_orders');assert.equal(order.status,'quoted');assert.equal(order.shipping_baht,200);
+  order=await db.get('SELECT * FROM shop_orders');assert.equal(order.status,'quoted');assert.equal(order.shipping_baht,0);
   const customer=await browser.newPage({viewport:{width:390,height:844}});
   const response=await customer.goto(base+created[0].url);
   assert(response.headers()['cache-control'].includes('no-store'));
   assert.equal(response.headers()['referrer-policy'],'no-referrer');
-  assert.equal(await customer.getByText('ยอดรวม 950 บาท',{exact:true}).count(),1);
+  assert.equal(await customer.getByText('ยอดรวม 999 บาท',{exact:true}).count(),1);
   assert.equal(await customer.locator('script[src*="googletagmanager"]').count(),0);
   await page.getByRole('checkbox',{name:'ตรวจเงินเข้าบัญชีจริงครบ'}).check();
   await page.getByRole('button',{name:'ยืนยันรับเงินแล้ว',exact:true}).click();
@@ -93,15 +93,24 @@ async function main() {
   await customer.reload();
   assert.equal(await customer.getByText('นิ่ม TEST-ONLY-0001',{exact:true}).count(),1);
   assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  // Mobile and desktop prices show the final total and the max quantity.
+  // Mobile and desktop prices show the promotion and keep larger quantities selectable.
   await customer.goto(base+'/shop');
-  await customer.getByText('ชุดรวมสั่ง 3 / 5 / 9 แพ็ก · ดูราคา',{exact:true}).click();
-  await customer.getByRole('link',{name:'เลือกจำนวนและดูยอดรวม',exact:true}).click();
-  assert.equal(new URL(customer.url()).hash,'#shop-quantity-heading');
-  for (const [quantity, title, total] of [[3,'กินที่บ้าน',950],[5,'แบ่งกันอร่อย',1450],[9,'รวมสั่งกับเพื่อน',2450]]) {
-    await customer.getByRole('radio',{name:`${title} ${quantity} แพ็ก`,exact:true}).check();
+  await customer.getByRole('button',{name:'เลือกชุด 3 แพ็ก',exact:true}).click();
+  await customer.waitForFunction(()=>document.activeElement?.id==='shop-quantity');
+  assert.equal(await customer.locator('#shop-quantity').inputValue(),'3');
+  assert.equal(await customer.evaluate(()=>document.activeElement?.id),'shop-quantity');
+  for (const [quantity, total] of [[3,999],[6,1998],[9,2997]]) {
+    const radio=customer.getByRole('radio',{name:`${quantity} แพ็ก`,exact:true});
+    await radio.locator('..').click(); // Customers select the visible card; the radio is visually hidden.
+    assert.equal(await radio.isChecked(),true);
     assert.equal(await customer.getByTestId('shop-total').innerText(),`${total.toLocaleString('th-TH')} บาท`);
   }
+  await customer.locator('#shop-quantity').fill('2');
+  assert.equal(await customer.getByTestId('shop-total').innerText(),'878 บาท');
+  await customer.getByRole('button',{name:'เปลี่ยนเป็น 3 แพ็ก',exact:true}).click();
+  assert.equal(await customer.locator('#shop-quantity').inputValue(),'3');
+  assert.equal(await customer.getByTestId('shop-total').innerText(),'999 บาท');
+  await customer.locator('#shop-quantity').fill('9');
   assert.equal(await customer.getByRole('button',{name:'เพิ่มจำนวน 1 แพ็ก',exact:true}).isDisabled(),false);
   assert(await customer.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   await customer.locator('#shop-quantity-heading').scrollIntoViewIfNeeded();
@@ -114,13 +123,12 @@ async function main() {
   await customer.setViewportSize({width:390,height:844});
   // A customer's click flow creates a separate request and a reload preserves it.
   await customer.goto(base+'/shop');
-  await customer.getByText('ชุดรวมสั่ง 3 / 5 / 9 แพ็ก · ดูราคา',{exact:true}).click();
-  await customer.getByRole('radio',{name:'กินที่บ้าน 3 แพ็ก',exact:true}).check();
-  await customer.getByRole('radio',{name:'รวมสั่งกับเพื่อน 9 แพ็ก',exact:true}).check();
+  await customer.getByRole('radio',{name:'3 แพ็ก',exact:true}).locator('..').click();
+  await customer.getByRole('radio',{name:'9 แพ็ก',exact:true}).locator('..').click();
   await customer.getByRole('button',{name:'เพิ่มจำนวน 1 แพ็ก',exact:true}).click();
   assert.equal(await customer.locator('#shop-quantity').inputValue(),'10');
   await customer.locator('#shop-quantity').fill('20');
-  assert.equal(await customer.getByTestId('shop-total').innerText(),'5,400 บาท');
+  assert.equal(await customer.getByTestId('shop-total').innerText(),'6,672 บาท');
   assert.equal(await customer.getByText('รอร้านยืนยัน',{exact:true}).count(),0);
   for(const [id,value] of Object.entries({...address,phone:'0891234567'})) await customer.locator('#shop-'+id).fill(value);
   await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
@@ -132,10 +140,10 @@ async function main() {
   assert.equal((await db.get('SELECT COUNT(*) AS count FROM reservations')).count,reservationsBefore);
   assert.equal((await customer.goto(base+'/shop/orders/'+randomBytes(24).toString('hex'))).status(),404);
   const bulkOrder=await db.get('SELECT * FROM shop_orders WHERE phone=?','0891234567');
-  assert.equal(bulkOrder.quantity,20);assert.equal(bulkOrder.goods_baht,5000);assert.equal(bulkOrder.shipping_baht,400);
-  assert.equal((await update({id:bulkOrder.id,version:bulkOrder.version,action:'quote',shippingBaht:400,paymentInstructions:'บัญชีทดสอบเท่านั้น ห้ามโอนเงินจริง',dispatchNote:'วางแผนผลิตสำหรับรอบทดสอบ',confirmed:true})).status,200);
+  assert.equal(bulkOrder.quantity,20);assert.equal(bulkOrder.goods_baht,6672);assert.equal(bulkOrder.shipping_baht,0);
+  assert.equal((await update({id:bulkOrder.id,version:bulkOrder.version,action:'quote',shippingBaht:0,paymentInstructions:'บัญชีทดสอบเท่านั้น ห้ามโอนเงินจริง',dispatchNote:'วางแผนผลิตสำหรับรอบทดสอบ',confirmed:true})).status,200);
   await customer.goto(savedUrl);
-  assert.equal(await customer.getByText('ยอดรวม 5,400 บาท',{exact:true}).count(),1);
+  assert.equal(await customer.getByText('ยอดรวม 6,672 บาท',{exact:true}).count(),1);
   // Rate limit is persistent; attempts cannot create arbitrarily many requests for one phone.
   for(let i=0;i<4;i++) assert.equal((await post({...input,requestKey:randomBytes(24).toString('hex')})).status,201);
   assert.equal((await post({...input,requestKey:randomBytes(24).toString('hex')})).status,429);
@@ -154,11 +162,13 @@ async function main() {
   assert.equal((await uploadQr(firstQr,0,true,'https://example.com')).status,403);
   assert.equal((await uploadQr(Buffer.from('invalid image'),0)).status,400);
   assert.equal((await uploadQr(firstQr,0)).status,200);
-  for (const [quantity, shipping] of [[1,200],[9,200],[10,400],[20,400],[21,null]]) {
+  for (const [quantity, goods, shipping] of [[1,339,200],[2,678,200],[3,999,0],[4,1338,0],[6,1998,0],[9,2997,0],[10,3336,0],[20,6672,0],[21,6993,0]]) {
     const res = await post({...input,quantity,requestKey:randomBytes(24).toString('hex'),address:{...address,phone:'08700000'+String(quantity).padStart(2,'0')}});
     assert.equal(res.status,201);
     const data=await res.json();
     const fresh=await db.get('SELECT * FROM shop_orders WHERE token=?',data.url.split('/').pop());
+    assert.equal(fresh.unit_price,339);
+    assert.equal(fresh.goods_baht,goods);
     assert.equal(fresh.shipping_baht,shipping);
     assert.equal(fresh.status,shipping===null?'requested':'quoted');
     assert.equal((await fetch(base+data.url+'/payment-qr')).status,shipping===null?404:200);
@@ -168,7 +178,7 @@ async function main() {
   const paymentConfig=await db.get('SELECT * FROM shop_payment_config WHERE id=1');
   assert.equal((await fetch(savedUrl+'/payment-qr')).status,404); // manual quote
   let bulk=await db.get('SELECT * FROM shop_orders WHERE id=?',bulkOrder.id);
-  const qrQuote={id:bulk.id,version:bulk.version,action:'quote',shippingBaht:400,paymentMethod:'qr',paymentQrFilename:paymentConfig.filename,dispatchNote:'รอบส่งทดสอบ',confirmed:true};
+  const qrQuote={id:bulk.id,version:bulk.version,action:'quote',shippingBaht:0,paymentMethod:'qr',paymentQrFilename:paymentConfig.filename,dispatchNote:'รอบส่งทดสอบ',confirmed:true};
   assert.equal((await update({...qrQuote,paymentQrFilename:'wrong'})).status,409);
   assert.equal((await update(qrQuote)).status,200);
   await customer.goto(savedUrl);
@@ -382,7 +392,8 @@ async function main() {
   await customer.locator('#shop-quantity').fill('21');
   for(const [id,value] of Object.entries({...address,phone:'0860000043'})) await customer.locator('#shop-'+id).fill(value);
   await customer.getByRole('button',{name:'ตรวจรายการก่อนส่ง',exact:true}).click();
-  assert(await customer.getByRole('button',{name:'ส่งออเดอร์ให้ร้านแจ้งค่าส่ง',exact:true}).isVisible());
+  assert.equal(await customer.getByTestId('shop-total').innerText(),'6,993 บาท');
+  assert(await customer.getByRole('button',{name:'สั่งซื้อและดูช่องทางชำระเงิน',exact:true}).isVisible());
   // Queue counts reflect distinct orders, including slips on old active orders.
   await page.reload();
   const expectedReview=(await db.get("SELECT COUNT(*) n FROM shop_orders o WHERE status='quoted' AND EXISTS(SELECT 1 FROM shop_order_slips s WHERE s.order_id=o.id)")).n;
@@ -415,7 +426,7 @@ async function main() {
   await ui.evaluate(()=>sessionStorage.setItem('lablae-shop-draft-v1',JSON.stringify({quantityText:'9',address:{name:'expired'},expiresAt:Date.now()-1,pending:null})));
   await ui.reload();
   assert.equal(await ui.locator('#shop-name').inputValue(),'');
-  assert.equal(await ui.locator('#shop-quantity').inputValue(),'1');
+  assert.equal(await ui.locator('#shop-quantity').inputValue(),'3');
   await ui.addInitScript(()=>Object.defineProperty(window,'sessionStorage',{get(){throw new Error('Storage blocked');}}));
   await ui.reload();
   for(const [id,value] of Object.entries(address)) await ui.locator('#shop-'+id).fill(value);

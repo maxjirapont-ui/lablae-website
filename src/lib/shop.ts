@@ -1,23 +1,27 @@
-// Owner-confirmed: 250 baht / 500 g; flat shipping 200 baht for 1–9 packs.
+// Owner-confirmed: 339 baht / 500 g; every 3 packs cost 999 baht, free shipping from 3 packs.
 export const SHOP_PRODUCT = {
   id: "sai-ua-500g",
   name: "ไส้อั่วลำลำลับแล",
-  priceBaht: 250,
+  priceBaht: 339,
   weightGrams: 500,
   image: "/images/shop/sai-ua-500g-studio.png",
   imageAlt: "ไส้อั่วลำลำลับแลในแพ็กซีลสูญญากาศ ขนาด 500 กรัม",
 } as const;
 
+export const SHOP_PROMOTION = {
+  quantity: 3,
+  priceBaht: 999,
+  freeShippingMinPacks: 3,
+} as const;
+
 // Arithmetic safety only; production capacity is confirmed by the shop after ordering.
 export const SHOP_MAX_PACKS = Math.floor(Number.MAX_SAFE_INTEGER / SHOP_PRODUCT.weightGrams);
-export const SHOP_FLAT_SHIPPING_MAX_PACKS = 9;
+export const SHOP_FLAT_SHIPPING_MAX_PACKS = SHOP_PROMOTION.freeShippingMinPacks - 1;
 export const SHOP_SHIPPING_BAHT = 200;
 
 export function getShopShippingBaht(quantity: number): number | null {
-  if (!Number.isSafeInteger(quantity) || quantity < 1) return null;
-  if (quantity <= 9) return 200;
-  if (quantity <= 20) return 400;
-  return null;
+  if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > SHOP_MAX_PACKS) return null;
+  return quantity >= SHOP_PROMOTION.freeShippingMinPacks ? 0 : SHOP_SHIPPING_BAHT;
 }
 
 export function estimateShopOrder(quantity: number) {
@@ -26,10 +30,16 @@ export function estimateShopOrder(quantity: number) {
   }
   const productWeightGrams = quantity * SHOP_PRODUCT.weightGrams;
   const shippingBaseBaht = getShopShippingBaht(quantity);
-  const goodsBaht = quantity * SHOP_PRODUCT.priceBaht;
+  const bundleCount = Math.floor(quantity / SHOP_PROMOTION.quantity);
+  const goodsBeforeDiscountBaht = quantity * SHOP_PRODUCT.priceBaht;
+  const goodsBaht = bundleCount * SHOP_PROMOTION.priceBaht + (quantity % SHOP_PROMOTION.quantity) * SHOP_PRODUCT.priceBaht;
+  const discountBaht = goodsBeforeDiscountBaht - goodsBaht;
   return {
     quantity,
     goodsBaht,
+    goodsBeforeDiscountBaht,
+    discountBaht,
+    bundleCount,
     productWeightGrams,
     shippingBaseBaht,
     estimatedSubtotalBaht: shippingBaseBaht === null ? null : goodsBaht + shippingBaseBaht,
@@ -38,8 +48,8 @@ export function estimateShopOrder(quantity: number) {
 }
 
 export const SHOP_BUNDLES = [
-  { quantity: 3, title: "กินที่บ้าน", recommended: false },
-  { quantity: 5, title: "แบ่งกันอร่อย", recommended: true },
+  { quantity: 3, title: "กินที่บ้าน", recommended: true },
+  { quantity: 6, title: "แบ่งกันอร่อย", recommended: false },
   { quantity: 9, title: "รวมสั่งกับเพื่อน", recommended: false },
 ] as const;
 
@@ -57,16 +67,18 @@ export function getShopBundleEstimates() {
   });
 }
 
-// Suggest only when base shipping stays unchanged; never change selection automatically.
+// Include the shipping saving in the difference; never change selection automatically.
 export function getShopBundleSuggestion(quantity: number) {
-  if (quantity >= 3) return null;
+  if (quantity >= SHOP_PROMOTION.quantity) return null;
   const current = estimateShopOrder(quantity);
-  const suggested = estimateShopOrder(3);
-  if (!current || !suggested || suggested.shippingBaseBaht === null || suggested.estimatedSubtotalBaht === null || current.shippingBaseBaht !== suggested.shippingBaseBaht) return null;
+  const suggested = estimateShopOrder(SHOP_PROMOTION.quantity);
+  if (!current || !suggested || current.shippingBaseBaht === null || current.estimatedSubtotalBaht === null || suggested.shippingBaseBaht === null || suggested.estimatedSubtotalBaht === null) return null;
   return {
     quantity: suggested.quantity,
     extraPacks: suggested.quantity - quantity,
     extraGoodsBaht: suggested.goodsBaht - current.goodsBaht,
+    extraTotalBaht: suggested.estimatedSubtotalBaht - current.estimatedSubtotalBaht,
+    shippingSavedBaht: current.shippingBaseBaht - suggested.shippingBaseBaht,
     shippingBaseBaht: suggested.shippingBaseBaht,
     estimatedSubtotalBaht: suggested.estimatedSubtotalBaht,
   };

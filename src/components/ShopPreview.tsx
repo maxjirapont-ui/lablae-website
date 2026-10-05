@@ -10,10 +10,12 @@ import { trackWebsiteAction } from "@/lib/website-analytics";
 import {
   estimateShopOrder,
   getShopBundleEstimates,
+  getShopBundleSuggestion,
   normalizeShopDigits,
   normalizeShopPhone,
   SHOP_MAX_PACKS,
   SHOP_PRODUCT,
+  SHOP_PROMOTION,
   validateShopAddress,
   type ShopAddress,
   type ShopAddressErrors,
@@ -68,7 +70,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
     } finally { clearTimeout(timeout); }
   }
   const hydrated = useSyncExternalStore(subscribeToHydration, () => true, () => false);
-  const [quantityText, setQuantityText] = useState("1");
+  const [quantityText, setQuantityText] = useState(String(SHOP_PROMOTION.quantity));
   const [address, setAddress] = useState<ShopAddress>(emptyAddress);
   const [errors, setErrors] = useState<ShopAddressErrors>({});
   const [reviewStep, setReviewing] = useState(false);
@@ -78,6 +80,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const quantity = /^\d+$/.test(quantityText) ? Number(quantityText) : NaN;
   const estimate = estimateShopOrder(quantity);
+  const bundleSuggestion = getShopBundleSuggestion(quantity);
 
   useEffect(() => {
     let active = true;
@@ -119,6 +122,16 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
     markStarted();
     setAddress((previous) => ({ ...previous, [key]: value }));
     setErrors((previous) => ({ ...previous, [key]: undefined }));
+  }
+
+  function choosePromotion() {
+    markStarted();
+    setQuantityText(String(SHOP_PROMOTION.quantity));
+    requestAnimationFrame(() => {
+      const field = document.getElementById("shop-quantity");
+      field?.focus({ preventScroll: true });
+      field?.scrollIntoView({ block: "center", behavior: "instant" });
+    });
   }
 
   function review(event: FormEvent<HTMLFormElement>) {
@@ -176,14 +189,15 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
             <p className="font-medium">{estimate.estimatedSubtotalBaht === null ? "ค่าสินค้า" : "ยอดรวม"} {quantity} แพ็ก</p>
             <p data-testid="shop-total" className="text-2xl font-bold">{money(estimate.estimatedSubtotalBaht ?? estimate.goodsBaht)} บาท</p>
           </div>
-          <p className="mt-1 text-sm text-stone-700">{estimate.estimatedSubtotalBaht === null ? "ยังไม่รวมค่าส่ง · ร้านจะแจ้งก่อนชำระเงิน" : "รวมค่าส่งแช่แข็งแล้ว"}</p>
+          <p className="mt-1 text-sm text-stone-700">{estimate.shippingBaseBaht === 0 ? "ส่งแช่แข็งฟรี" : estimate.estimatedSubtotalBaht === null ? "ยังไม่รวมค่าส่ง · ร้านจะแจ้งก่อนชำระเงิน" : "รวมค่าส่งแช่แข็งแล้ว"}</p>
           {quantity > 1 && estimate.estimatedSubtotalBaht !== null && <p className="mt-2 text-sm text-stone-700">เฉลี่ยประมาณ {money(Number((estimate.estimatedSubtotalBaht / quantity).toFixed(2)))} บาท / แพ็ก รวมส่ง</p>}
         </div>
         <dl className="space-y-2 text-sm text-stone-700">
-          <div className="flex justify-between gap-4"><dt>ไส้อั่ว {quantity} แพ็ก</dt><dd>{money(estimate.goodsBaht)} บาท</dd></div>
-          <div className="flex justify-between gap-4"><dt>ค่าส่งแช่แข็ง</dt><dd className="shrink-0">{estimate.shippingBaseBaht === null ? "รอร้านยืนยัน" : `${money(estimate.shippingBaseBaht)} บาท`}</dd></div>
+          <div className="flex justify-between gap-4"><dt>ไส้อั่ว {quantity} แพ็ก</dt><dd className="shrink-0">{money(estimate.goodsBeforeDiscountBaht)} บาท</dd></div>
+          {estimate.discountBaht > 0 && <div className="flex justify-between gap-4"><dt>ส่วนลดโปร {SHOP_PROMOTION.quantity} แพ็ก{estimate.bundleCount > 1 && ` × ${estimate.bundleCount} ชุด`}</dt><dd className="shrink-0">−{money(estimate.discountBaht)} บาท</dd></div>}
+          <div className="flex justify-between gap-4"><dt>ค่าส่งแช่แข็ง</dt><dd className="shrink-0 font-medium">{estimate.shippingBaseBaht === 0 ? "ส่งฟรี" : estimate.shippingBaseBaht === null ? "รอร้านยืนยัน" : `${money(estimate.shippingBaseBaht)} บาท`}</dd></div>
         </dl>
-        <p className="text-sm leading-relaxed text-stone-600">{estimate.shippingBaseBaht === null ? "เกิน 20 แพ็ก ร้านแจ้งค่าส่งก่อนชำระ" : "1–9 แพ็ก ส่ง 200 บาท · 10–20 แพ็ก ส่ง 400 บาท"}</p>
+        <p className="text-sm leading-relaxed text-stone-600">{SHOP_PROMOTION.quantity} แพ็ก {money(SHOP_PROMOTION.priceBaht)} บาท · ตั้งแต่ {SHOP_PROMOTION.freeShippingMinPacks} แพ็กส่งฟรี</p>
       </div>
     );
   }
@@ -198,10 +212,10 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
       <div className="mb-5">
         <p className="mb-2 text-sm text-accent">จากครัวลำลำลับแล</p>
         <h1 ref={headingRef} tabIndex={-1} className="scroll-mt-32 text-3xl font-bold leading-snug text-primary outline-none sm:scroll-mt-24 sm:text-4xl">
-          {reviewing ? "ตรวจสอบรายการของคุณ" : "ไส้อั่ว ส่งถึงบ้าน"}
+          {reviewing ? "ตรวจสอบรายการของคุณ" : SHOP_PRODUCT.name}
         </h1>
         <p className="mt-3 text-base leading-relaxed text-primary/80">
-          {reviewing ? (estimate?.shippingBaseBaht === null ? "ตรวจรายการ แล้วส่งให้ร้านแจ้งค่าส่ง" : "ตรวจรายการ แล้วไปชำระเงิน") : "อร่อยจากลับแลถึงบ้านคุณ จะกินเองหรือรวมสั่งกับคนที่บ้านก็คุ้ม"}
+          {reviewing ? (estimate?.shippingBaseBaht === null ? "ตรวจรายการ แล้วส่งให้ร้านแจ้งค่าส่ง" : "ตรวจรายการ แล้วไปชำระเงิน") : "แพ็กละ 500 กรัม · ปรุงสุก · ซีลสูญญากาศ"}
         </p>
       </div>
 
@@ -237,26 +251,28 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
       ) : (
         <div className="grid items-start gap-8 md:grid-cols-[1fr_1.1fr] lg:gap-12">
           <section aria-label="รายละเอียดไส้อั่ว" className="space-y-4 md:sticky md:top-24">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div><p className="text-sm text-primary/75">เต็มแพ็ก 500 กรัม</p><p className="mt-1 text-5xl font-bold tracking-tight text-accent">{money(SHOP_PRODUCT.priceBaht)} <span className="text-lg font-normal">บาท / แพ็ก</span></p></div>
-              <span className="rounded-full border border-accent/35 px-3 py-2 text-sm text-primary">ปรุงสุก · ซีลสูญญากาศ</span>
+            <div className="rounded-2xl border border-accent/40 bg-[#f1e6d5] p-5 text-[#482a18] sm:p-6">
+              <p className="text-lg font-bold">โปร {SHOP_PROMOTION.quantity} แพ็ก</p>
+              <p className="mt-1 text-5xl font-bold leading-tight tracking-tight sm:text-6xl">{money(SHOP_PROMOTION.priceBaht)} <span className="text-2xl font-medium">บาท</span></p>
+              <p className="mt-2 inline-flex rounded-full bg-[#653c20] px-4 py-1.5 text-lg font-bold text-white">ส่งฟรี</p>
+              <p className="mt-3 text-base">แพ็กละ {money(SHOP_PRODUCT.priceBaht)} บาท · 500 กรัม</p>
             </div>
-            <a href="#shop-quantity-heading" onClick={markStarted} className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-accent px-5 py-3 font-bold text-[#261810] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">เลือกจำนวนและดูยอดรวม</a>
+            <button type="button" onClick={choosePromotion} disabled={!hydrated || !draftReady} className={`${buttonClass} inline-flex min-h-12 w-full items-center justify-center gap-2 bg-accent px-5 py-3 font-bold text-[#261810] hover:bg-accent/85`}>เลือกชุด {SHOP_PROMOTION.quantity} แพ็ก<ArrowRight size={18} aria-hidden="true" /></button>
             <figure>
               <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#f1e6d5]">
                 {imageFailed ? <div className="flex h-full items-center justify-center text-stone-700">ไส้อั่วลำลำลับแล · 500 กรัม</div> : (
-                  <Image src={SHOP_PRODUCT.image} alt={SHOP_PRODUCT.imageAlt} fill sizes="(min-width: 1024px) 480px, 100vw" className="object-contain" loading="eager" onError={() => setImageFailed(true)} />
+                  <Image src={SHOP_PRODUCT.image} alt={SHOP_PRODUCT.imageAlt} fill sizes="(min-width: 1280px) 489px, (min-width: 768px) 45vw, calc(100vw - 32px)" className="object-contain" loading="eager" onError={() => setImageFailed(true)} />
                 )}
               </div>
               <figcaption className="mt-2 text-sm text-primary/70">ไส้อั่วลำลำลับแล · แพ็กละ 500 กรัม</figcaption>
             </figure>
-            <p className="text-sm leading-relaxed text-primary/80">ส่งแช่แข็ง · 1–9 แพ็ก ค่าส่ง 200 บาท · 10–20 แพ็ก 400 บาท</p>
+            <p className="text-sm leading-relaxed text-primary/80">ส่งแช่แข็ง · ตั้งแต่ {SHOP_PROMOTION.freeShippingMinPacks} แพ็กส่งฟรี · 1–2 แพ็ก ค่าส่ง 200 บาท</p>
           </section>
 
           <form onSubmit={review} onChangeCapture={markStarted} noValidate className="space-y-7 rounded-2xl bg-[#fffaf3] p-5 text-stone-900 sm:p-8">
             <section aria-labelledby="shop-quantity-heading">
               <h2 id="shop-quantity-heading" tabIndex={-1} className="scroll-mt-32 text-xl font-bold outline-none sm:scroll-mt-24">1. เลือกจำนวนแพ็ก</h2>
-              <p className="mt-2 text-sm text-stone-600">เริ่มได้ตั้งแต่ 1 แพ็ก · 450 บาทรวมส่ง</p>
+              <p className="mt-2 text-sm text-stone-600">โปร {SHOP_PROMOTION.quantity} แพ็ก {money(SHOP_PROMOTION.priceBaht)} บาท ส่งฟรี · สั่งได้ตั้งแต่ 1 แพ็ก</p>
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <label className="sr-only" htmlFor="shop-quantity">จำนวนแพ็ก</label>
                 <div className="inline-flex items-center rounded-xl border border-stone-400 bg-white p-1">
@@ -270,31 +286,27 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
                 <span>แพ็ก</span>
               </div>
               <p id="shop-quantity-hint" className={`mt-2 text-sm ${estimate ? "text-stone-600" : "text-red-800"}`}>{estimate ? "พิมพ์จำนวนที่ต้องการได้เลย" : "กรุณาใส่จำนวนเต็มตั้งแต่ 1 ขึ้นไปและไม่มากเกินกว่าระบบจะคำนวณได้"}</p>
-              <details className="mt-4"><summary className="cursor-pointer py-3 font-medium text-[#653c20]">ชุดรวมสั่ง 3 / 5 / 9 แพ็ก · ดูราคา</summary>
-              <fieldset className="mt-5 space-y-3" aria-describedby="shop-bundles-hint">
+              <fieldset className="mt-5" aria-describedby="shop-bundles-hint">
                 <legend className="sr-only">เลือกชุดไส้อั่ว</legend>
-                <p id="shop-bundles-hint" className="mb-3 text-sm leading-relaxed text-stone-700">ราคาด้านล่างรวมค่าส่ง 200 บาทแล้ว</p>
+                <p id="shop-bundles-hint" className="mb-3 text-sm leading-relaxed text-stone-700">เลือก 3 / 6 / 9 แพ็ก ส่งฟรีทุกชุด</p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
                 {bundleEstimates.map((bundle) => {
                   const selected = quantity === bundle.quantity;
                   return (
-                    <label key={bundle.quantity} className={`block cursor-pointer rounded-xl border-2 p-4 transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-800 ${selected ? "border-[#653c20] bg-[#f1e6d5]" : "border-stone-300 bg-white hover:border-stone-500"}`}>
-                      <span className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="flex items-center gap-3">
-                          <input id={`shop-bundle-${bundle.quantity}`} type="radio" name="shop-bundle" value={bundle.quantity} checked={selected} onChange={() => setQuantityText(String(bundle.quantity))} aria-label={`${bundle.title} ${bundle.quantity} แพ็ก`} aria-describedby={`shop-bundle-price-${bundle.quantity}`} className="h-5 w-5 shrink-0 accent-[#653c20]" />
-                          <span className="text-lg font-bold">{bundle.title} · {bundle.quantity} แพ็ก</span>
-                        </span>
-                        {bundle.recommended && <span className="rounded-full bg-[#653c20] px-2.5 py-1 text-xs font-bold text-white">ชุดแนะนำ</span>}
-                      </span>
-                      <span id={`shop-bundle-price-${bundle.quantity}`} className="mt-3 block">
-                        <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1"><span className="text-3xl font-bold tracking-tight text-[#653c20]">{money(bundle.estimatedSubtotalBaht)}</span><span className="text-sm text-stone-700">บาท รวมส่งแล้ว</span></span>
-                        <span className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm"><span className="text-stone-600">สินค้า {money(bundle.goodsBaht)} + ส่ง {money(bundle.shippingBaseBaht)}</span><span className="text-stone-600">เฉลี่ย {money(Number(bundle.averagePerPackBaht.toFixed(2)))} บาท / แพ็ก</span></span>
-
-                      </span>
+                    <label key={bundle.quantity} className={`block min-w-0 cursor-pointer rounded-xl border-2 px-2 py-3 text-center transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-800 sm:p-4 ${selected ? "border-[#653c20] bg-[#f1e6d5]" : "border-stone-300 bg-white hover:border-stone-500"}`}>
+                      <input id={`shop-bundle-${bundle.quantity}`} type="radio" name="shop-bundle" value={bundle.quantity} checked={selected} onChange={() => setQuantityText(String(bundle.quantity))} aria-label={`${bundle.quantity} แพ็ก`} aria-describedby={`shop-bundle-price-${bundle.quantity}`} className="sr-only" />
+                      <span className="block text-lg font-bold">{bundle.quantity} แพ็ก</span>
+                      <span id={`shop-bundle-price-${bundle.quantity}`} className="mt-1 block text-xl font-bold tracking-tight text-[#653c20] sm:text-2xl">{money(bundle.estimatedSubtotalBaht)} <span className="block text-sm font-normal">บาท · ส่งฟรี</span></span>
+                      {bundle.recommended && <span className="mt-2 inline-block rounded-full bg-[#653c20] px-2 py-1 text-xs font-bold text-white">แนะนำ</span>}
                     </label>
                   );
                 })}
+                </div>
               </fieldset>
-              </details>
+              {bundleSuggestion && <div className="mt-4 rounded-xl border border-amber-800/30 bg-[#f1e6d5] p-4 text-sm leading-relaxed">
+                <p>เพิ่มอีก {bundleSuggestion.extraPacks} แพ็ก จ่ายเพิ่ม {money(bundleSuggestion.extraTotalBaht)} บาท เป็น {bundleSuggestion.quantity} แพ็ก {money(bundleSuggestion.estimatedSubtotalBaht)} บาท ส่งฟรี</p>
+                <button type="button" onClick={choosePromotion} className={`${buttonClass} mt-2 min-h-11 px-3 py-2 font-bold text-[#653c20] underline underline-offset-4`}>เปลี่ยนเป็น {SHOP_PROMOTION.quantity} แพ็ก</button>
+              </div>}
             </section>
 
             <section aria-label="ยอดรวมก่อนกรอกที่อยู่" className="border-t border-stone-200 pt-6">{totals()}</section>
@@ -327,7 +339,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
         </div>
       )}
       {!reviewing && <div className="mt-8 grid gap-4 md:grid-cols-2">
-        <details className="rounded-2xl border border-accent/30 p-5 text-primary"><summary className="cursor-pointer py-1 text-lg font-bold">การจัดส่งและการรับสินค้า</summary><div className="mt-3 space-y-3 text-base leading-relaxed"><p>จัดส่งแบบแช่แข็ง ร้านตรวจเงินแล้วจะโทรติดต่อเรื่องจัดส่งตามเบอร์ที่ระบุในออเดอร์</p><p>เกิน 20 แพ็ก ร้านจะแจ้งค่าส่งก่อนชำระเงิน ถามเรื่องพื้นที่จัดส่ง วันรับสินค้า การเก็บรักษา หรือส่วนผสมได้ก่อนสั่งครับ</p><ShopContactButtons /></div></details>
+        <details className="rounded-2xl border border-accent/30 p-5 text-primary"><summary className="cursor-pointer py-1 text-lg font-bold">การจัดส่งและการรับสินค้า</summary><div className="mt-3 space-y-3 text-base leading-relaxed"><p>จัดส่งแบบแช่แข็ง ตั้งแต่ {SHOP_PROMOTION.freeShippingMinPacks} แพ็กส่งฟรี ส่วน 1–2 แพ็ก ค่าส่ง 200 บาท</p><p>ร้านตรวจเงินแล้วจะโทรติดต่อเรื่องจัดส่งตามเบอร์ที่ระบุในออเดอร์ ถามเรื่องพื้นที่จัดส่ง วันรับสินค้า การเก็บรักษา หรือส่วนผสมได้ก่อนสั่งครับ</p><ShopContactButtons /></div></details>
             <details className="rounded-2xl border border-accent/30 p-5 text-primary">
               <summary className="cursor-pointer text-lg font-bold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">อุ่นไส้อั่วที่บ้าน</summary>
               <div className="mt-4 space-y-5 text-sm leading-relaxed text-primary/85">

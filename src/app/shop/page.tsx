@@ -2,21 +2,62 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import ShopPreview from "@/components/ShopPreview";
-import { pageMetadata } from "@/lib/seo";
-import { SHOP_PRODUCT } from "@/lib/shop";
+import { pageMetadata, serializeJsonLd, SITE_URL } from "@/lib/seo";
+import { SHOP_PRODUCT, SHOP_PROMOTION, SHOP_SHIPPING_BAHT } from "@/lib/shop";
 import { shopIsPublic } from "@/lib/shop-orders";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   ...pageMetadata(
-    "สั่งไส้อั่วลำลำลับแล 500 กรัม",
-    "ส่งคำขอสั่งไส้อั่ว 500 กรัม แพ็กละ 250 บาท ค่าส่งเหมาจ่าย 200 บาท สำหรับ 1–9 แพ็ก ร้านยืนยันสินค้าก่อนชำระเงิน",
+    `ไส้อั่วลำลำลับแล ${SHOP_PROMOTION.quantity} แพ็ก ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรี`,
+    `ไส้อั่วลำลำลับแล แพ็กละ ${SHOP_PRODUCT.weightGrams} กรัม ${SHOP_PRODUCT.priceBaht} บาท โปร ${SHOP_PROMOTION.quantity} แพ็ก ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรีเมื่อสั่งตั้งแต่ ${SHOP_PROMOTION.freeShippingMinPacks} แพ็ก สั่ง 1–2 แพ็ก ค่าส่ง ${SHOP_SHIPPING_BAHT} บาท จัดส่งแช่แข็ง`,
     "/shop",
     SHOP_PRODUCT.image,
     SHOP_PRODUCT.imageAlt,
   ),
   robots: { index: false, follow: false, googleBot: { index: false, follow: false } },
+};
+
+const shopUrl = `${SITE_URL}/shop`;
+const shippingDetails = (price: number) => ({
+  "@type": "OfferShippingDetails",
+  shippingRate: { "@type": "MonetaryAmount", value: price, currency: "THB" },
+  shippingDestination: { "@type": "DefinedRegion", addressCountry: "TH" },
+});
+const productSchema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Product",
+      "@id": `${shopUrl}#${SHOP_PRODUCT.id}`,
+      name: `${SHOP_PRODUCT.name} ${SHOP_PRODUCT.weightGrams} กรัม`,
+      image: `${SITE_URL}${SHOP_PRODUCT.image}`,
+      description: `ไส้อั่วปรุงสุก ซีลสูญญากาศ แพ็กละ ${SHOP_PRODUCT.weightGrams} กรัม จัดส่งแช่แข็ง`,
+      offers: {
+        "@type": "Offer",
+        name: "1 แพ็ก",
+        url: shopUrl,
+        price: SHOP_PRODUCT.priceBaht,
+        priceCurrency: "THB",
+        shippingDetails: shippingDetails(SHOP_SHIPPING_BAHT),
+      },
+    },
+    {
+      "@type": "Product",
+      "@id": `${shopUrl}#bundle-${SHOP_PROMOTION.quantity}`,
+      name: `${SHOP_PRODUCT.name} ${SHOP_PROMOTION.quantity} แพ็ก`,
+      image: `${SITE_URL}${SHOP_PRODUCT.image}`,
+      description: `${SHOP_PROMOTION.quantity} แพ็ก แพ็กละ ${SHOP_PRODUCT.weightGrams} กรัม ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรี`,
+      offers: {
+        "@type": "Offer",
+        url: shopUrl,
+        price: SHOP_PROMOTION.priceBaht,
+        priceCurrency: "THB",
+        shippingDetails: shippingDetails(0),
+      },
+    },
+  ],
 };
 
 export default async function ShopPage() {
@@ -25,5 +66,8 @@ export default async function ShopPage() {
   if (process.env.NODE_ENV === "production" && !shopIsPublic() && !(await isAdminAuthenticated())) {
     notFound();
   }
-  return <ShopPreview testing={!shopIsPublic()} />;
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(productSchema) }} />
+    <ShopPreview testing={!shopIsPublic()} />
+  </>;
 }

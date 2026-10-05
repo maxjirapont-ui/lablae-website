@@ -21,6 +21,7 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
   const paymentQr = parsePaymentQr(order.payment_qr_json);
   const address = JSON.parse(order.address_json) as ShopAddress;
   const total = (order.goods_baht + (order.shipping_baht || 0)).toLocaleString("th-TH");
+  const discountBaht = Math.max(0, order.quantity * order.unit_price - order.goods_baht);
   const showDeliveryInPayment = order.status === "quoted" && !hasSubmittedSlip;
   const paymentDeliveryNote = showDeliveryInPayment && <div className="space-y-2">
     <p className="text-base leading-relaxed whitespace-pre-wrap break-words">{order.dispatch_note || "วันส่งตกลงกับร้าน"}</p>
@@ -89,8 +90,9 @@ export default async function OrderPage({params}: {params:Promise<{token:string}
     </> : <>{paymentPanel}<ShopSlipUpload token={order.token} count={0}/></>)}
     <section className="rounded-2xl border border-accent/30 p-5 space-y-3">
       <h2 className="text-xl font-bold">{order.product_name}</h2>
-      <p>{order.quantity} แพ็ก · แพ็กละ 500 กรัม · {order.unit_price} บาท/แพ็ก</p>
-      <p>ค่าสินค้า {order.goods_baht.toLocaleString("th-TH")} บาท · ค่าจัดส่ง {order.shipping_baht === null ? "รอร้านยืนยัน" : `${order.shipping_baht} บาท`}</p>
+      <p>{order.quantity} แพ็ก · แพ็กละ 500 กรัม · ราคาแยกแพ็ก {order.unit_price} บาท/แพ็ก</p>
+      {discountBaht > 0 && <p>ส่วนลดชุด {discountBaht.toLocaleString("th-TH")} บาท</p>}
+      <p>ค่าสินค้า {order.goods_baht.toLocaleString("th-TH")} บาท · {order.shipping_baht === 0 ? "ส่งฟรี" : `ค่าจัดส่ง ${order.shipping_baht === null ? "รอร้านยืนยัน" : `${order.shipping_baht} บาท`}`}</p>
       {order.shipping_baht !== null && <p className="text-2xl font-bold text-accent">ยอดรวม {total} บาท</p>}
     </section>
     {order.tracking && <section className="border border-accent/30 rounded-2xl p-5 space-y-3"><h2 className="font-bold text-xl">ข้อมูลจัดส่ง</h2><p className="break-words whitespace-pre-wrap">{order.tracking}</p><ShopCopyText value={order.tracking} label="คัดลอกข้อมูลพัสดุ" success="คัดลอกข้อมูลพัสดุแล้ว" /></section>}
