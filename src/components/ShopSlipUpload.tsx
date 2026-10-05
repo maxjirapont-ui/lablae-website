@@ -50,7 +50,7 @@ export default function ShopSlipUpload({token,count}:{token:string;count:number}
      setSelected(file);setPreview(/^image\//.test(file.type)||/\.(jpe?g|png|webp|heic|heif)$/i.test(file.name)?URL.createObjectURL(file):'');
     }} className="block w-full min-h-14 min-w-0 rounded-xl border-2 border-accent bg-[#fffaf3] text-[#261810] p-3 text-base file:mr-3 file:rounded-lg file:border-0 file:bg-[#653c20] file:px-4 file:py-3 file:font-bold file:text-white disabled:opacity-50"/>
    </label>
-   <p id="slip-file-help" className="text-sm break-all" aria-live="polite">{selected?`เลือกแล้ว: ${selected.name}`:SHOP_SLIP_FILE_HELP}</p>
+   <p id="slip-file-help" className="text-sm break-words" aria-live="polite">{selected?`เลือกแล้ว: ${selected.name}`:SHOP_SLIP_FILE_HELP}</p>
    {preview&&<div className="rounded-xl bg-white p-2"><img src={preview} alt="ตัวอย่างสลิปที่เลือก ยังไม่ได้ส่ง" onError={()=>setPreview('')} className="mx-auto max-h-64 max-w-full object-contain"/></div>}
    <button type="submit" disabled={busy||!selected} className="w-full rounded-xl bg-accent text-[#261810] font-bold px-5 py-4 disabled:opacity-50">{busy?'กำลังส่ง…':'ส่งสลิปให้ร้านตรวจสอบ'}</button>
   </form>}
