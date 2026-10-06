@@ -289,6 +289,12 @@ export async function getDb(): Promise<Database> {
     await db.exec("CREATE INDEX IF NOT EXISTS idx_reservations_date_status ON reservations(date, status)");
   } catch {}
 
+  await db.exec(`CREATE TABLE IF NOT EXISTS reservation_requests (
+    request_key TEXT PRIMARY KEY,
+    reservation_id INTEGER NOT NULL REFERENCES reservations(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   const copyMigrationName = "polish_thai_copy_2026_09_06";
   const copyMigration = await db.get<{ name: string }>(
     "SELECT name FROM app_migrations WHERE name = ?",

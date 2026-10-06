@@ -35,7 +35,7 @@ export default function ShopPaymentSettings({config}: {config?:ShopPaymentConfig
         <p className="text-sm text-primary/75">JPG หรือ PNG ไม่เกิน 5 MB ใช้รูปจากแอปธนาคาร ชื่อผู้รับเงินต้องตรงกับ QR</p>
         <button disabled={busy} className="rounded-xl border border-accent px-4 py-3 font-bold text-accent disabled:opacity-40">{busy ? "กำลังบันทึก…" : "บันทึกช่องทางรับเงิน"}</button>
       </form>
-      <p className="text-sm leading-relaxed text-primary/75">ลูกค้าจะเห็น QR หลังร้านยืนยันยอด เปลี่ยน QR ตรงนี้ได้ภายหลัง โดยออเดอร์ที่ยืนยันไปแล้วจะยังใช้ข้อมูลรับเงินเดิม</p>
+      <p className="text-sm leading-relaxed text-primary/75">ลูกค้าจะเห็น QR หลังสั่งซื้อ หากค่าส่งยังไม่แน่นอน ร้านต้องยืนยันยอดก่อน เปลี่ยน QR ตรงนี้ได้ภายหลัง โดยออเดอร์ที่ยืนยันไปแล้วจะยังใช้ข้อมูลรับเงินเดิม</p>
       {message && <p role="status">{message}</p>}
     </div>
   </details>;

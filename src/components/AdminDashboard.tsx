@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { MenuItem, Article } from "@/lib/data";
+import AccessibleDialog from "./AccessibleDialog";
 import StoryTextEditor, { StoryTextFields } from "./StoryTextEditor";
 import { DEFAULT_STORIES } from "./QuickFactsStoryModal";
 import HeroSectionEditor from "./HeroSectionEditor";
@@ -132,6 +133,9 @@ export default function AdminDashboard({
   // State caches
   const [menus, setMenus] = useState<MenuItem[]>(initialMenus);
   const [reservations, setReservations] = useState<Reservation[]>(initialReservations);
+  const reservationInFlight = useRef(new Set<number>());
+  const [reservationBusy, setReservationBusy] = useState<number[]>([]);
+  const [reservationNotice, setReservationNotice] = useState("");
   const [articles, setArticles] = useState<Article[]>(initialArticles);
   
   // Settings Form States
@@ -253,33 +257,49 @@ export default function AdminDashboard({
 
   // --- RESERVATION HANDLERS ---
   const handleUpdateReservationStatus = async (id: number, status: string) => {
+    if (reservationInFlight.current.has(id)) return;
+    reservationInFlight.current.add(id);
+    setReservationBusy([...reservationInFlight.current]);
+    setReservationNotice("");
     try {
       const res = await fetch("/api/admin/reservations", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status }),
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status }), signal: AbortSignal.timeout(15000),
       });
-      if (res.ok) {
-        setReservations(prev =>
-          prev.map(r => (r.id === id ? { ...r, status } : r))
-        );
-      }
-    } catch (err) {
-      console.error(err);
+      const data = await res.json();
+      if (!res.ok) throw new Error(res.status === 401 ? "หมดเวลาเข้าสู่ระบบ กรุณาเข้าสู่ระบบอีกครั้ง" : data.error || "บันทึกสถานะไม่สำเร็จ กรุณาลองอีกครั้ง");
+      setReservations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+      setReservationNotice("บันทึกสถานะการจองแล้ว");
+    } catch (error) {
+      setReservationNotice(error instanceof Error && error.name === "TimeoutError"
+        ? "รอนานกว่าปกติ กรุณาโหลดรายการล่าสุดเพื่อตรวจสถานะก่อนลองอีกครั้ง"
+        : error instanceof TypeError ? "เชื่อมต่อไม่สำเร็จ กรุณาโหลดรายการล่าสุดเพื่อตรวจผลก่อนลองอีกครั้ง"
+        : error instanceof Error ? error.message : "เชื่อมต่อไม่สำเร็จ กรุณาลองอีกครั้ง");
+    } finally {
+      reservationInFlight.current.delete(id);
+      setReservationBusy([...reservationInFlight.current]);
     }
   };
 
   const handleDeleteReservation = async (id: number) => {
-    if (!confirm("คุณต้องการลบประวัติการจองนี้ใช่หรือไม่?")) return;
+    if (reservationInFlight.current.has(id) || !confirm("คุณต้องการลบประวัติการจองนี้ใช่หรือไม่?")) return;
+    reservationInFlight.current.add(id);
+    setReservationBusy([...reservationInFlight.current]);
+    setReservationNotice("");
     try {
-      const res = await fetch(`/api/admin/reservations?id=${id}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        setReservations(prev => prev.filter(r => r.id !== id));
-      }
-    } catch (err) {
-      console.error(err);
+      const res = await fetch(`/api/admin/reservations?id=${id}`, { method: "DELETE", signal: AbortSignal.timeout(15000) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(res.status === 401 ? "หมดเวลาเข้าสู่ระบบ กรุณาเข้าสู่ระบบอีกครั้ง" : data.error || "ลบรายการไม่สำเร็จ กรุณาลองอีกครั้ง");
+      setReservations(prev => prev.filter(r => r.id !== id));
+      setReservationNotice("ลบประวัติการจองแล้ว");
+    } catch (error) {
+      setReservationNotice(error instanceof Error && error.name === "TimeoutError"
+        ? "รอนานกว่าปกติ กรุณาโหลดรายการล่าสุดเพื่อตรวจผลก่อนลองอีกครั้ง"
+        : error instanceof TypeError ? "เชื่อมต่อไม่สำเร็จ กรุณาโหลดรายการล่าสุดเพื่อตรวจผลก่อนลองอีกครั้ง"
+        : error instanceof Error ? error.message : "เชื่อมต่อไม่สำเร็จ กรุณาลองอีกครั้ง");
+    } finally {
+      reservationInFlight.current.delete(id);
+      setReservationBusy([...reservationInFlight.current]);
     }
   };
 
@@ -667,6 +687,7 @@ export default function AdminDashboard({
   };
 
   const handleOpenAddMenu = () => {
+    setActiveTab("menus");
     setEditingMenu({ 
       name: "", 
       price: 0, 
@@ -1397,7 +1418,7 @@ export default function AdminDashboard({
   };
 
   return (
-    <div className={`mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 transition-all duration-300 ${
+    <div className={`admin-dashboard mx-auto px-4 py-8 sm:px-6 lg:px-8 space-y-6 transition-all duration-300 ${
       showFloatingPreview ? "max-w-[1500px]" : "max-w-6xl"
     }`}>
       {/* Dashboard Header with Master Publish Button */}
@@ -2097,6 +2118,7 @@ export default function AdminDashboard({
         {/* TAB: RESERVATIONS MANAGEMENT */}
         {activeTab === "reservations" && (
           <div className="space-y-6 font-thai">
+            {reservationNotice && <p role="status" className="rounded-xl border border-accent/30 p-4 text-base">{reservationNotice}</p>}
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-primary/10 pb-4">
               <div className="flex items-center gap-3">
@@ -2401,6 +2423,7 @@ export default function AdminDashboard({
                             <button
                               type="button"
                               onClick={() => handleUpdateReservationStatus(res.id, "confirmed")}
+                              disabled={reservationBusy.includes(res.id)}
                               className="flex items-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
                             >
                               <Check className="w-3.5 h-3.5" />
@@ -2413,6 +2436,7 @@ export default function AdminDashboard({
                             <button
                               type="button"
                               onClick={() => handleUpdateReservationStatus(res.id, "completed")}
+                              disabled={reservationBusy.includes(res.id)}
                               className="flex items-center gap-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs transition-colors cursor-pointer"
                             >
                               <CheckCircle className="w-3.5 h-3.5" />
@@ -2425,6 +2449,7 @@ export default function AdminDashboard({
                             <button
                               type="button"
                               onClick={() => handleUpdateReservationStatus(res.id, "cancelled")}
+                              disabled={reservationBusy.includes(res.id)}
                               className="flex items-center gap-1 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
                             >
                               <X className="w-3.5 h-3.5" />
@@ -2437,6 +2462,7 @@ export default function AdminDashboard({
                             <button
                               type="button"
                               onClick={() => handleUpdateReservationStatus(res.id, "pending")}
+                              disabled={reservationBusy.includes(res.id)}
                               className="flex items-center gap-1 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-medium transition-colors cursor-pointer"
                             >
                               <RefreshCw className="w-3 h-3" />
@@ -2448,6 +2474,7 @@ export default function AdminDashboard({
                           <button
                             type="button"
                             onClick={() => handleDeleteReservation(res.id)}
+                              disabled={reservationBusy.includes(res.id)}
                             className="p-2 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl transition-colors cursor-pointer ml-auto lg:ml-0"
                             title="ลบประวัติการจองนี้"
                           >
@@ -2968,7 +2995,7 @@ export default function AdminDashboard({
               </div>
               <div className="flex flex-wrap gap-2 w-full sm:w-auto items-center">
                 {/* View Mode Switcher */}
-                <div className="inline-flex rounded-xl border border-primary/15 p-0.5 bg-white shrink-0">
+                <div className="menu-view-switcher grid grid-cols-2 sm:inline-flex w-full sm:w-auto rounded-xl border border-primary/15 p-0.5 bg-white">
                   <button
                     type="button"
                     onClick={() => setMenuViewMode("cards")}
@@ -2992,7 +3019,7 @@ export default function AdminDashboard({
                   <button
                     type="button"
                     onClick={() => setMenuViewMode("featured_home")}
-                    className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    className={`col-span-2 sm:col-span-1 flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                       menuViewMode === "featured_home" ? "bg-accent text-[#1a100a] shadow-xs font-bold" : "text-primary/70 hover:text-accent"
                     }`}
                   >
@@ -3287,7 +3314,7 @@ export default function AdminDashboard({
 
             {/* Menu Modal Dialog (Popup) */}
             {showMenuForm && editingMenu && (
-              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+              <AccessibleDialog returnFocus="#admin-tab-menus" aria-label="ข้อมูลเมนูอาหาร" onClose={() => { setShowMenuForm(false); setEditingMenu(null); }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
                 <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-primary/15 font-thai my-auto">
                   <div className="flex justify-between items-center pb-4 border-b border-primary/10">
                     <h3 className="font-bold text-primary text-base sm:text-lg flex items-center gap-2">
@@ -3296,6 +3323,7 @@ export default function AdminDashboard({
                     </h3>
                     <button
                       type="button"
+                      aria-label="ปิดหน้าต่างเมนู"
                       onClick={() => { setShowMenuForm(false); setEditingMenu(null); }}
                       className="p-1.5 rounded-full hover:bg-primary/5 text-primary/60 hover:text-primary cursor-pointer"
                     >
@@ -3311,8 +3339,8 @@ export default function AdminDashboard({
                 )}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-primary mb-1">ชื่อเมนู</label>
-                    <input
+                    <label htmlFor="menu-name" className="block text-xs font-semibold text-primary mb-1">ชื่อเมนู</label>
+                    <input id="menu-name"
                       type="text"
                       value={editingMenu.name || ""}
                       onChange={e => setEditingMenu(prev => ({ ...prev, name: e.target.value }))}
@@ -3321,8 +3349,8 @@ export default function AdminDashboard({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-primary mb-1">ราคา (บาท)</label>
-                    <input
+                    <label htmlFor="menu-price" className="block text-xs font-semibold text-primary mb-1">ราคา (บาท)</label>
+                    <input id="menu-price"
                       type="number"
                       value={editingMenu.price !== undefined ? editingMenu.price : 0}
                       onChange={e => setEditingMenu(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
@@ -3331,8 +3359,8 @@ export default function AdminDashboard({
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-primary mb-1">หมวดหมู่</label>
-                    <select
+                    <label htmlFor="menu-category" className="block text-xs font-semibold text-primary mb-1">หมวดหมู่</label>
+                    <select id="menu-category"
                       value={editingMenu.category || "จานเดียว"}
                       onChange={e => setEditingMenu(prev => ({ ...prev, category: e.target.value }))}
                       className="block w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-xs sm:text-sm focus:outline-none"
@@ -3346,10 +3374,10 @@ export default function AdminDashboard({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-primary mb-1">รูปภาพอาหาร</label>
+                  <label htmlFor="menu-image-url" className="block text-xs font-semibold text-primary mb-1">รูปภาพอาหาร</label>
                   <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                     <div className="flex-1 w-full">
-                      <input
+                      <input id="menu-image-url"
                         type="text"
                         value={editingMenu.image_url || ""}
                         onChange={e => setEditingMenu(prev => ({ ...prev, image_url: e.target.value }))}
@@ -3397,8 +3425,8 @@ export default function AdminDashboard({
                   )}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-primary mb-1">รายละเอียดส่วนผสม/คำอธิบายเพิ่มเติม</label>
-                  <textarea
+                  <label htmlFor="menu-description" className="block text-xs font-semibold text-primary mb-1">รายละเอียดส่วนผสม/คำอธิบายเพิ่มเติม</label>
+                  <textarea id="menu-description"
                     value={editingMenu.description || ""}
                     onChange={e => setEditingMenu(prev => ({ ...prev, description: e.target.value }))}
                     className="block w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-xs sm:text-sm focus:outline-none h-20 resize-none"
@@ -3468,7 +3496,7 @@ export default function AdminDashboard({
                 </div>
               </form>
             </div>
-          </div>
+          </AccessibleDialog>
         )}
 
             {/* Quick Banner to jump to Homepage Featured Dishes reordering */}
@@ -4220,7 +4248,7 @@ export default function AdminDashboard({
 
             {/* Article Modal Dialog (Popup) */}
             {showArticleForm && editingArticle && (
-              <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+              <AccessibleDialog returnFocus="#admin-tab-articles" aria-label="ข้อมูลบทความ" onClose={() => { setShowArticleForm(false); setEditingArticle(null); }} className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
                 <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-primary/15 font-thai my-auto">
                   <div className="flex justify-between items-center pb-4 border-b border-primary/10">
                     <h3 className="font-bold text-primary text-base sm:text-lg flex items-center gap-2">
@@ -4229,6 +4257,7 @@ export default function AdminDashboard({
                     </h3>
                     <button
                       type="button"
+                      aria-label="ปิดหน้าต่างบทความ"
                       onClick={() => { setShowArticleForm(false); setEditingArticle(null); }}
                       className="p-1.5 rounded-full hover:bg-primary/5 text-primary/60 hover:text-primary cursor-pointer"
                     >
@@ -4245,8 +4274,8 @@ export default function AdminDashboard({
                     )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-primary mb-1">หัวข้อบทความ</label>
-                        <input
+                        <label htmlFor="article-title" className="block text-xs font-semibold text-primary mb-1">หัวข้อบทความ</label>
+                        <input id="article-title"
                           type="text"
                           value={editingArticle.title || ""}
                           onChange={e => setEditingArticle(prev => ({ ...prev, title: e.target.value }))}
@@ -4255,8 +4284,8 @@ export default function AdminDashboard({
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-primary mb-1">ลิงก์บทความ (Slug เช่น why-lablae)</label>
-                        <input
+                        <label htmlFor="article-slug" className="block text-xs font-semibold text-primary mb-1">ลิงก์บทความ (Slug เช่น why-lablae)</label>
+                        <input id="article-slug"
                           type="text"
                           value={editingArticle.slug || ""}
                           onChange={e => setEditingArticle(prev => ({ ...prev, slug: e.target.value }))}
@@ -4266,10 +4295,10 @@ export default function AdminDashboard({
                       </div>
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-primary mb-1">รูปภาพปกบทความ (ถ้ามี)</label>
+                      <label htmlFor="article-image-url" className="block text-xs font-semibold text-primary mb-1">รูปภาพปกบทความ (ถ้ามี)</label>
                       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                         <div className="flex-1 w-full">
-                          <input
+                          <input id="article-image-url"
                             type="text"
                             value={editingArticle.image_url || ""}
                             onChange={e => setEditingArticle(prev => ({ ...prev, image_url: e.target.value }))}
@@ -4317,8 +4346,8 @@ export default function AdminDashboard({
                       )}
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-primary mb-1">เนื้อหาบทความ (สามารถแก้ไขข้อความได้ทุกบรรทัด)</label>
-                      <textarea
+                      <label htmlFor="article-content" className="block text-xs font-semibold text-primary mb-1">เนื้อหาบทความ (สามารถแก้ไขข้อความได้ทุกบรรทัด)</label>
+                      <textarea id="article-content"
                         value={editingArticle.content || ""}
                         onChange={e => setEditingArticle(prev => ({ ...prev, content: e.target.value }))}
                         className="block w-full px-3 py-3 bg-white border border-primary/15 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-accent h-72 resize-y font-thai leading-relaxed"
@@ -4344,7 +4373,7 @@ export default function AdminDashboard({
                     </div>
                   </form>
                 </div>
-              </div>
+              </AccessibleDialog>
             )}
 
             {/* Article items list */}
@@ -5332,15 +5361,7 @@ export default function AdminDashboard({
                           />
                           <span className="text-[10px] font-semibold text-primary">แสดงหัวข้อหน้าเมนู</span>
                         </label>
-                        <label className="flex items-center gap-2 p-2 bg-cream/20 border border-primary/5 rounded-lg cursor-pointer select-none">
-                          <input
-                            type="checkbox"
-                            checked={settings.menu_page_search_show !== "0"}
-                            onChange={e => setSettings(prev => ({ ...prev, menu_page_search_show: e.target.checked ? "1" : "0" }))}
-                            className="rounded text-accent focus:ring-accent w-4 h-4"
-                          />
-                          <span className="text-[10px] font-semibold text-primary">แสดงช่องค้นหาและตัวกรอง</span>
-                        </label>
+                        <p className="text-sm text-primary/75 p-2">หน้าเมนูมีช่องค้นหาและเลือกหมวดอาหารให้ลูกค้าเสมอ</p>
                       </div>
 
                       {/* Menu Categories Order List */}
@@ -5880,13 +5901,13 @@ export default function AdminDashboard({
       )}
 
       {/* Slide-Drawer Mobile Preview for screens < 1280px */}
-      <div
+      {showFloatingPreview && <div
         className={`xl:hidden fixed inset-y-0 right-0 z-50 w-full max-w-md bg-cream border-l border-primary/15 shadow-2xl flex flex-col transition-transform duration-300 transform font-thai ${
           showFloatingPreview ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {renderPreviewPanelContent()}
-      </div>
+      </div>}
     </div>
   );
 }

@@ -1,6 +1,9 @@
 import { randomInt } from "node:crypto";
-import type { Database } from "sqlite";
+import { open, type Database } from "sqlite";
+import sqlite3 from "sqlite3";
 import { getDb } from "./db";
+import { getDatabasePath } from "./storage";
+import { toArabicDigits } from "./text";
 
 export const BOOKING_TIME_ZONE = "Asia/Bangkok";
 
@@ -34,6 +37,7 @@ export interface ReservationRecord {
   status_updated_at: string | null;
   status_updated_by: string;
   created_at: string;
+  replayed?: boolean;
 }
 
 export interface AvailabilitySlot {
@@ -245,7 +249,7 @@ async function generateUniqueBookingCode(db: Database): Promise<string> {
   throw new Error("สร้างเลขที่การจองไม่สำเร็จ กรุณาลองอีกครั้ง");
 }
 
-export async function createReservation(input: {
+type ReservationInput = {
   name: string;
   phone: string;
   date: string;
@@ -253,15 +257,46 @@ export async function createReservation(input: {
   guests: number;
   notes?: string;
   source?: "web" | "line" | "admin";
-}): Promise<ReservationRecord> {
-  const db = await getDb();
+  requestKey?: string;
+};
+
+export async function createReservation(input: ReservationInput): Promise<ReservationRecord> {
+  await getDb(); // Initialize schema before opening a dedicated transaction connection.
+  const db = await open({ filename: getDatabasePath(), driver: sqlite3.Database });
+  try {
+    await db.exec("PRAGMA busy_timeout = 5000; PRAGMA foreign_keys = ON;");
+    return await createReservationWithDb(db, input);
+  } finally {
+    await db.close();
+  }
+}
+
+async function createReservationWithDb(db: Database, input: ReservationInput): Promise<ReservationRecord> {
   const config = await getBookingConfig(db);
   const name = input.name.trim().slice(0, 120);
-  const phone = input.phone.replace(/[^0-9+]/g, "");
+  const phone = toArabicDigits(input.phone).replace(/[^0-9+]/g, "");
   const notes = (input.notes || "").trim();
   const guests = Number(input.guests);
   const maximumGuests = input.source === "web" ? config.maxOnlineGuests : config.guestCapacity;
   const now = bangkokNow();
+  const requestKey = input.requestKey || "";
+  if (requestKey && !/^[a-zA-Z0-9_-]{20,100}$/.test(requestKey)) throw new Error("ข้อมูลการส่งคำขอไม่ถูกต้อง กรุณาโหลดหน้าใหม่");
+  const findReplay = async () => {
+    if (!requestKey) return undefined;
+    const previous = await db.get<ReservationRecord>(
+      "SELECT r.* FROM reservation_requests q JOIN reservations r ON r.id = q.reservation_id WHERE q.request_key = ?",
+      [requestKey],
+    );
+    if (!previous) return undefined;
+    if (previous.name !== name || previous.phone !== phone || previous.date !== input.date ||
+      previous.time !== input.time || previous.guests !== guests || previous.notes !== notes) {
+      throw new Error("ข้อมูลคำขอเปลี่ยนไป กรุณาส่งคำขอใหม่");
+    }
+    return { ...previous, replayed: true };
+  };
+  // A lost response can be recovered even after the selected time has passed.
+  const replay = await findReplay();
+  if (replay) return replay;
 
   if (name.length < 2) throw new Error("กรุณากรอกชื่อผู้จอง");
   if (!/^\+?\d{9,15}$/.test(phone)) throw new Error("กรุณาตรวจสอบเบอร์โทรศัพท์");
@@ -280,6 +315,8 @@ export async function createReservation(input: {
   const tablesRequired = tablesForGuests(guests);
   await db.exec("BEGIN IMMEDIATE");
   try {
+    const replay = await findReplay();
+    if (replay) { await db.exec("COMMIT"); return replay; }
     const blocked = await db.get<{ id: number }>(
       "SELECT id FROM booking_blocks WHERE date = ? AND time IN (?, '*') LIMIT 1",
       [input.date, input.time],
@@ -291,7 +328,7 @@ export async function createReservation(input: {
       [input.date],
     );
     const duplicate = existing.find((reservation) => reservation.phone === phone && reservation.time === input.time);
-    if (duplicate) throw new Error(`เบอร์นี้มีรายการจองเวลาเดียวกันแล้ว (${duplicate.booking_code || `รายการ ${duplicate.id}`})`);
+    if (duplicate) throw new Error("เบอร์นี้มีรายการจองเวลาเดียวกันแล้ว กรุณาเปิดลิงก์การจองเดิมหรือโทรสอบถามร้าน");
     const remaining = slotCapacity(input.time, config, existing);
     if (remaining.guests < guests || remaining.tables < tablesRequired) {
       throw new Error("ช่วงเวลานี้มีที่นั่งไม่พอสำหรับจำนวนที่เลือก กรุณาเลือกเวลาอื่น");
@@ -306,6 +343,7 @@ export async function createReservation(input: {
     );
     const reservation = await db.get<ReservationRecord>("SELECT * FROM reservations WHERE id = ?", [result.lastID]);
     if (!reservation) throw new Error("ไม่พบรายการจองที่เพิ่งสร้าง");
+    if (requestKey) await db.run("INSERT INTO reservation_requests (request_key, reservation_id) VALUES (?, ?)", [requestKey, reservation.id]);
     await db.exec("COMMIT");
     return reservation;
   } catch (error) {

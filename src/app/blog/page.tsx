@@ -65,7 +65,7 @@ export default async function BlogListingPage() {
               <h2 className="text-lg sm:text-xl font-bold font-thai text-primary">
                 {partTitle}
               </h2>
-              <span className="text-xs font-thai text-primary/40 ml-auto">
+              <span className="text-xs font-thai text-primary/75 ml-auto">
                 {chapterList.length} ตอน
               </span>
             </div>
@@ -91,7 +91,7 @@ export default async function BlogListingPage() {
                     </p>
                   </div>
 
-                  <div className="pt-3 mt-3 border-t border-accent/15 flex items-center justify-between text-[11px] font-thai text-primary/50">
+                  <div className="pt-3 mt-3 border-t border-accent/15 flex items-center justify-between text-sm font-thai text-primary/75">
                     <span className="group-hover:text-accent font-semibold transition-colors flex items-center gap-1">
                       เปิดอ่านบทนี้
                       <ChevronRight className="w-3 h-3" />

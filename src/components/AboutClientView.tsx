@@ -193,15 +193,18 @@ export default function AboutClientView({
       </div>
 
       {/* Tabs Switcher */}
-      <div className="flex border-b border-primary/10 overflow-x-auto scrollbar-none gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 border-b border-primary/10 gap-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isSelected = activeTab === tab.id;
           return (
             <button
               key={tab.id}
+              type="button"
+              aria-pressed={isSelected}
+              aria-controls="about-story-panel"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-4 border-b-2 font-thai text-sm font-semibold whitespace-nowrap transition-all duration-300 cursor-pointer ${
+              className={`flex items-center gap-2 px-4 py-3 min-h-12 text-left border-b-2 font-thai text-base font-semibold transition-all duration-300 cursor-pointer ${
                 isSelected
                   ? "border-accent text-accent bg-accent/5"
                   : "border-transparent text-primary/70 hover:text-accent hover:bg-primary/5"
@@ -215,7 +218,7 @@ export default function AboutClientView({
       </div>
 
       {/* Tab Content Box */}
-      <div className="wood-card bg-[#241710] border border-accent/20 rounded-3xl p-6 sm:p-10 space-y-6">
+      <div id="about-story-panel" role="region" aria-label={currentTab.title} className="wood-card bg-[#241710] border border-accent/20 rounded-3xl p-6 sm:p-10 space-y-6">
         <div className="space-y-2 border-b border-accent/15 pb-4">
           <h2 className="text-2xl font-bold font-thai text-primary">
             {currentTab.title}

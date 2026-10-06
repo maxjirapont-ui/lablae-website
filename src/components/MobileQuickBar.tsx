@@ -26,7 +26,7 @@ export default function MobileQuickBar({
           <div className="w-7 h-7 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mb-0.5">
             <Phone className="w-5 h-5" />
           </div>
-          <span className="text-[14px] font-bold text-accent leading-tight">จองโต๊ะ</span>
+          <span className="text-[14px] font-bold text-accent leading-tight">โทรจอง</span>
         </a>
 
         {/* Map / Directions Button */}

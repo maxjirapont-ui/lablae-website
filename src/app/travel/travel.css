@@ -6,3 +6,5 @@
 
 /* Place histories: readable text with sources separate from visiting details. */
 .travel-history{border-top:1px solid #e2dfd2;padding-top:14px;margin-top:16px}.travel-history h5{font-size:15px;font-weight:700;color:#183d35;margin-bottom:8px}.travel-history p{font-size:15px;line-height:1.85;margin:0 0 12px;overflow-wrap:anywhere}.travel-legend{border-left:3px solid #b89049;padding-left:12px}.travel-legend strong{display:block;font-size:13px;color:#795922}.travel-history-sources{margin-bottom:6px}.travel-history-sources ul{padding-left:18px;list-style:disc}.travel-history-sources li{font-size:13px;margin-bottom:8px;overflow-wrap:anywhere}.travel-history-sources a{text-decoration:underline;text-underline-offset:3px}@media(max-width:580px){.travel-card.has-photo{display:block}.travel-photo{width:100%;min-height:180px;height:180px}.travel-photo img{object-position:center}.travel-card-body{padding:20px}.travel-history p{font-size:16px}}
+
+.travel-history > summary { cursor: pointer; min-height: 44px; padding: 10px 0; font-size: 16px; font-weight: 600; }

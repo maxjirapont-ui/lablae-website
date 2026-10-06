@@ -46,8 +46,8 @@ export default function Guide() {
         {p.photo && <div className={`travel-photo ${p.id === "LPL-013" ? "travel-photo-rotate" : ""}`}><img src={p.photo} alt={p.name} loading="lazy" width="1000" height="750" /></div>}
         <div className="travel-card-body"><p className="travel-kicker">{p.category}</p><h4><span className="travel-number">{p.poster_number}</span>{p.name}</h4><p>{p.description}</p>
         {historyByNumber[p.poster_number] && (
-          <section className="travel-history" aria-label={`ประวัติ ${p.name}`}>
-            <h5>ประวัติและเรื่องของที่นี่</h5>
+          <details className="travel-history" aria-label={`ประวัติ ${p.name}`}>
+            <summary>ประวัติและเรื่องของที่นี่</summary>
             {historyByNumber[p.poster_number].paragraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)}
             {historyByNumber[p.poster_number].legend && (
               <p className="travel-legend"><strong>ตำนานท้องถิ่น</strong> {historyByNumber[p.poster_number].legend}</p>
@@ -58,7 +58,7 @@ export default function Guide() {
                 <li key={source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.label} ↗</a></li>
               ))}</ul>
             </details>
-          </section>
+          </details>
         )}
         <details><summary>เวลาเปิด ที่จอด และข้อมูลก่อนแวะ</summary><dl><dt>เวลาเปิด</dt><dd>{p.hours_display}</dd><dt>ที่จอดรถ</dt><dd>{p.parking?.text || 'ยังไม่มีข้อมูลที่ยืนยันได้'}</dd></dl><p className="travel-note">{p.navigation_note}</p><p className="travel-sources">แหล่งข้อมูล: {p.source_urls.filter(url => /^https:\/\//.test(url) && !url.includes('drive.google.com')).slice(0, 3).map((url, i) => <a key={url} href={url} target="_blank" rel="noreferrer">แหล่งที่ {i + 1}</a>)}</p></details>
         {p.navigation_url ? <a className="travel-map-link" href={p.navigation_url} target="_blank" rel="noreferrer">เปิดสถานที่ใน Google Maps ↗</a> : <p className="travel-note">ฝายหลวง: ยังรอยืนยันหมุดตัวฝาย จึงยังไม่มีปุ่มนำทาง</p>}

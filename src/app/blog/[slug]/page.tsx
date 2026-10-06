@@ -101,7 +101,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
           <ArrowLeft className="w-3.5 h-3.5" />
           กลับสู่สารบัญตำราลับแลง
         </Link>
-        <span className="text-[11px] text-primary/40">
+        <span className="text-sm text-primary/75">
           ตอนที่ {currentIndex + 1} จาก {allArticles.length}
         </span>
       </div>
@@ -121,7 +121,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
             {article.title}
           </h1>
 
-          <div className="text-xs text-[#f5ece1]/50 pt-1">
+          <div className="text-xs text-[#f5ece1]/75 pt-1">
             หนังสือ “ลับแลง — ตำราเล่าเรื่องแห่งเมืองที่อดีตยังกินได้” · ลำลำลับแล
           </div>
         </div>
@@ -154,7 +154,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
             href={`/blog/${prevChapter.slug}`}
             className="p-4 rounded-2xl wood-card bg-[#241710] hover:bg-[#2d1d14] border border-accent/20 hover:border-accent/50 text-left space-y-1 transition-all group"
           >
-            <span className="text-[11px] text-[#f5ece1]/50 flex items-center gap-1 group-hover:text-accent transition-colors">
+            <span className="text-sm text-[#f5ece1]/75 flex items-center gap-1 group-hover:text-accent transition-colors">
               <ChevronLeft className="w-3 h-3" />
               บทก่อนหน้า
             </span>
@@ -171,7 +171,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
             href={`/blog/${nextChapter.slug}`}
             className="p-4 rounded-2xl wood-card bg-[#241710] hover:bg-[#2d1d14] border border-accent/20 hover:border-accent/50 text-right space-y-1 transition-all group sm:col-start-2"
           >
-            <span className="text-[11px] text-[#f5ece1]/50 flex items-center justify-end gap-1 group-hover:text-accent transition-colors">
+            <span className="text-sm text-[#f5ece1]/75 flex items-center justify-end gap-1 group-hover:text-accent transition-colors">
               บทถัดไป
               <ChevronRight className="w-3 h-3" />
             </span>

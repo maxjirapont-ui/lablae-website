@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ShopOrderAdmin from "./ShopOrderAdmin";
 import type { ShopOrder } from "@/lib/shop-order-types";
 import type { ShopPaymentConfig } from "@/lib/shop-payment";
@@ -8,6 +8,10 @@ import type { ShopSlip } from "@/lib/shop-slips";
 const filters = { work:"งานค้าง", review:"รอตรวจสลิป", paid:"รอจัดส่ง", requested:"รอยืนยันค่าส่ง", unpaid:"รอลูกค้าจ่าย", shipped:"จัดส่งแล้ว", cancelled:"ยกเลิก", all:"ทั้งหมด" };
 type Filter = keyof typeof filters;
 export default function ShopOrdersBoard({orders,paymentConfig,slips,initialQuery=""}:{orders:ShopOrder[];paymentConfig?:ShopPaymentConfig;slips:ShopSlip[];initialQuery?:string}) {
+  useEffect(() => {
+    const match = /^#order-([1-9]\d*)$/.exec(window.location.hash);
+    if (!initialQuery && match) window.location.replace(`/admin/shop?order=LL-${match[1]}${window.location.hash}`);
+  }, [initialQuery]);
   const [filter,setFilter]=useState<Filter>(initialQuery ? "all" : "work");
   const [query,setQuery]=useState(initialQuery);
   const [message,setMessage]=useState("");

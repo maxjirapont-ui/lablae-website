@@ -96,7 +96,7 @@ export async function flushShopNotifications() {
         const order=await db.get<ShopOrder>('SELECT * FROM shop_orders WHERE id=?',job.order_id);
         if(!order) {await db.run("UPDATE shop_line_outbox SET state='failed',error='ไม่พบออเดอร์' WHERE id=?",job.id);await db.exec('COMMIT');continue;}
         const address=JSON.parse(order.address_json) as {name:string;province:string};
-        const text=[job.kind==='slip'?'มีสลิปใหม่ · รอตรวจเงินเข้า':'มีคำสั่งซื้อออนไลน์ใหม่',`LL-${order.id} · ไส้อั่ว ${order.quantity} แพ็ก`, `ค่าสินค้า ${order.goods_baht.toLocaleString('th-TH')} บาท`,order.shipping_baht===null?'ค่าส่งรอร้านยืนยัน':`ค่าส่ง ${order.shipping_baht} บาท · รวม ${(order.goods_baht+order.shipping_baht).toLocaleString('th-TH')} บาท`, `ผู้รับ: ${address.name} · ${address.province}`,job.kind==='slip'?'การแนบสลิปไม่ใช่การยืนยันรับเงิน':'ร้านวางแผนผลิตและแจ้งรอบส่งก่อนรับเงิน',`เปิดหลังบ้าน: ${siteBase()}/admin/shop#order-${order.id}`].join('\n');
+        const text=[job.kind==='slip'?'มีสลิปใหม่ · รอตรวจเงินเข้า':'มีคำสั่งซื้อออนไลน์ใหม่',`LL-${order.id} · ไส้อั่ว ${order.quantity} แพ็ก`, `ค่าสินค้า ${order.goods_baht.toLocaleString('th-TH')} บาท`,order.shipping_baht===null?'ค่าส่งรอร้านยืนยัน':`ค่าส่ง ${order.shipping_baht} บาท · รวม ${(order.goods_baht+order.shipping_baht).toLocaleString('th-TH')} บาท`, `ผู้รับ: ${address.name} · ${address.province}`,job.kind==='slip'?'การแนบสลิปไม่ใช่การยืนยันรับเงิน':'ตรวจเงินเข้าแล้วโทรหาลูกค้าเพื่อนัดรอบส่ง',`เปิดหลังบ้าน: ${siteBase()}/admin/shop?order=LL-${order.id}#order-${order.id}`].join('\n');
         job.recipient=cfg.group_id;
         job.payload=JSON.stringify({to:job.recipient,messages:[{type:'text',text}]});
       }

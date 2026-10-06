@@ -34,6 +34,7 @@ async function callLine(path: string, body: Record<string, unknown>): Promise<bo
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(8000),
   });
   if (!response.ok) {
     console.error("LINE Messaging API request failed", response.status, await response.text());

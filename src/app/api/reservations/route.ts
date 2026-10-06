@@ -13,12 +13,13 @@ export async function POST(request: NextRequest) {
       guests: Number(body.guests),
       notes: String(body.notes || ""),
       source: "web",
+      requestKey: String(body.requestKey || ""),
     });
 
     // The reservation is already safe in the database. A temporary LINE outage
     // must never make the customer submit the same reservation twice.
     try {
-      await sendReservationToStaff(reservation);
+      if (!reservation.replayed) await sendReservationToStaff(reservation);
     } catch (lineError) {
       console.error("Could not deliver reservation to LINE", lineError);
     }

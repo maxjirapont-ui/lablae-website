@@ -38,11 +38,13 @@ export async function GET(
     else if (ext === ".webp") contentType = "image/webp";
     else if (ext === ".gif") contentType = "image/gif";
     else if (ext === ".svg") contentType = "image/svg+xml";
+    else if (ext === ".pdf") contentType = "application/pdf";
 
     return new NextResponse(new Uint8Array(fileBuffer), {
       status: 200,
       headers: {
         "Content-Type": contentType,
+        ...(ext === ".pdf" ? { "Content-Disposition": "inline" } : {}),
         "Cache-Control": "public, max-age=31536000, immutable",
       },
     });

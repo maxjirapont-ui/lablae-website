@@ -319,3 +319,20 @@ body {
     padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* Keep management forms readable and tappable on phones. */
+@media (width < 48rem) {
+  .admin-dashboard { --text-xs: 1rem; --text-sm: 1rem; --text-xs--line-height: 1.6; --text-sm--line-height: 1.6; }
+  .admin-dashboard :is([class*="text-[10px]"], [class*="text-[11px]"]) { font-size: 1rem; line-height: 1.6; }
+  .admin-dashboard :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea, button) { min-height: 44px; }
+  .admin-dashboard :is(input, select, textarea) { font-size: 16px; }
+  .story-dialog :is(p, blockquote) { font-size: 16px; line-height: 1.75; }
+  .story-dialog button { min-height: 44px; }
+}
+.public-site .group:focus-within .group-hover\:opacity-100 { opacity: 1; }
+:where(.admin-dashboard, .story-dialog) :is(button, a, input, select, textarea):focus-visible { outline: 2px solid var(--color-accent, #d7aa62); outline-offset: 3px; }
+
+@media (width < 48rem) {
+  .admin-dashboard button { max-width: 100%; min-width: 0; }
+  .admin-dashboard button > span { min-width: 0; white-space: normal; }
+}

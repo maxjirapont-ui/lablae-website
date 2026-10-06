@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+import AccessibleDialog from "./AccessibleDialog";
 import React, { useState, useEffect } from "react";
 import { X, ChevronRight, Sparkles, Image as ImageIcon, Heart, ArrowLeft, Maximize2 } from "lucide-react";
 
@@ -264,17 +266,14 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
     return () => window.removeEventListener("hashchange", checkHash);
   }, []);
 
-  // Prevent background scroll when modal is open
-  useEffect(() => {
-    if (activeStoryId !== null) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [activeStoryId]);
+  const closeStory = () => {
+    setLightboxIndex(null);
+    setActiveStoryId(null);
+    if (window.location.hash.includes("story=")) history.replaceState(null, "", window.location.pathname + window.location.search);
+  };
+  const photoCaption = (caption: string, index: number) =>
+    /^(?:DSC|IMG|DCIM)[_\d-]|\.(?:jpe?g|png|webp|mov)$/i.test(caption.trim())
+      ? `${currentStory?.title || "บ้าน 100 ปี"} · ภาพที่ ${index + 1}` : caption;
 
   return (
     <>
@@ -318,7 +317,7 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
 
       {/* Story Details Modal Dialog */}
       {currentStory && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+        <AccessibleDialog aria-label={currentStory.title} onClose={closeStory} className="story-dialog fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
           <div 
             className="relative w-full max-w-4xl max-h-[90vh] bg-[#1a100a] border border-accent/35 rounded-3xl shadow-2xl flex flex-col overflow-hidden text-[#f7eee3]"
             onClick={(e) => e.stopPropagation()}
@@ -345,12 +344,7 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
 
               <button
                 type="button"
-                onClick={() => {
-                  setActiveStoryId(null);
-                  if (window.location.hash.includes("story=")) {
-                    history.pushState(null, "", window.location.pathname);
-                  }
-                }}
+                onClick={closeStory}
                 className="p-2 rounded-full bg-accent/10 hover:bg-accent/25 text-[#f7eee3] transition-colors cursor-pointer"
                 aria-label="ปิดหน้าต่าง"
               >
@@ -363,6 +357,7 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
               {stories.map((s) => (
                 <button
                   key={s.id}
+                  aria-pressed={activeStoryId === s.id}
                   type="button"
                   onClick={() => setActiveStoryId(s.id)}
                   className={`px-3 py-1.5 rounded-full text-xs font-thai font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
@@ -422,15 +417,17 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4">
                   {currentStory.photos.map((photo, pIdx) => (
-                    <div
+                    <button
+                      type="button"
+                      aria-label={`ขยายภาพ ${photoCaption(photo.caption, pIdx)}`}
                       key={pIdx}
                       onClick={() => setLightboxIndex(pIdx)}
-                      className="group relative rounded-2xl overflow-hidden bg-[#241710] border border-accent/25 hover:border-accent shadow-xs hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col"
+                      className="group relative rounded-2xl overflow-hidden bg-[#241710] border border-accent/25 hover:border-accent shadow-xs hover:shadow-lg transition-all duration-300 cursor-pointer text-left flex flex-col"
                     >
                       <div className="relative aspect-4/3 w-full overflow-hidden bg-black/40">
                         <img
                           src={photo.url}
-                          alt={photo.caption}
+                          alt={photoCaption(photo.caption, pIdx)}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         {photo.tag && (
@@ -445,9 +442,9 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
                         </div>
                       </div>
                       <div className="p-3 font-thai text-xs text-[#f7eee3]/90 leading-relaxed bg-[#20130b] flex-grow flex items-center">
-                        <p className="line-clamp-2">{photo.caption}</p>
+                        <p className="line-clamp-2">{photoCaption(photo.caption, pIdx)}</p>
                       </div>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -491,29 +488,29 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
                 แวะมาสัมผัสบรรยากาศจริงที่ <strong>ร้านลำลำลับแลบ้าน 100 ปี</strong>
               </span>
               <div className="flex items-center gap-2 w-full sm:w-auto">
-                <a
-                  href="/about"
+                <Link
+                  href="/blog"
                   className="flex-1 sm:flex-none text-center px-4 py-2 rounded-full border border-accent/40 hover:bg-accent/15 text-xs font-thai font-medium transition-colors"
                 >
-                  อ่านตำราลับแลทั้งหมด →
-                </a>
-                <a
+                  อ่านตำราลับแลงทั้งหมด →
+                </Link>
+                <Link
                   href="/menu"
                   className="flex-1 sm:flex-none text-center px-5 py-2 rounded-full bg-accent hover:brightness-110 text-[#1a100a] text-xs font-thai font-bold shadow-md transition-all"
                 >
                   ดูเมนูอาหาร
-                </a>
+                </Link>
               </div>
             </div>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
 
       {/* Lightbox Fullscreen Image View */}
       {currentStory && lightboxIndex !== null && currentStory.photos[lightboxIndex] && (
-        <div 
+        <AccessibleDialog aria-label="รูปภาพขยาย" onClose={() => setLightboxIndex(null)}
           className="fixed inset-0 z-60 bg-black/95 flex flex-col items-center justify-between p-4 backdrop-blur-lg animate-in fade-in"
-          onClick={() => setLightboxIndex(null)}
+          onClick={event => { if (event.target === event.currentTarget) setLightboxIndex(null); }}
         >
           {/* Lightbox Header */}
           <div className="w-full max-w-5xl flex items-center justify-between py-2 text-white shrink-0">
@@ -537,7 +534,7 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
           >
             <img
               src={currentStory.photos[lightboxIndex].url}
-              alt={currentStory.photos[lightboxIndex].caption}
+              alt={photoCaption(currentStory.photos[lightboxIndex].caption, lightboxIndex)}
               className="max-h-[75vh] max-w-full object-contain rounded-xl shadow-2xl border border-white/10"
             />
           </div>
@@ -548,10 +545,10 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
             onClick={(e) => e.stopPropagation()}
           >
             <p className="bg-black/60 px-4 py-2.5 rounded-2xl border border-white/10 inline-block">
-              {currentStory.photos[lightboxIndex].caption}
+              {photoCaption(currentStory.photos[lightboxIndex].caption, lightboxIndex)}
             </p>
           </div>
-        </div>
+        </AccessibleDialog>
       )}
     </>
   );

@@ -95,7 +95,7 @@ export default function ShopOrderAdmin({order, paymentConfig, slips=[], onSaved}
       <button disabled={busy} className={button}>บันทึกการจัดส่ง</button>
     </form>}
     {order.status === "requested" && quoteForm}
-    {order.status === "quoted" && <details className="border-t border-accent/20 pt-3"><summary className="cursor-pointer py-3 text-sm">แก้ไขยอดหรือข้อมูลจัดส่ง</summary>{quoteForm}</details>}
+    {order.status === "quoted" && <details className="border-t border-accent/20 pt-3"><summary className="cursor-pointer py-3 text-sm">รอบส่งและช่องทางรับเงิน</summary>{quoteForm}</details>}
     {order.tracking && <p className="break-words">จัดส่ง: {order.tracking}</p>}
     {["requested","quoted"].includes(order.status) && <details className="border-t border-accent/20 pt-3" onToggle={event=>{if(!event.currentTarget.open)setConfirmCancel(false);}}>
       <summary className="cursor-pointer py-3">ยกเลิกออเดอร์</summary>

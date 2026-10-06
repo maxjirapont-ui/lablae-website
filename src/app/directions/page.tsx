@@ -49,6 +49,16 @@ export default async function DirectionsPage() {
             </div>
           </div>
 
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mb-5 flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-5 py-4 font-thai text-sm font-bold text-[#1a100a] transition hover:brightness-110 sm:text-base"
+          >
+            <Navigation className="h-5 w-5" />
+            เปิด Google Maps เพื่อนำทาง
+          </a>
+
           <div className="overflow-hidden rounded-2xl border border-accent/20 bg-[#1a100a]">
             <iframe
               title={`แผนที่ ${restaurantName}`}
@@ -59,16 +69,6 @@ export default async function DirectionsPage() {
               allowFullScreen
             />
           </div>
-
-          <a
-            href={googleMapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-5 py-4 font-thai text-sm font-bold text-[#1a100a] transition hover:brightness-110 sm:text-base"
-          >
-            <Navigation className="h-5 w-5" />
-            เปิด Google Maps เพื่อนำทาง
-          </a>
         </div>
 
         <div className="grid gap-px border-t border-accent/20 bg-accent/20 md:grid-cols-3">

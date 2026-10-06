@@ -12,9 +12,12 @@ import { listShopSlips } from "@/lib/shop-slips";
 
 export const dynamic = "force-dynamic";
 export default async function AdminShopPage({searchParams}: {searchParams:Promise<{order?:string|string[]}>}) {
-  if (!(await isAdminAuthenticated())) redirect("/admin/login");
   const requestedOrder = (await searchParams).order;
   const initialQuery = typeof requestedOrder === "string" && /^LL-\d+$/i.test(requestedOrder) ? requestedOrder.toUpperCase() : "";
+  if (!(await isAdminAuthenticated())) {
+    const next = initialQuery ? `/admin/shop?order=${initialQuery}` : "/admin/shop";
+    redirect(`/admin/login?next=${encodeURIComponent(next)}`);
+  }
   const orders = await listShopOrders();
   const paymentConfig = await getShopPaymentConfig();
   const lineStatus = await getShopLineStatus();

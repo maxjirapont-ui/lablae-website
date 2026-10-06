@@ -21,7 +21,7 @@ export default function MenuList({
   const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string>(() => {
     const category = searchParams.get("category");
-    return category ? decodeURIComponent(category) : "ทั้งหมด";
+    return category || (initialItems.some(item => item.is_recommended) ? "เมนูแนะนำ" : "ทั้งหมด");
   });
   const [searchQuery, setSearchQuery] = useState<string>("");
 
@@ -42,10 +42,15 @@ export default function MenuList({
         return c;
       })
       .filter(Boolean);
-    return ["ทั้งหมด", "เมนูแนะนำ", "อาหารตามฤดูกาล", ...list];
-  }, [categoriesOrder]);
+    const actual = new Set(orderedItems.map(item => getGroupForCategory(item.category)));
+    return ["ทั้งหมด",
+      ...(orderedItems.some(item => item.is_recommended) ? ["เมนูแนะนำ"] : []),
+      ...(orderedItems.some(item => item.is_seasonal) ? ["อาหารตามฤดูกาล"] : []),
+      ...new Set([...list.filter(group => actual.has(group)), ...actual]),
+    ];
+  }, [categoriesOrder, orderedItems]);
 
-  const getGroupForCategory = (dbCategory: string): string => {
+  function getGroupForCategory(dbCategory: string): string {
     const cat = dbCategory.trim();
     if (cat.includes("ขันโตก")) return "เซตขันโตก";
     if (cat.includes("ของทอด") || cat.includes("ย่าง")) return "ของทอด/ย่าง";
@@ -82,7 +87,7 @@ export default function MenuList({
 
       if (!matchesSearch) return false;
 
-      if (selectedCategory === "ทั้งหมด") {
+      if (selectedCategory === "ทั้งหมด" || !categoryGroups.includes(selectedCategory)) {
         return true;
       }
       if (selectedCategory === "เมนูแนะนำ") {
@@ -95,7 +100,7 @@ export default function MenuList({
       const itemGroup = getGroupForCategory(item.category);
       return itemGroup === selectedCategory;
     });
-  }, [orderedItems, selectedCategory, searchQuery]);
+  }, [orderedItems, selectedCategory, searchQuery, categoryGroups]);
 
   // Group items by category (used for classic list layout when showing all categories)
   const groupedByCategory = useMemo(() => {
@@ -190,7 +195,7 @@ export default function MenuList({
   };
 
   return (
-    <div className="space-y-8 font-thai">
+    <div className="space-y-4 font-thai">
       {/* Search & Category Filter Controls */}
       {showSearch && (
         <div className="flex flex-col md:flex-row gap-4 justify-between items-center bg-[#261810] p-4 border border-accent/20 rounded-2xl">
@@ -200,38 +205,31 @@ export default function MenuList({
               <Search className="h-4 w-4" />
             </div>
             <input
-              type="text"
+              type="search"
+              aria-label="ค้นหาเมนูอาหาร"
               placeholder="ค้นหาเมนูอาหาร..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-accent/20 rounded-xl bg-[#1a100a] text-[#f5ece1] placeholder-[#c8b39b]/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-sm"
+              onChange={(e) => { setSearchQuery(e.target.value); setSelectedCategory("ทั้งหมด"); }}
+              className="block w-full pl-10 pr-3 py-2 border border-accent/20 rounded-xl bg-[#1a100a] text-[#f5ece1] placeholder-[#c8b39b]/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-base min-h-11"
             />
           </div>
 
           {/* Info */}
           <div className="flex items-center text-xs text-[#f5ece1]/70 gap-1.5 self-end md:self-auto">
             <Info className="w-3.5 h-3.5 text-accent" />
-            <span>แสดงทั้งหมด {filteredItems.length} รายการ</span>
+            <span role="status">พบ {filteredItems.length} รายการ</span>
           </div>
         </div>
       )}
 
-      {/* Category Tabs (Horizontal Scrollable) */}
-      <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-thin scrollbar-thumb-accent/20">
-        {categoryGroups.map((group) => (
-          <button
-            key={group}
-            onClick={() => setSelectedCategory(group)}
-            className={`min-h-11 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
-              selectedCategory === group
-                ? "bg-accent text-[#1c120c] font-bold shadow-md"
-                : "bg-[#261810] border border-accent/20 text-[#f5ece1]/80 hover:bg-accent/15 hover:text-accent"
-            }`}
-          >
-            {group}
-          </button>
-        ))}
-      </div>
+      <label className="flex flex-col sm:flex-row sm:items-center gap-2 text-base text-primary">
+        <span className="font-semibold">เลือกหมวดอาหาร</span>
+        <select value={categoryGroups.includes(selectedCategory) ? selectedCategory : "ทั้งหมด"}
+          onChange={event => { setSelectedCategory(event.target.value); setSearchQuery(""); }}
+          className="min-h-11 w-full sm:w-auto rounded-xl border border-accent/30 bg-[#261810] px-3 py-2 text-base text-[#f5ece1]">
+          {categoryGroups.map(group => <option key={group} value={group}>{group}</option>)}
+        </select>
+      </label>
 
       {/* Menu List/Grid Container */}
       {filteredItems.length > 0 ? (
@@ -239,7 +237,7 @@ export default function MenuList({
           <div className="space-y-8">
             {selectedCategory === "ทั้งหมด" ? (
               categoryGroups.map((group) => {
-                if (group === "ทั้งหมด") return null;
+                if (["ทั้งหมด", "เมนูแนะนำ", "อาหารตามฤดูกาล"].includes(group)) return null;
                 const items = groupedByCategory[group] || [];
                 if (items.length === 0) return null;
                 return (
@@ -361,6 +359,9 @@ export default function MenuList({
                 ? "ขณะนี้ยังไม่มีรายการอาหาร"
                 : `หมวด “${selectedCategory}” ยังไม่มีรายการอาหาร`}
           </p>
+          {(searchQuery || selectedCategory !== "ทั้งหมด") && <button type="button"
+            onClick={() => { setSearchQuery(""); setSelectedCategory("ทั้งหมด"); }}
+            className="mt-4 min-h-11 rounded-xl border border-accent/30 px-4 py-2 text-base text-accent">ดูเมนูทั้งหมด</button>}
         </div>
       )}
     </div>

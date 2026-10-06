@@ -74,6 +74,7 @@ export default function BookingForm() {
   const resultRef = useRef<HTMLDivElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const pendingRequest = useRef<{ payload: string; key: string } | null>(null);
 
   const loadAvailability = useCallback(async (startDate?: string) => {
     setLoadingAvailability(true);
@@ -82,7 +83,7 @@ export default function BookingForm() {
       const query = startDate
         ? `/api/reservations/availability?days=1&date=${encodeURIComponent(startDate)}`
         : "/api/reservations/availability?days=1";
-      const response = await fetch(query, { cache: "no-store" });
+      const response = await fetch(query, { cache: "no-store", signal: AbortSignal.timeout(10000) });
       const data = await response.json() as AvailabilityResponse & { error?: string };
       if (!response.ok) throw new Error(data.error || "โหลดเวลาว่างไม่สำเร็จ");
       setAvailability(data);
@@ -103,7 +104,9 @@ export default function BookingForm() {
         };
       });
     } catch (loadError) {
-      setAvailabilityError(loadError instanceof Error ? loadError.message : "โหลดเวลาว่างไม่สำเร็จ");
+      setAvailabilityError(loadError instanceof TypeError || (loadError instanceof Error && ["TimeoutError", "AbortError"].includes(loadError.name))
+        ? "เชื่อมต่อเวลาว่างไม่สำเร็จ กรุณาลองโหลดอีกครั้งหรือโทรสอบถามร้าน"
+        : loadError instanceof Error ? loadError.message : "โหลดเวลาว่างไม่สำเร็จ");
     } finally {
       setLoadingAvailability(false);
     }
@@ -166,22 +169,32 @@ export default function BookingForm() {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError("");
     setResult(null);
     try {
+      const payload = JSON.stringify(formData);
+      // Keep the same key when retrying after a connection failure.
+      if (pendingRequest.current?.payload !== payload) {
+        pendingRequest.current = { payload, key: crypto.randomUUID() };
+      }
       const response = await fetch("/api/reservations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, requestKey: pendingRequest.current.key }),
+        signal: AbortSignal.timeout(20000),
       });
       const data = await response.json() as SubmitResult & { error?: string };
       if (!response.ok) throw new Error(data.error || "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
       setSubmittedDetails({ ...formData });
       setResult(data);
       trackWebsiteAction("booking_request_submitted");
+      if (/^\/booking\/\d{6}$/.test(data.statusUrl)) window.location.assign(data.statusUrl);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
+      setError(submitError instanceof TypeError || (submitError instanceof Error && ["TimeoutError", "AbortError"].includes(submitError.name))
+        ? "ยังตรวจผลการจองไม่ได้ กรุณากดส่งอีกครั้ง ระบบจะตรวจคำขอเดิมให้โดยไม่สร้างรายการซ้ำ"
+        : submitError instanceof Error ? submitError.message : "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
     } finally {
       setLoading(false);
     }
@@ -268,7 +281,12 @@ export default function BookingForm() {
       {availabilityError && (
         <div className="flex items-start gap-3 p-4 rounded-xl mb-6 font-thai text-base bg-rose-950/70 text-rose-100 border border-rose-500/30" role="alert">
           <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" aria-hidden="true" />
-          <span>{availabilityError}</span>
+          <div className="space-y-3">
+            <p>{availabilityError}</p>
+            <button type="button" disabled={loadingAvailability} onClick={() => void loadAvailability(formData.date || undefined)}
+              className="min-h-11 rounded-xl border border-rose-300/50 px-4 py-2 disabled:opacity-50">โหลดเวลาว่างอีกครั้ง</button>
+            <a href="tel:0956283125" className="block underline underline-offset-4">โทรสอบถามเวลาว่าง</a>
+          </div>
         </div>
       )}
 
