@@ -210,7 +210,11 @@ export default async function Home() {
         {/* Soft atmospheric overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#1a100a]" />
 
-        <div className="relative max-w-4xl mx-auto px-4 text-center space-y-6 z-10">
+        <div className="relative max-w-4xl mx-auto px-4 py-6 sm:py-0 text-center space-y-4 sm:space-y-6 z-10">
+          <p id="home-opening-hours" aria-label="เวลาเปิดร้าน" className="md:hidden mx-auto flex w-fit max-w-full items-center justify-center gap-2 rounded-2xl border border-accent/40 bg-[#1a100a]/85 px-4 py-2 font-thai text-[16px] font-semibold leading-6 text-[#fff8ee]">
+            <Clock className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+            <span>{hours}</span>
+          </p>
           <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/20 text-accent border border-accent/35 text-xs sm:text-sm font-thai font-medium tracking-wide backdrop-blur-xs">
             <Sparkles className="w-4 h-4" />
             {heroBadge}
