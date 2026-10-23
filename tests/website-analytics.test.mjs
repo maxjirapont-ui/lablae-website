@@ -26,7 +26,7 @@ test('events exclude private routes, test hosts, queries and booking details', (
   const calls = [];
   const previous = globalThis.window;
   try {
-    globalThis.window = {location: new URL('https://www.lablae.net/?phone=0950000000#private'), gtag: (...args) => calls.push(args)};
+    globalThis.window = {location: new URL('https://www.lablae.net/?phone=0950000000#private'), dispatchEvent: () => true, gtag: (...args) => calls.push(args)};
     trackWebsiteAction('booking_request_submitted');
     assert.equal(calls.length, 1);
     assert.equal(calls[0][2].page_location, 'https://www.lablae.net/');
@@ -45,7 +45,7 @@ test('events exclude private routes, test hosts, queries and booking details', (
 test('shop events use only public names and a clean public URL', () => {
   const calls=[]; const previous=globalThis.window;
   try {
-    globalThis.window={location:new URL('https://www.lablae.net/shop?phone=0812345678#review'),gtag:(...args)=>calls.push(args)};
+    globalThis.window={location:new URL('https://www.lablae.net/shop?phone=0812345678#review'),dispatchEvent: () => true, gtag:(...args)=>calls.push(args)};
     for(const name of ['shop_begin_checkout','shop_review_order','shop_order_created']) trackWebsiteAction(name);
     assert.equal(calls.length,3);
     assert(calls.every(call=>call[2].page_location==='https://www.lablae.net/shop'));

@@ -50,6 +50,7 @@ type AnalyticsWindow = Window & {
 export function trackWebsiteAction(action: WebsiteAction): void {
   if (typeof window === "undefined" || !["www.lablae.net", "lablae.net"].includes(window.location.hostname) ||
     !isPublicAnalyticsPath(window.location.pathname)) return;
+  window.dispatchEvent(new CustomEvent("lablae:website-action", { detail: action }));
   // Event names only: no form values, phone numbers, booking codes, or link URLs.
   (window as AnalyticsWindow).gtag?.("event", action, {
     send_to: WEBSITE_MEASUREMENT_ID,
