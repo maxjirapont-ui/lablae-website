@@ -3,6 +3,8 @@ import { Inter, Sarabun } from "next/font/google";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import AppShell from "@/components/AppShell";
+import MetaMeasurement from "@/components/MetaMeasurement";
+import { validMetaPixelId } from "@/lib/meta-measurement";
 import WebsiteAnalytics from "@/components/WebsiteAnalytics";
 import { getMenuItems, getSetting } from "@/lib/data";
 import { menuPriceRange } from "@/lib/menu-display";
@@ -224,6 +226,7 @@ export default async function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-warm-bg text-[#f5ece1] overflow-x-hidden">
         {process.env.WEBSITE_ANALYTICS_ENABLED !== "0" && <WebsiteAnalytics />}
+        {process.env.META_MEASUREMENT_ENABLED === "1" && <MetaMeasurement pixelId={validMetaPixelId(process.env.META_PIXEL_ID)} />}
         <AppShell
           navbar={{
             logoUrl: brandLogo,

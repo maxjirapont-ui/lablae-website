@@ -185,11 +185,12 @@ export default function BookingForm() {
         body: JSON.stringify({ ...formData, requestKey: pendingRequest.current.key }),
         signal: AbortSignal.timeout(20000),
       });
-      const data = await response.json() as SubmitResult & { error?: string };
+      const data = await response.json() as SubmitResult & { error?: string; metaEventId?: string };
       if (!response.ok) throw new Error(data.error || "ส่งคำขอจองไม่สำเร็จ กรุณาลองอีกครั้ง");
       setSubmittedDetails({ ...formData });
       setResult(data);
       trackWebsiteAction("booking_request_submitted");
+      if (data.metaEventId) window.dispatchEvent(new CustomEvent("lablae:booking-request", { detail: data.metaEventId }));
       if (/^\/booking\/\d{6}$/.test(data.statusUrl)) window.location.assign(data.statusUrl);
     } catch (submitError) {
       setError(submitError instanceof TypeError || (submitError instanceof Error && ["TimeoutError", "AbortError"].includes(submitError.name))
