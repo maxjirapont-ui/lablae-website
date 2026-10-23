@@ -3,7 +3,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import { isPublicAnalyticsPath } from '@/lib/website-analytics';
-import { META_ACTION_EVENT, META_BOOKING_EVENT, META_CONSENT_COOKIE, META_CONSENT_EVENT, metaActionName } from '@/lib/meta-measurement';
+import { META_ACTION_EVENT, META_BOOKING_EVENT, META_CONSENT_COOKIE, META_CONSENT_EVENT, metaActionName, metaUrlParametersAreSafe, emitBookingLead } from '@/lib/meta-measurement';
 
 type Fbq = ((...args: unknown[]) => void) & { queue?: unknown[][]; callMethod?: (...args: unknown[]) => void; push?: Fbq; loaded?: boolean; version?: string };
 type MetaWindow = Window & { fbq?: Fbq; _fbq?: Fbq; lablaeMetaId?: string };
@@ -15,6 +15,7 @@ export default function MetaMeasurement({ pixelId }: { pixelId: string }) {
   const path = usePathname();
   const consent = useSyncExternalStore(subscribe, snapshot, serverSnapshot);
   const lastPage = useRef('');
+  const sentBookings = useRef(new Set<string>());
   const publicPage = isPublicAnalyticsPath(path);
 
   function choose(value: 'yes' | 'no') {
@@ -35,14 +36,19 @@ export default function MetaMeasurement({ pixelId }: { pixelId: string }) {
       lastPage.current = '';
       return;
     }
-    // Pixel can capture its document URL. Do not load it on URLs containing
-    // query values/fragments or private referrer paths. No form auto-matching.
-    if (location.search || location.hash) return;
+    // Only approved campaign parameters and public anchors may reach Meta.
+    if (!metaUrlParametersAreSafe(new URL(location.href))) {
+      w.fbq?.('consent', 'revoke');
+      return;
+    }
     if (document.referrer) {
       try {
         const ref = new URL(document.referrer);
-        if (ref.search || ref.hash || (ref.origin === location.origin && !isPublicAnalyticsPath(ref.pathname))) return;
-      } catch { return; }
+        if (!metaUrlParametersAreSafe(ref) || (ref.origin === location.origin && !isPublicAnalyticsPath(ref.pathname))) {
+          w.fbq?.('consent', 'revoke');
+          return;
+        }
+      } catch { w.fbq?.('consent', 'revoke'); return; }
     }
     if (!w.fbq) {
       const fbq: Fbq = (...args) => { if (fbq.callMethod) fbq.callMethod(...args); else fbq.queue!.push(args); };
@@ -63,14 +69,14 @@ export default function MetaMeasurement({ pixelId }: { pixelId: string }) {
       lastPage.current = path;
     }
     const action = (event: Event) => {
-      if (snapshot() !== 'yes' || !isPublicAnalyticsPath(location.pathname) || location.search || location.hash) return;
+      if (snapshot() !== 'yes' || !isPublicAnalyticsPath(location.pathname) || !metaUrlParametersAreSafe(new URL(location.href))) return;
       const name = metaActionName((event as CustomEvent<string>).detail);
       if (name) w.fbq?.('trackSingleCustom', pixelId, name);
     };
     const booking = (event: Event) => {
       const id = (event as CustomEvent<string>).detail;
-      if (snapshot() === 'yes' && isPublicAnalyticsPath(location.pathname) && !location.search && !location.hash && /^[a-f0-9]{64}$/.test(id)) {
-        w.fbq?.('trackSingle', pixelId, 'Lead', { content_name: 'booking_request' }, { eventID: id });
+      if (snapshot() === 'yes' && isPublicAnalyticsPath(location.pathname) && metaUrlParametersAreSafe(new URL(location.href))) {
+        if (w.fbq) emitBookingLead(w.fbq, pixelId, id, sentBookings.current);
       }
     };
     window.addEventListener(META_ACTION_EVENT, action);
