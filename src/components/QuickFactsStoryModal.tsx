@@ -295,6 +295,8 @@ export default function QuickFactsStoryModal({ customStoriesData }: QuickFactsSt
               <img
                 src={story.coverImage || story.photos[0]?.url}
                 alt={`ภาพจริง: ${story.statLabel}`}
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </span>
