@@ -5,7 +5,7 @@ import { getArticleBySlug, getArticles } from "@/lib/data";
 import { ArrowLeft, BookOpen, ChevronLeft, ChevronRight, Bookmark } from "lucide-react";
 
 import type { Metadata } from "next";
-import { pageMetadata, SITE_URL, SHARE_IMAGE } from "@/lib/seo";
+import { pageMetadata, SITE_URL, SHARE_IMAGE, serializeJsonLd } from "@/lib/seo";
 
 export const revalidate = 0; // Disable static cache
 
@@ -106,6 +106,29 @@ export default async function BlogDetailPage({ params }: PageProps) {
         </span>
       </div>
 
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd({
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Article",
+            "@id": `${SITE_URL}/blog/${encodeURIComponent(article.slug)}#article`,
+            headline: article.title,
+            description: article.excerpt || undefined,
+            inLanguage: "th-TH",
+            mainEntityOfPage: `${SITE_URL}/blog/${encodeURIComponent(article.slug)}`,
+            image: new URL(article.image_url || SHARE_IMAGE, SITE_URL).href,
+            publisher: { "@id": `${SITE_URL}/#restaurant` },
+          },
+          {
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              { "@type": "ListItem", position: 1, name: "ลำลำลับแล", item: SITE_URL },
+              { "@type": "ListItem", position: 2, name: "เรื่องเล่าเมืองลับแล", item: `${SITE_URL}/blog` },
+              { "@type": "ListItem", position: 3, name: article.title, item: `${SITE_URL}/blog/${encodeURIComponent(article.slug)}` },
+            ],
+          },
+        ],
+      }) }} />
       {/* Book Reader Card */}
       <article className="wood-card bg-[#241710] rounded-3xl p-6 sm:p-12 border border-accent/20 shadow-md space-y-8">
         {/* Chapter Header */}
@@ -139,7 +162,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
       <aside className="rounded-2xl border border-accent/25 bg-[#241710] p-5 font-thai space-y-3">
         <h2 className="text-lg font-bold text-primary">แวะมากินข้าวที่บ้าน 100 ปี</h2>
-        <p className="text-sm leading-relaxed text-primary/80">ร้านลำลำลับแลอยู่ใต้ถุนบ้านไม้ของครอบครัว ในอำเภอลับแล จังหวัดอุตรดิตถ์</p>
+        <p className="text-sm leading-relaxed text-primary/80"><Link href="/" className="underline underline-offset-4">ลำลำลับแล ร้านอาหารลับแล</Link> อยู่ใต้ถุนบ้านไม้ของครอบครัว ในจังหวัดอุตรดิตถ์ เสิร์ฟอาหารล้านนาผสมสุโขทัย</p>
         <div className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-accent">
           <Link href="/menu" className="underline underline-offset-4">ดูเมนูและราคาอาหาร</Link>
           <Link href="/directions" className="underline underline-offset-4">ดูแผนที่มาร้าน</Link>

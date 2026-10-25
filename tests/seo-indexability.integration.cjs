@@ -31,6 +31,27 @@ async function check(enabled, port) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     assert(ready, log);
+    const home = await (await request('/')).text();
+    assert(home.includes('ร้านอาหารลับแล อุตรดิตถ์ | ลำลำลับแลบ้าน 100 ปี'));
+    assert(home.includes('id="local-restaurant-title"'));
+    assert(home.includes('อาหารล้านนาผสมสุโขทัย'));
+    assert.equal((home.match(/<h1\b/g) || []).length, 1);
+    assert(home.includes('rel="preload"') && home.includes('as="image"'));
+    const trackedHome = await (await request('/?utm_source=google')).text();
+    assert(trackedHome.includes('<link rel="canonical" href="https://www.lablae.net"'));
+    const blog = await (await request('/blog/chapter-22-khao-phan-phak')).text();
+    const blogSchemas = [...blog.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].flatMap(match => {
+      const value = JSON.parse(match[1]); return value['@graph'] || [value];
+    });
+    assert(blogSchemas.some(value => value['@type'] === 'Article'));
+    assert(blogSchemas.some(value => value['@type'] === 'BreadcrumbList'));
+    assert(blog.includes('ลำลำลับแล ร้านอาหารลับแล'));
+    const optimized = await request('/_next/image?url=%2Fimages%2Fmenu%2Fkhantoke_100years.jpg&w=640&q=75');
+    assert.equal(optimized.status, 200);
+    assert(optimized.headers.get('content-type').startsWith('image/'));
+    const optimizedBytes = (await optimized.arrayBuffer()).byteLength;
+    assert(optimizedBytes < 200000, `Optimized image unexpectedly large: ${optimizedBytes}`);
+    console.log(`PASS: local restaurant copy, canonical, article schema and image resizing (${optimizedBytes} bytes)`);
     const sitemapResponse = await request('/sitemap.xml');
     assert.equal(sitemapResponse.status, 200);
     const sitemap = await sitemapResponse.text();

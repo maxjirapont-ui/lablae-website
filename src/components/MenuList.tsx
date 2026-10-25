@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { MenuItem } from "@/lib/data";
 import { menuDescription, menuPrice, menuPriceLabel } from "@/lib/menu-display";
@@ -141,8 +142,10 @@ export default function MenuList({
       >
         {item.image_url && item.image_url.trim() !== "" ? (
           <div className="relative aspect-[4/3] w-full overflow-hidden shrink-0 border-b border-accent/20 bg-[#1a100a]">
-            <img
+            <Image
               src={item.image_url}
+              fill sizes="(max-width: 767px) 100vw, 50vw"
+              unoptimized={!item.image_url.startsWith("/") || item.image_url.startsWith("//")}
               alt={item.name}
               loading={/ขันโตก\s*บ้าน\s*100\s*ปี/.test(item.name) ? "eager" : "lazy"}
               decoding="async"
@@ -283,8 +286,10 @@ export default function MenuList({
                   {/* Menu Item Image or Decorative Accent Header */}
                   {item.image_url && item.image_url.trim() !== "" ? (
                     <div className="relative aspect-[4/3] w-full overflow-hidden border-b border-accent/15">
-                      <img
+                      <Image
                         src={item.image_url}
+                        fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                        unoptimized={!item.image_url.startsWith("/") || item.image_url.startsWith("//")}
                         alt={item.name}
                         loading={/ขันโตก\s*บ้าน\s*100\s*ปี/.test(item.name) ? "eager" : "lazy"}
                         decoding="async"

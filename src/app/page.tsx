@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { menuDescription, menuPrice, menuPriceLabel } from "@/lib/menu-display";
@@ -11,8 +12,8 @@ import { Clock, Phone, MapPin, Sparkles, BookOpen, ChevronRight } from "lucide-r
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
-const HOME_TITLE = "ลำลำลับแลบ้าน 100 ปี | ร้านอาหารลับแล อุตรดิตถ์";
-const HOME_DESCRIPTION = "ลำลำลับแลบ้าน 100 ปี ร้านอาหารพื้นเมืองในอำเภอลับแล จังหวัดอุตรดิตถ์ อาหารเหนือสูตรครอบครัว 4 รุ่น พริกแกงทำเอง ดูเมนูขันโตก แผนที่ และจองโต๊ะออนไลน์";
+const HOME_TITLE = "ร้านอาหารลับแล อุตรดิตถ์ | ลำลำลับแลบ้าน 100 ปี";
+const HOME_DESCRIPTION = "ลำลำลับแลบ้าน 100 ปี ร้านอาหารลับแล จ.อุตรดิตถ์ อาหารล้านนาผสมสุโขทัยใต้ถุนบ้านไม้ของครอบครัว ดูเมนูขันโตก ราคาอาหาร แผนที่มาร้าน และจองโต๊ะล่วงหน้า";
 
 export async function generateMetadata(): Promise<Metadata> {
   const heroImage = (await getSetting("home_hero_image")) || undefined;
@@ -205,8 +206,10 @@ export default async function Home() {
       {/* 1. Hero Section (Always on Top) */}
       <section 
         className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: `url('${heroImage}')` }}
       >
+        <Image src={heroImage} alt="" fill sizes="100vw" preload
+          unoptimized={!heroImage.startsWith("/") || heroImage.startsWith("//")}
+          className="object-cover object-center" />
         {/* Soft atmospheric overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/55 to-[#1a100a]" />
 
@@ -264,6 +267,22 @@ export default async function Home() {
 
 
 
+
+      <section aria-labelledby="local-restaurant-title" className="max-w-4xl mx-auto px-4 sm:px-6 font-thai text-center space-y-4">
+        <h2 id="local-restaurant-title" className="text-2xl sm:text-3xl font-bold text-primary">
+          ร้านอาหารลับแล ในบ้านไม้ 100 ปี
+        </h2>
+        <p className="text-base leading-8 text-primary/85">
+          ลำลำลับแลอยู่ในอำเภอลับแล จังหวัดอุตรดิตถ์ เสิร์ฟอาหารล้านนาผสมสุโขทัย
+          ทั้งสำรับขันโตกและกับข้าวของครอบครัว ใต้ถุนบ้านไม้ที่เรายังดูแลกันอยู่
+        </p>
+        <p className="text-sm leading-7 text-primary/80">{address} · {hours}</p>
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-accent">
+          <Link href="/menu" className="underline underline-offset-4">ดูเมนูขันโตกและราคาอาหาร</Link>
+          <Link href="/directions" className="underline underline-offset-4">แผนที่มาร้านลำลำลับแล</Link>
+          <Link href="/#booking" className="underline underline-offset-4">จองโต๊ะก่อนเดินทาง</Link>
+        </div>
+      </section>
 
       {/* Render Dynamic Reorderable Sections */}
       {sections.map((sectionKey) => {
@@ -325,8 +344,12 @@ export default async function Home() {
 
                 {/* About Image Section with Caption */}
                 <div className="relative group rounded-3xl overflow-hidden shadow-lg aspect-video md:aspect-auto md:h-80 border border-primary/5">
-                  <img 
-                    src={aboutImage} 
+                  <Image
+                    src={aboutImage}
+                    fill sizes="(max-width: 767px) 100vw, 50vw"
+                    unoptimized={!aboutImage.startsWith("/") || aboutImage.startsWith("//")}
+                    loading="lazy"
+                    decoding="async"
                     alt={aboutImageCaption || "บรรยากาศร้านลำลำลับแล"} 
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
@@ -361,8 +384,12 @@ export default async function Home() {
                     <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-[#261810]">
                       {dish.image_url && dish.image_url.trim() !== "" && (
                         <div className="relative h-40 w-full overflow-hidden border-b border-accent/15">
-                          <img
+                          <Image
                             src={dish.image_url}
+                            fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                            unoptimized={!dish.image_url.startsWith("/") || dish.image_url.startsWith("//")}
+                            loading="lazy"
+                            decoding="async"
                             alt={dish.name}
                             className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                           />
@@ -441,8 +468,12 @@ export default async function Home() {
                     <div key={dish.id} className="wood-card rounded-2xl overflow-hidden flex flex-col h-full bg-[#261810]">
                       {dish.image_url && dish.image_url.trim() !== "" && (
                         <div className="relative h-40 w-full overflow-hidden border-b border-accent/15">
-                          <img
+                          <Image
                             src={dish.image_url}
+                            fill sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 33vw"
+                            unoptimized={!dish.image_url.startsWith("/") || dish.image_url.startsWith("//")}
+                            loading="lazy"
+                            decoding="async"
                             alt={dish.name}
                             className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                           />
@@ -588,14 +619,17 @@ export default async function Home() {
 
                 {/* Interactive Image & Direction Overlay Column */}
                 <div className="relative group rounded-3xl overflow-hidden shadow-lg aspect-video md:aspect-auto md:h-[350px] border border-primary/5">
-                  <img 
-                    src={aboutImage} 
+                  <Image
+                    src={aboutImage}
+                    fill sizes="(max-width: 767px) 100vw, 50vw"
+                    unoptimized={!aboutImage.startsWith("/") || aboutImage.startsWith("//")}
+                    loading="lazy" decoding="async"
                     alt="บรรยากาศร้านลำลำลับแล" 
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
                   {/* Elegant directions overlay */}
                   <div className="absolute inset-0 bg-black/45 flex flex-col justify-end p-6 sm:p-8 space-y-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <h4 className="font-thai font-bold text-cream text-lg">ยินดีต้อนรับสู่บ้าน 100 ปี</h4>
+                    <h3 className="font-thai font-bold text-cream text-lg">ยินดีต้อนรับสู่บ้าน 100 ปี</h3>
                     <p className="font-thai text-xs text-cream/90">ตั้งอยู่ในอำเภอลับแล จังหวัดอุตรดิตถ์ มีที่จอดรถสะดวกสบาย</p>
                     <div>
                       <a
@@ -634,7 +668,7 @@ export default async function Home() {
           </details>
           <details className="py-4">
             <summary className="cursor-pointer font-semibold text-primary">มีอาหารอะไรให้เลือกบ้าง?</summary>
-            <p className="mt-3 text-sm leading-relaxed text-primary/80">อาหารพื้นเมืองลับแลและอาหารเหนือสูตรครอบครัว 4 รุ่น ทั้งชุดขันโตก น้ำพริก และกับข้าว พริกแกงทำเอง <Link href="/menu" className="text-accent underline">ดูเมนูและราคาปัจจุบัน</Link></p>
+            <p className="mt-3 text-sm leading-relaxed text-primary/80">อาหารล้านนาผสมสุโขทัย ทั้งชุดขันโตก น้ำพริก และกับข้าวของครอบครัว พริกแกงทำเอง <Link href="/menu" className="text-accent underline">ดูเมนูและราคาปัจจุบัน</Link></p>
           </details>
           <details className="py-4">
             <summary className="cursor-pointer font-semibold text-primary">จองโต๊ะล่วงหน้าได้อย่างไร?</summary>

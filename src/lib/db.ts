@@ -8,6 +8,7 @@ const dbPath = getDatabasePath();
 
 // Global database connection cache to prevent multiple connections in dev hot-reloads
 let globalDb: Database | null = null;
+let initializingDb: Promise<Database> | null = null;
 
 const LEGACY_COPY_UPDATES = [
   ["hero_btn2_text", "รู้จักกับเรา & ตำนานลับแล", "รู้จักบ้านและเรื่องเล่าลับแล"],
@@ -162,7 +163,18 @@ export async function getDb(): Promise<Database> {
   if (globalDb) {
     return globalDb;
   }
+  // Metadata and layout can request the database together on a cold start.
+  // Share initialization so migrations never run twice in this process.
+  if (!initializingDb) {
+    initializingDb = initializeDb().catch((error) => {
+      initializingDb = null;
+      throw error;
+    });
+  }
+  return initializingDb;
+}
 
+async function initializeDb(): Promise<Database> {
   const db = await open({
     filename: dbPath,
     driver: sqlite3.Database,
