@@ -31,12 +31,18 @@ async function check(enabled, port) {
       await new Promise(resolve => setTimeout(resolve, 100));
     }
     assert(ready, log);
-    const home = await (await request('/')).text();
+    const homeResponse = await request('/');
+    const home = await homeResponse.text();
     assert(home.includes('ร้านอาหารลับแล อุตรดิตถ์ | ลำลำลับแลบ้าน 100 ปี'));
     assert(home.includes('id="local-restaurant-title"'));
     assert(home.includes('อาหารล้านนาผสมสุโขทัย'));
     assert.equal((home.match(/<h1\b/g) || []).length, 1);
-    assert(home.includes('rel="preload"') && home.includes('as="image"'));
+    const hero = (home.match(/<img\b[^>]+>/g) || []).find(tag => tag.includes('object-cover object-center'));
+    assert(hero?.includes('loading="eager"') && hero.includes('fetchPriority="high"'));
+    const fontPreloads = (homeResponse.headers.get('link') || '').split(',').filter(link => link.includes('as="font"'));
+    assert.equal(fontPreloads.length, 5, 'Only Inter and four Thai Sarabun weights should be preloaded');
+    const logo = (home.match(/<img\b[^>]+>/g) || []).find(tag => tag.includes('alt="ลำลำลับแล"'));
+    if (logo) assert(logo.includes('sizes="40px"') && logo.includes('width="40"'));
     const trackedHome = await (await request('/?utm_source=google')).text();
     assert(trackedHome.includes('<link rel="canonical" href="https://www.lablae.net"'));
     const blog = await (await request('/blog/chapter-22-khao-phan-phak')).text();

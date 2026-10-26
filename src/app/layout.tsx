@@ -26,7 +26,8 @@ const inter = Inter({
 
 const sarabun = Sarabun({
   variable: "--font-sarabun",
-  subsets: ["thai", "latin"],
+  // Preload Thai only; Latin glyphs load on demand without competing with the hero.
+  subsets: ["thai"],
   weight: ["300", "400", "500", "700"],
 });
 

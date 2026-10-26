@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Utensils, Calendar, ChevronDown } from "lucide-react";
 import AnnouncementBanner, { AnnouncementBannerProps } from "./AnnouncementBanner";
@@ -149,11 +150,16 @@ export default function Navbar({
               <div className="flex-shrink-0">
                 <Link href="/" onClick={() => closeMenu()} className="flex items-center gap-3">
                   {logoUrl && (
-                    <img
+                    <Image
                       src={logoUrl}
                       alt="ลำลำลับแล"
+                      width={40}
+                      height={40}
+                      sizes="40px"
+                      loading="eager"
+                      unoptimized={!logoUrl.startsWith("/") || logoUrl.startsWith("//")}
                       className="object-contain shrink-0"
-                      style={{ height: "40px", width: "auto" }}
+                      style={{ height: "40px", width: "40px" }}
                     />
                   )}
                   <div className="flex flex-col">

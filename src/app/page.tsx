@@ -207,7 +207,7 @@ export default async function Home() {
       <section 
         className="relative min-h-[85vh] flex items-center justify-center overflow-hidden bg-cover bg-center"
       >
-        <Image src={heroImage} alt="" fill sizes="100vw" preload
+        <Image src={heroImage} alt="" fill sizes="100vw" loading="eager" fetchPriority="high"
           unoptimized={!heroImage.startsWith("/") || heroImage.startsWith("//")}
           className="object-cover object-center" />
         {/* Soft atmospheric overlay */}
