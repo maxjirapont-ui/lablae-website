@@ -109,7 +109,8 @@ const BRAND_NAME_REPLACEMENTS_2026_11: ReadonlyArray<readonly [string, string]> 
   ["ร้านอาหาร 'ลำลำลับแล'", "ร้านอาหาร 'บ้าน 100 ปี ลำลำลับแล'"],
 ];
 
-// Owner answers (10 Nov 2026): every fish dish uses Nile tilapia; the small set serves 1–2.
+// Owner answers (10 Nov 2026): every fish dish uses Nile tilapia; the small set serves 1–2;
+// the crab comes from Uttaradit farmers; only the beef อ่อม is stewed overnight.
 const MENU_FISH_AND_SMALL_SET_2026_11: ReadonlyArray<readonly [string, string]> = [
   ["โตกเล็ก", "ขันโตกขนาดย่อมสำหรับ 1–2 คน ได้ลองหลายอย่างในถาดเดียว: น้ำพริกอ่อง, พริกหนุ่ม, ชุดผัก, ลาบหมู, ไส้อั่ว, แคบหมู, สามชั้นทอด, ข้าวเหนียว"],
   ["ปลานึ่งพริกหนุ่ม", "ปลานิลนึ่ง กินคู่น้ำพริกหนุ่มกับผักลวก"],
@@ -117,6 +118,8 @@ const MENU_FISH_AND_SMALL_SET_2026_11: ReadonlyArray<readonly [string, string]> 
   ["ปลาทอดสมุนไพร", "ปลานิลทอดสมุนไพร"],
   ["ปลานึ่งซีอิ๊ว", "ปลานิลนึ่งซีอิ๊ว"],
   ["ต้มยำปลาลับแล", "ต้มยำปลานิลแบบลับแล"],
+  ["อ่องมันปู", "มันปูจากปูที่เกษตรกรในอุตรดิตถ์เลี้ยงแบบออร์แกนิก ปรุงแบบโบราณ รสเข้ม มัน กินกับข้าวเหนียวและผักสด"],
+  ["แกงอ่อมหมู/ไก่", "แกงอ่อมแบบที่ตากับยายทำให้กินตอนเด็ก เลือกหมูหรือไก่ หอมสมุนไพร"],
 ];
 
 const LEGACY_CATEGORY_UPDATES = [
@@ -591,6 +594,20 @@ async function initializeDb(): Promise<Database> {
     for (const [menuName, description] of MENU_FISH_AND_SMALL_SET_2026_11) {
       await db.run("UPDATE menus SET description = ? WHERE name = ?", [description, menuName]);
     }
+    // "ปลานึ่งพริกหนุ่ม" (sides) and "ปลานึ่งน้ำพริกหนุ่ม" (mains) are the same dish:
+    // hide the sides copy (reversible in admin) and keep the one under กับข้าว.
+    const keptFishDish = await db.get<{ id: number }>(
+      "SELECT id FROM menus WHERE name = ? AND is_visible = 1",
+      ["ปลานึ่งน้ำพริกหนุ่ม"],
+    );
+    if (keptFishDish) {
+      await db.run("UPDATE menus SET is_visible = 0 WHERE name = ?", ["ปลานึ่งพริกหนุ่ม"]);
+    }
+    // Only the beef อ่อม is stewed overnight over charcoal.
+    await db.run(
+      "UPDATE settings SET value = REPLACE(value, ?, ?) WHERE INSTR(value, ?) > 0",
+      ["'แกงอ่อมหมู/ไก่' ตุ๋นเตาถ่านข้ามวัน", "'แกงอ่อมเนื้อ' ตุ๋นเตาถ่านข้ามวัน", "'แกงอ่อมหมู/ไก่' ตุ๋นเตาถ่านข้ามวัน"],
+    );
     await db.run("INSERT INTO app_migrations (name) VALUES (?)", [fishMenuMigrationName]);
   }
 
