@@ -109,6 +109,16 @@ const BRAND_NAME_REPLACEMENTS_2026_11: ReadonlyArray<readonly [string, string]> 
   ["ร้านอาหาร 'ลำลำลับแล'", "ร้านอาหาร 'บ้าน 100 ปี ลำลำลับแล'"],
 ];
 
+// Owner answers (10 Nov 2026): every fish dish uses Nile tilapia; the small set serves 1–2.
+const MENU_FISH_AND_SMALL_SET_2026_11: ReadonlyArray<readonly [string, string]> = [
+  ["โตกเล็ก", "ขันโตกขนาดย่อมสำหรับ 1–2 คน ได้ลองหลายอย่างในถาดเดียว: น้ำพริกอ่อง, พริกหนุ่ม, ชุดผัก, ลาบหมู, ไส้อั่ว, แคบหมู, สามชั้นทอด, ข้าวเหนียว"],
+  ["ปลานึ่งพริกหนุ่ม", "ปลานิลนึ่ง กินคู่น้ำพริกหนุ่มกับผักลวก"],
+  ["ปลานึ่งน้ำพริกหนุ่ม", "ปลานิลนึ่ง กินคู่น้ำพริกหนุ่มกับผักลวก"],
+  ["ปลาทอดสมุนไพร", "ปลานิลทอดสมุนไพร"],
+  ["ปลานึ่งซีอิ๊ว", "ปลานิลนึ่งซีอิ๊ว"],
+  ["ต้มยำปลาลับแล", "ต้มยำปลานิลแบบลับแล"],
+];
+
 const LEGACY_CATEGORY_UPDATES = [
   ["เซทขันโตก", "เซตขันโตก"],
   ["เครื่องดื่มดับแซ่บ & น้ำสมุนไพร", "เครื่องดื่มและน้ำสมุนไพร"],
@@ -570,6 +580,18 @@ async function initializeDb(): Promise<Database> {
       }
     }
     await db.run("INSERT INTO app_migrations (name) VALUES (?)", [brandNameMigrationName]);
+  }
+
+  const fishMenuMigrationName = "menu_fish_tilapia_small_set_2026_11_10";
+  const fishMenuMigration = await db.get<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [fishMenuMigrationName],
+  );
+  if (!fishMenuMigration) {
+    for (const [menuName, description] of MENU_FISH_AND_SMALL_SET_2026_11) {
+      await db.run("UPDATE menus SET description = ? WHERE name = ?", [description, menuName]);
+    }
+    await db.run("INSERT INTO app_migrations (name) VALUES (?)", [fishMenuMigrationName]);
   }
 
   globalDb = db;
