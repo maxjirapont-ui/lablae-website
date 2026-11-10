@@ -12,8 +12,8 @@ export function generateMetadata(): Metadata {
   const publicShop = shopIsPublic();
   return {
     ...pageMetadata(
-      `ไส้อั่วลำลำลับแล ${SHOP_PROMOTION.quantity} แพ็ก ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรี`,
-      `ไส้อั่วลำลำลับแล แพ็กละ ${SHOP_PRODUCT.weightGrams} กรัม ${SHOP_PRODUCT.priceBaht} บาท โปร ${SHOP_PROMOTION.quantity} แพ็ก ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรีเมื่อสั่งตั้งแต่ ${SHOP_PROMOTION.freeShippingMinPacks} แพ็ก สั่ง 1–2 แพ็ก ค่าส่ง ${SHOP_SHIPPING_BAHT} บาท จัดส่งแช่แข็ง`,
+      `ไส้อั่วบ้าน 100 ปี ${SHOP_PROMOTION.quantity} แพ็ก ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรี`,
+      `ไส้อั่วบ้าน 100 ปี แพ็กละ ${SHOP_PRODUCT.weightGrams} กรัม ${SHOP_PRODUCT.priceBaht} บาท โปร ${SHOP_PROMOTION.quantity} แพ็ก ${SHOP_PROMOTION.priceBaht} บาท ส่งฟรีเมื่อสั่งตั้งแต่ ${SHOP_PROMOTION.freeShippingMinPacks} แพ็ก สั่ง 1–2 แพ็ก ค่าส่ง ${SHOP_SHIPPING_BAHT} บาท จัดส่งแช่แข็ง`,
       "/shop",
       SHOP_PRODUCT.image,
       SHOP_PRODUCT.imageAlt,

@@ -204,7 +204,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
       </div>}
 
       <div className="mb-5">
-        <p className="mb-2 text-sm text-accent">จากครัวลำลำลับแล</p>
+        <p className="mb-2 text-sm text-accent">จากครัวบ้าน 100 ปี</p>
         <h1 className="text-3xl font-bold leading-snug text-primary sm:text-4xl">{SHOP_PRODUCT.name}</h1>
         <p className="mt-2 text-base text-primary/80">แพ็กละ 500 กรัม · ปรุงสุก · ซีลสูญญากาศ</p>
       </div>
@@ -227,7 +227,7 @@ export default function ShopPreview({testing = true}: {testing?:boolean}) {
           </div>
           <button type="button" onClick={choosePromotion} disabled={!hydrated || !draftReady || locked} className={`${buttonClass} inline-flex min-h-12 w-full items-center justify-center gap-2 bg-accent px-5 py-3 font-bold text-[#261810] hover:bg-accent/85`}>เลือกชุด {SHOP_PROMOTION.quantity} แพ็ก<ArrowRight size={18} aria-hidden="true" /></button>
           <div className="relative aspect-square overflow-hidden rounded-2xl bg-[#f1e6d5]">
-            {imageFailed ? <div className="flex h-full items-center justify-center text-stone-700">ไส้อั่วลำลำลับแล · 500 กรัม</div> : (
+            {imageFailed ? <div className="flex h-full items-center justify-center text-stone-700">ไส้อั่วบ้าน 100 ปี · 500 กรัม</div> : (
               <Image src={SHOP_PRODUCT.image} alt={SHOP_PRODUCT.imageAlt} fill sizes="(min-width: 1280px) 489px, (min-width: 768px) 45vw, calc(100vw - 32px)" className="object-contain" loading="eager" onError={() => setImageFailed(true)} />
             )}
           </div>

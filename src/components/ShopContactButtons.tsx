@@ -24,7 +24,7 @@ export default function ShopContactButtons({
     <a href={phoneHref} className={`${buttonClass} ${phoneClass}`}>
       <Phone size={18} aria-hidden="true" />โทรหาร้าน
     </a>
-    <a href={SHOP_MESSENGER_URL} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className={`${buttonClass} ${messageClass}`} aria-label="ทักเพจร้านลำลำลับแลใน Messenger (เปิดแยกจากหน้าสั่งซื้อ)">
+    <a href={SHOP_MESSENGER_URL} target="_blank" rel="noopener noreferrer" referrerPolicy="no-referrer" className={`${buttonClass} ${messageClass}`} aria-label="ทักเพจบ้าน 100 ปี ลำลำลับแลใน Messenger (เปิดแยกจากหน้าสั่งซื้อ)">
       <MessageCircle size={18} aria-hidden="true" />ทักเพจร้าน
     </a>
   </div>;

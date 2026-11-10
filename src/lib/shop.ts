@@ -1,11 +1,11 @@
 // Owner-confirmed: 339 baht / 500 g; every 3 packs cost 999 baht, free shipping from 3 packs.
 export const SHOP_PRODUCT = {
   id: "sai-ua-500g",
-  name: "ไส้อั่วลำลำลับแล",
+  name: "ไส้อั่วบ้าน 100 ปี",
   priceBaht: 339,
   weightGrams: 500,
   image: "/images/shop/sai-ua-500g-studio.png",
-  imageAlt: "ไส้อั่วลำลำลับแลในแพ็กซีลสูญญากาศ ขนาด 500 กรัม",
+  imageAlt: "ไส้อั่วบ้าน 100 ปีในแพ็กซีลสูญญากาศ ขนาด 500 กรัม",
 } as const;
 
 export const SHOP_PROMOTION = {
