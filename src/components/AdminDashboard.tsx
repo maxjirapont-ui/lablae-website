@@ -308,7 +308,7 @@ export default function AdminDashboard({
     try {
       const backupData = {
         exported_at: new Date().toISOString(),
-        restaurant_name: settings.restaurant_name || "ร้านลำลำลับแลบ้าน 100 ปี",
+        restaurant_name: settings.restaurant_name || "บ้าน 100 ปี ลำลำลับแล",
         version: "1.0",
         settings,
         menus,
@@ -1207,7 +1207,7 @@ export default function AdminDashboard({
     setSettingsMsg("กำลังบันทึกข้อมูลหน้าเมนูและเล่ม PDF...");
     try {
       const payload = {
-        menu_page_badge: settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน 100 ปี",
+        menu_page_badge: settings.menu_page_badge ?? "บ้าน 100 ปี ลำลำลับแล",
         menu_page_title: settings.menu_page_title ?? "กับข้าวและสำรับอาหาร",
         menu_page_subtitle: settings.menu_page_subtitle ?? "ปรุงสดใหม่ทุกจาน พริกแกงทำเอง วัตถุดิบสดจากสวนหลังบ้านและในชุมชนลับแล",
         menu_page_notice: settings.menu_page_notice ?? "",
@@ -1702,7 +1702,7 @@ export default function AdminDashboard({
               <div>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-xs font-semibold mb-2 text-accent border border-accent/20">
                   <Store className="w-3.5 h-3.5 text-accent" />
-                  {settings.restaurant_name || "ร้านลำลำลับแลบ้าน 100 ปี"}
+                  {settings.restaurant_name || "บ้าน 100 ปี ลำลำลับแล"}
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold">ศูนย์จัดการด่วน</h2>
                 <p className="text-xs text-white/80 mt-1">
@@ -3096,8 +3096,8 @@ export default function AdminDashboard({
                     </label>
                     <input
                       type="text"
-                      placeholder="เช่น ร้านลำลำลับแลบ้าน 100 ปี"
-                      value={settings.menu_page_badge ?? "ร้านลำลำลับแลบ้าน 100 ปี"}
+                      placeholder="เช่น บ้าน 100 ปี ลำลำลับแล"
+                      value={settings.menu_page_badge ?? "บ้าน 100 ปี ลำลำลับแล"}
                       onChange={(e) => setSettings(prev => ({ ...prev, menu_page_badge: e.target.value }))}
                       className="w-full px-3 py-2 bg-white border border-primary/15 rounded-xl text-primary focus:outline-none focus:border-accent"
                     />

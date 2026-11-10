@@ -48,7 +48,7 @@ interface HeroSectionEditorProps {
 
 const DEFAULT_HERO_VALUES = {
   hero_badge: "บ้านไม้ 100 ปีไร้ตะปู · อ.ลับแล จ.อุตรดิตถ์",
-  hero_title: "ร้านลำลำลับแลบ้าน 100 ปี",
+  hero_title: "บ้าน 100 ปี ลำลำลับแล",
   hero_subtitle: "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู",
   hero_description:
     "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงทำเอง ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ",
@@ -340,7 +340,7 @@ export default function HeroSectionEditor({
                 type="text"
                 value={title}
                 onChange={(e) => handleFieldChange(setTitle, e.target.value)}
-                placeholder="เช่น ร้านลำลำลับแลบ้าน 100 ปี"
+                placeholder="เช่น บ้าน 100 ปี ลำลำลับแล"
                 className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-cream/30 text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
                 required
               />

@@ -37,15 +37,15 @@ export const metadata: Metadata = {
     other: { "msvalidate.01": "0D5FEC7249CEA094DC8EE9C9368FDB3E" },
   },
   title: {
-    default: "ร้านลำลำลับแลบ้าน 100 ปี | อาหารเมืองลับแล อุตรดิตถ์",
-    template: "%s | ร้านลำลำลับแลบ้าน 100 ปี",
+    default: "บ้าน 100 ปี ลำลำลับแล | อาหารเมืองลับแล อุตรดิตถ์",
+    template: "%s | บ้าน 100 ปี ลำลำลับแล",
   },
   description: "อาหารเหนือแบบลับแลโบราณ ส่งต่อมาสี่รุ่น รสชาติเข้มข้นผสมผสานวัฒนธรรมล้านนาและสุโขทัย ร้านอาหารเมืองลับแล ขันโตก ข้าวพันผัก ใต้ถุนเรือนไม้ไร้ตะปู 100 ปี จ.อุตรดิตถ์",
   keywords: [
     "ร้านอาหารลับแล",
     "ร้านอาหารอุตรดิตถ์",
     "ลำลำลับแล",
-    "ลำลำลับแลบ้าน 100 ปี",
+    "บ้าน 100 ปี ลำลำลับแล",
     "ของกินลับแล",
     "อาหารเมืองลับแล",
     "ขันโตก ลับแล",
@@ -56,28 +56,28 @@ export const metadata: Metadata = {
     "อาหารเหนือ อุตรดิตถ์",
     "หมูทอดลับแลพริกข่า"
   ],
-  authors: [{ name: "ร้านลำลำลับแลบ้าน 100 ปี" }],
-  creator: "ร้านลำลำลับแลบ้าน 100 ปี",
-  publisher: "ร้านลำลำลับแลบ้าน 100 ปี",
+  authors: [{ name: "บ้าน 100 ปี ลำลำลับแล" }],
+  creator: "บ้าน 100 ปี ลำลำลับแล",
+  publisher: "บ้าน 100 ปี ลำลำลับแล",
   openGraph: {
     type: "website",
     locale: "th_TH",
     url: "https://www.lablae.net",
-    siteName: "ร้านลำลำลับแลบ้าน 100 ปี",
-    title: "ร้านลำลำลับแลบ้าน 100 ปี | อาหารเมืองลับแล อุตรดิตถ์",
+    siteName: "บ้าน 100 ปี ลำลำลับแล",
+    title: "บ้าน 100 ปี ลำลำลับแล | อาหารเมืองลับแล อุตรดิตถ์",
     description: "อาหารเหนือแบบลับแลโบราณ ส่งต่อมาสี่รุ่น รสชาติเข้มข้นผสมผสานวัฒนธรรมล้านนาและสุโขทัย ใต้ถุนเรือนไม้ไร้ตะปู 100 ปี",
     images: [
       {
         url: "/images/menu/khantoke_big.jpg",
         width: 1200,
         height: 630,
-        alt: "ชุดขันโตก ร้านลำลำลับแลบ้าน 100 ปี",
+        alt: "ชุดขันโตก บ้าน 100 ปี ลำลำลับแล",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ร้านลำลำลับแลบ้าน 100 ปี | อาหารเมืองลับแล อุตรดิตถ์",
+    title: "บ้าน 100 ปี ลำลำลับแล | อาหารเมืองลับแล อุตรดิตถ์",
     description: "อาหารเหนือแบบลับแลโบราณ ส่งต่อมาสี่รุ่น ณ เมืองลับแล จ.อุตรดิตถ์",
     images: ["/images/menu/khantoke_big.jpg"],
   },
@@ -131,7 +131,7 @@ export default async function RootLayout({
   const creamColor = (await getSetting("theme_cream")) || "#f7eee3";
 
   // Fetch Business Data for AI Search optimization (JSON-LD Schema)
-  const restaurantName = (await getSetting("restaurant_name")) || "ร้านลำลำลับแลบ้าน 100 ปี";
+  const restaurantName = (await getSetting("restaurant_name")) || "บ้าน 100 ปี ลำลำลับแล";
   const phone = (await getSetting("phone")) || "095-628-3125";
   const address = (await getSetting("address")) || "ถนนสายของกินเมืองลับแล, ต.ศรีพนมมาศ, อ.ลับแล, จ.อุตรดิตถ์";
   const facebookUrl = (await getSetting("facebook_url")) || "https://www.facebook.com/lumlumlablae/";

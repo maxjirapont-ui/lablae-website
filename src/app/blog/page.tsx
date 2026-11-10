@@ -7,7 +7,7 @@ import { Sparkles, BookOpen, ChevronRight, Bookmark, ArrowUpRight } from "lucide
 export const revalidate = 0; // Disable static cache
 export const metadata = pageMetadata(
   "เรื่องเล่าเมืองลับแล อาหารพื้นบ้าน และตำราลับแลง",
-  "อ่านตำราลับแลง เรื่องเล่าเมืองลับแล อุตรดิตถ์ บันทึกครัวโบราณ อาหารพื้นบ้าน และวิถีชีวิตจากครอบครัวร้านลำลำลับแลบ้าน 100 ปี",
+  "อ่านตำราลับแลง เรื่องเล่าเมืองลับแล อุตรดิตถ์ บันทึกครัวโบราณ อาหารพื้นบ้าน และวิถีชีวิตจากครอบครัวบ้าน 100 ปี ลำลำลับแล",
   "/blog",
 );
 
@@ -45,7 +45,7 @@ export default async function BlogListingPage() {
 
         <p className="text-xs sm:text-sm font-thai text-[#f7eee3]/75 max-w-md mx-auto leading-relaxed">
           จากแผ่นดินล้านนา–สุโขทัย สู่สำรับอาหารของตาเงิน–ยายจัน<br />
-          ร้านลำลำลับแลบ้าน 100 ปี อ.ลับแล จ.อุตรดิตถ์
+          บ้าน 100 ปี ลำลำลับแล อ.ลับแล จ.อุตรดิตถ์
         </p>
 
         <div className="pt-2 flex justify-center items-center gap-2 text-xs font-thai text-[#f7eee3]/60">

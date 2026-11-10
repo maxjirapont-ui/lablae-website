@@ -12,8 +12,8 @@ import { Clock, Phone, MapPin, Sparkles, BookOpen, ChevronRight } from "lucide-r
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0; // Dynamic on request
-const HOME_TITLE = "ร้านอาหารลับแล อุตรดิตถ์ | ลำลำลับแลบ้าน 100 ปี";
-const HOME_DESCRIPTION = "ลำลำลับแลบ้าน 100 ปี ร้านอาหารลับแล จ.อุตรดิตถ์ อาหารล้านนาผสมสุโขทัยใต้ถุนบ้านไม้ของครอบครัว ดูเมนูขันโตก ราคาอาหาร แผนที่มาร้าน และจองโต๊ะล่วงหน้า";
+const HOME_TITLE = "ร้านอาหารลับแล อุตรดิตถ์ | บ้าน 100 ปี ลำลำลับแล";
+const HOME_DESCRIPTION = "บ้าน 100 ปี ลำลำลับแล ร้านอาหารลับแล จ.อุตรดิตถ์ อาหารล้านนาผสมสุโขทัยใต้ถุนบ้านไม้ของครอบครัว ดูเมนูขันโตก ราคาอาหาร แผนที่มาร้าน และจองโต๊ะล่วงหน้า";
 
 export async function generateMetadata(): Promise<Metadata> {
   const heroImage = (await getSetting("home_hero_image")) || undefined;
@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     HOME_DESCRIPTION,
     "/",
     heroImage,
-    "บรรยากาศบ้านไม้ 100 ปี ร้านลำลำลับแล",
+    "บรรยากาศบ้าน 100 ปี ลำลำลับแล",
   );
 }
 const HOMEPAGE_FEATURED_LIMIT = 3;
@@ -148,12 +148,12 @@ export default async function Home() {
 
   // Hero Section Customizable Texts & Descriptions
   const heroBadge = (await getSetting("hero_badge")) || "บ้านไม้ 100 ปีไร้ตะปู · อ.ลับแล จ.อุตรดิตถ์";
-  const heroTitle = (await getSetting("hero_title")) || "ร้านลำลำลับแลบ้าน 100 ปี";
+  const heroTitle = (await getSetting("hero_title")) || "บ้าน 100 ปี ลำลำลับแล";
   const heroSubtitle = (await getSetting("hero_subtitle")) || "กับข้าวรสมือครอบครัว ใต้ถุนเรือนไม้ไร้ตะปู";
   const heroDescription = (await getSetting("hero_description")) || "อาหารพื้นเมืองลับแลดั้งเดิม พริกแกงทำเอง ข้าวพันผัก และชุดขันโตกสูตรโบราณ 4 รุ่น แวะมากินข้าวบ้านญาตินะครับ";
 
   // About / Story Ambience Section Customizable Texts
-  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศร้านลำลำลับแล ใต้ถุนบ้านไม้ 100 ปี";
+  const aboutImageCaption = (await getSetting("home_about_image_caption")) || "บรรยากาศบ้าน 100 ปี ลำลำลับแล ใต้ถุนบ้านไม้ 100 ปี";
   const aboutBadge = (await getSetting("about_badge")) || "เรื่องเล่าจากบ้าน 100 ปี";
   const aboutTitle = (await getSetting("about_title")) || "บ้านหลังนี้คือบ้านของครอบครัวเราจริง ๆ";
   const aboutQuote = (await getSetting("about_quote")) || "“นี่คือรสมือครอบครัวเรา ไม่ได้อวดว่าเลิศที่สุด แต่รับรองว่าเป็นของจริง ที่เรากินกันมาตั้งแต่ทวด”";
@@ -273,13 +273,13 @@ export default async function Home() {
           ร้านอาหารลับแล ในบ้านไม้ 100 ปี
         </h2>
         <p className="text-base leading-8 text-primary/85">
-          ลำลำลับแลอยู่ในอำเภอลับแล จังหวัดอุตรดิตถ์ เสิร์ฟอาหารล้านนาผสมสุโขทัย
+          บ้าน 100 ปี ลำลำลับแลอยู่ในอำเภอลับแล จังหวัดอุตรดิตถ์ เสิร์ฟอาหารล้านนาผสมสุโขทัย
           ทั้งสำรับขันโตกและกับข้าวของครอบครัว ใต้ถุนบ้านไม้ที่เรายังดูแลกันอยู่
         </p>
         <p className="text-sm leading-7 text-primary/80">{address} · {hours}</p>
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 text-accent">
           <Link href="/menu" className="underline underline-offset-4">ดูเมนูขันโตกและราคาอาหาร</Link>
-          <Link href="/directions" className="underline underline-offset-4">แผนที่มาร้านลำลำลับแล</Link>
+          <Link href="/directions" className="underline underline-offset-4">แผนที่มาบ้าน 100 ปี ลำลำลับแล</Link>
           <Link href="/#booking" className="underline underline-offset-4">จองโต๊ะก่อนเดินทาง</Link>
         </div>
       </section>
@@ -350,7 +350,7 @@ export default async function Home() {
                     unoptimized={!aboutImage.startsWith("/") || aboutImage.startsWith("//")}
                     loading="lazy"
                     decoding="async"
-                    alt={aboutImageCaption || "บรรยากาศร้านลำลำลับแล"} 
+                    alt={aboutImageCaption || "บรรยากาศบ้าน 100 ปี ลำลำลับแล"} 
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
                   {aboutImageCaption && (
@@ -624,7 +624,7 @@ export default async function Home() {
                     fill sizes="(max-width: 767px) 100vw, 50vw"
                     unoptimized={!aboutImage.startsWith("/") || aboutImage.startsWith("//")}
                     loading="lazy" decoding="async"
-                    alt="บรรยากาศร้านลำลำลับแล" 
+                    alt="บรรยากาศบ้าน 100 ปี ลำลำลับแล" 
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-103"
                   />
                   {/* Elegant directions overlay */}
@@ -655,7 +655,7 @@ export default async function Home() {
         <h2 id="visit-questions" className="text-2xl font-bold text-primary mb-5">ก่อนแวะมากินข้าวที่ลับแล</h2>
         <div className="divide-y divide-accent/20 rounded-2xl border border-accent/20 px-5">
           <details className="py-4">
-            <summary className="cursor-pointer font-semibold text-primary">ร้านลำลำลับแลบ้าน 100 ปี อยู่ที่ไหน?</summary>
+            <summary className="cursor-pointer font-semibold text-primary">บ้าน 100 ปี ลำลำลับแล อยู่ที่ไหน?</summary>
             <p className="mt-3 text-sm leading-relaxed text-primary/80">{address} <Link href="/directions" className="text-accent underline">ดูแผนที่และเส้นทางมาร้าน</Link></p>
           </details>
           <details className="py-4">

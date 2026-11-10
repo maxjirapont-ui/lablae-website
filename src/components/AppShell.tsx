@@ -35,12 +35,12 @@ export default function AppShell({
   if (isShop) return <div className="public-site contents">
     <header className="sticky top-0 z-50 border-b border-accent/20 bg-[#1a100a]/95 backdrop-blur-md">
       <nav aria-label="เมนูสั่งซื้อ" className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-2 sm:min-h-16 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <Link href="/" className="inline-flex min-h-10 items-center text-base text-accent">← ลำลำลับแล บ้าน 100 ปี</Link>
+        <Link href="/" className="inline-flex min-h-10 items-center text-base text-accent">← บ้าน 100 ปี ลำลำลับแล</Link>
         <ShopContactButtons phoneHref={`tel:${phone.replace(/[^0-9+]/g, "")}`} className="w-full [&>a]:flex-1 [&>a]:px-3 sm:w-auto sm:[&>a]:flex-none" />
       </nav>
     </header>
     <main className="flex-grow pb-6">{children}</main>
-    <footer className="border-t border-accent/20 px-4 py-6 text-center text-sm text-primary/70">ลำลำลับแล บ้าน 100 ปี · <Link href="/" className="inline-flex min-h-11 items-center text-accent underline">กลับหน้าร้าน</Link></footer>
+    <footer className="border-t border-accent/20 px-4 py-6 text-center text-sm text-primary/70">บ้าน 100 ปี ลำลำลับแล · <Link href="/" className="inline-flex min-h-11 items-center text-accent underline">กลับหน้าร้าน</Link></footer>
   </div>;
   return (
     <div className="public-site restaurant-site contents">

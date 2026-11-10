@@ -93,6 +93,22 @@ const BRAND_VOICE_MENU_DESCRIPTIONS_2026_11: ReadonlyArray<readonly [string, str
   ["น้ำโอเลี้ยง", "โอเลี้ยงโบราณ เข้ม หวานมัน"],
 ];
 
+// Brand rename (Nov 2026): "บ้าน 100 ปี ลำลำลับแล" leads with the house so it is never
+// confused with other "ลำลำลับแล" noodle shops. Order matters: longer phrases first.
+const BRAND_NAME_REPLACEMENTS_2026_11: ReadonlyArray<readonly [string, string]> = [
+  ["บ้าน 100 ปี ร้านลำลำลับแล", "บ้าน 100 ปี ลำลำลับแล"],
+  ["ร้านลำลำลับแลบ้าน 100 ปี", "บ้าน 100 ปี ลำลำลับแล"],
+  ["ลำลำลับแลบ้าน 100 ปี", "บ้าน 100 ปี ลำลำลับแล"],
+  ["ลำลำลับแล บ้าน 100 ปี", "บ้าน 100 ปี ลำลำลับแล"],
+  ["บรรยากาศร้านลำลำลับแล", "บรรยากาศบ้าน 100 ปี ลำลำลับแล"],
+  ["อาหารร้านลำลำลับแล", "อาหารบ้าน 100 ปี ลำลำลับแล"],
+  ["ร้านลำลำลับแลจึง", "บ้าน 100 ปี ลำลำลับแลจึง"],
+  ["มาร้านลำลำลับแล", "มาบ้าน 100 ปี ลำลำลับแล"],
+  ["ยังร้านลำลำลับแล", "ยังบ้าน 100 ปี ลำลำลับแล"],
+  ["ณ ลำลำลับแล", "ณ บ้าน 100 ปี ลำลำลับแล"],
+  ["ร้านอาหาร 'ลำลำลับแล'", "ร้านอาหาร 'บ้าน 100 ปี ลำลำลับแล'"],
+];
+
 const LEGACY_CATEGORY_UPDATES = [
   ["เซทขันโตก", "เซตขันโตก"],
   ["เครื่องดื่มดับแซ่บ & น้ำสมุนไพร", "เครื่องดื่มและน้ำสมุนไพร"],
@@ -529,6 +545,31 @@ async function initializeDb(): Promise<Database> {
       await db.run("UPDATE menus SET description = ? WHERE name = ?", [description, menuName]);
     }
     await db.run("INSERT INTO app_migrations (name) VALUES (?)", [brandVoiceMenuMigrationName]);
+  }
+
+  const brandNameMigrationName = "rename_brand_baan_100_pee_first_2026_11_10";
+  const brandNameMigration = await db.get<{ name: string }>(
+    "SELECT name FROM app_migrations WHERE name = ?",
+    [brandNameMigrationName],
+  );
+  if (!brandNameMigration) {
+    for (const [legacyValue, updatedValue] of BRAND_NAME_REPLACEMENTS_2026_11) {
+      await db.run(
+        "UPDATE settings SET value = REPLACE(value, ?, ?) WHERE INSTR(value, ?) > 0",
+        [legacyValue, updatedValue, legacyValue],
+      );
+      for (const column of ["title", "content", "excerpt", "part_title"] as const) {
+        try {
+          await db.run(
+            `UPDATE articles SET ${column} = REPLACE(${column}, ?, ?) WHERE INSTR(${column}, ?) > 0`,
+            [legacyValue, updatedValue, legacyValue],
+          );
+        } catch {
+          // Older databases may not have every optional article column yet.
+        }
+      }
+    }
+    await db.run("INSERT INTO app_migrations (name) VALUES (?)", [brandNameMigrationName]);
   }
 
   globalDb = db;

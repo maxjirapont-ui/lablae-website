@@ -152,7 +152,7 @@ export default function Navbar({
                   {logoUrl && (
                     <Image
                       src={logoUrl}
-                      alt="ลำลำลับแล"
+                      alt="บ้าน 100 ปี ลำลำลับแล"
                       width={40}
                       height={40}
                       sizes="40px"
@@ -164,10 +164,10 @@ export default function Navbar({
                   )}
                   <div className="flex flex-col">
                     <span className="font-thai font-bold text-lg sm:text-xl text-primary tracking-wide leading-none">
-                      ลำลำลับแล
+                      บ้าน 100 ปี
                     </span>
                     <span className="font-thai text-xs md:text-[10px] text-accent tracking-widest font-medium mt-0.5">
-                      บ้าน 100 ปี
+                      ลำลำลับแล
                     </span>
                   </div>
                 </Link>

@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export const metadata = pageMetadata(
   "แผนที่และเส้นทางมาร้านที่ลับแล อุตรดิตถ์",
-  "แผนที่ร้านลำลำลับแลบ้าน 100 ปี อำเภอลับแล จังหวัดอุตรดิตถ์ ดูที่อยู่ เวลาเปิด เบอร์โทร และเปิดเส้นทางนำทางใน Google Maps",
+  "แผนที่บ้าน 100 ปี ลำลำลับแล อำเภอลับแล จังหวัดอุตรดิตถ์ ดูที่อยู่ เวลาเปิด เบอร์โทร และเปิดเส้นทางนำทางใน Google Maps",
   "/directions",
 );
 
@@ -16,7 +16,7 @@ const MAP_EMBED_URL =
 
 export default async function DirectionsPage() {
   const restaurantName =
-    (await getSetting("restaurant_name")) || "ร้านลำลำลับแลบ้าน 100 ปี";
+    (await getSetting("restaurant_name")) || "บ้าน 100 ปี ลำลำลับแล";
   const address =
     (await getSetting("address")) ||
     "ถนนสายของกินเมืองลับแล ต.ศรีพนมมาศ อ.ลับแล จ.อุตรดิตถ์";

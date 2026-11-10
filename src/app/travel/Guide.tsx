@@ -22,7 +22,7 @@ export default function Guide() {
   function reveal() { setZone('ทั้งหมด'); setQuery(''); }
   return <div className="laplae-guide">
     <div className="travel-hero"><header className="travel-intro">
-      <p className="travel-kicker">ลำลำลับแล บ้าน 100 ปี ชวนเที่ยวบ้านเรา</p>
+      <p className="travel-kicker">บ้าน 100 ปี ลำลำลับแล ชวนเที่ยวบ้านเรา</p>
       <h1>เที่ยวลับแล<span>ค่อย ๆ แวะไปทีละย่าน</span></h1>
       <p>ไหว้พระ เดินตลาด ชมบ้านเก่า แล้วแวะกินข้าวที่บ้านเรา<br className="travel-desktop" /> เลือกย่านที่สนใจ แล้วแวะในแบบของคุณได้เลยครับ</p>
       <nav aria-label="ส่วนต่าง ๆ ในคู่มือ" className="travel-actions"><a href="#illustration">ดูภาพรวม</a><a href="#places">เลือกที่เที่ยว</a><a href="#real-map">แผนที่หมุดจริง</a></nav>
@@ -66,6 +66,6 @@ export default function Guide() {
       </article>)}</div></section>)}
     </section>
     <section id="real-map" className="travel-section"><h2>ดูตำแหน่งบนแผนที่จริง</h2><p>18 หมุดอ้างอิงสถานที่ กดหมุดเพื่อเปิดรายละเอียด ส่วนฝายหลวงยังรอยืนยันตำแหน่งตัวฝาย หมุดส่วนใหญ่ไม่ได้ระบุทางเข้าหรือช่องจอดรถครับ</p><iframe title="แผนที่สถานที่เที่ยวลับแลบน OpenStreetMap" src="/travel/map.html" loading="lazy" className="travel-live-map" /><p className="travel-note">หากแผนที่ไม่ขึ้น ใช้ปุ่ม Google Maps ในแต่ละสถานที่ด้านบนได้ครับ</p></section>
-    <aside className="travel-house"><p className="travel-kicker">เที่ยวแล้ว แวะกินข้าวที่บ้านเรา</p><h2>ลำลำลับแล บ้าน 100 ปี</h2><p>กับข้าวบ้านเรา ใต้ถุนบ้านไม้ร้อยปี<br />เปิดทุกวัน 10.00–20.00 น. จอดรถที่ร้านได้ครับ</p><div className="travel-actions"><Link href="/menu">ดูเมนูอาหาร</Link><a href="tel:0956283125">โทร 095-628-3125</a><a href={data.places.find(p => p.id === 'LPL-008')!.navigation_url!} target="_blank" rel="noreferrer">นำทางมาร้าน ↗</a></div></aside>
+    <aside className="travel-house"><p className="travel-kicker">เที่ยวแล้ว แวะกินข้าวที่บ้านเรา</p><h2>บ้าน 100 ปี ลำลำลับแล</h2><p>กับข้าวบ้านเรา ใต้ถุนบ้านไม้ร้อยปี<br />เปิดทุกวัน 10.00–20.00 น. จอดรถที่ร้านได้ครับ</p><div className="travel-actions"><Link href="/menu">ดูเมนูอาหาร</Link><a href="tel:0956283125">โทร 095-628-3125</a><a href={data.places.find(p => p.id === 'LPL-008')!.navigation_url!} target="_blank" rel="noreferrer">นำทางมาร้าน ↗</a></div></aside>
   </div>;
 }

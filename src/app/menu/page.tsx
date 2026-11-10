@@ -10,7 +10,7 @@ export const revalidate = 0; // Disable static cache for menu, so dashboard upda
 
 export const metadata = pageMetadata(
   "เมนูและราคาอาหาร ขันโตก อาหารพื้นเมืองลับแล",
-  "ดูรูปอาหาร ราคา และรายการในชุดขันโตกของร้านลำลำลับแลบ้าน 100 ปี อุตรดิตถ์ มีข้าวพันผัก น้ำพริก และกับข้าวพื้นเมือง พร้อมแผนที่และจองโต๊ะล่วงหน้า",
+  "ดูรูปอาหาร ราคา และรายการในชุดขันโตกของบ้าน 100 ปี ลำลำลับแล อุตรดิตถ์ มีข้าวพันผัก น้ำพริก และกับข้าวพื้นเมือง พร้อมแผนที่และจองโต๊ะล่วงหน้า",
   "/menu",
 );
 
@@ -22,7 +22,7 @@ export default async function MenuPage() {
   const categoriesOrder = (await getSetting("menu_categories_order")) || "เซตขันโตก,ของทอด/ย่าง,ลาบ/แกง,น้ำพริก / เครื่องเคียง,ส้มตำบ้าน 100 ปี,ข้าวพันผัก,เครื่องดื่มและน้ำสมุนไพร,ข้าวและเส้น,อาหารพื้นบ้าน,จานเดียว,กับข้าว,เครื่องดื่ม";
 
   // Dynamic texts and PDF URL
-  const badge = (await getSetting("menu_page_badge")) || "ร้านลำลำลับแลบ้าน 100 ปี";
+  const badge = (await getSetting("menu_page_badge")) || "บ้าน 100 ปี ลำลำลับแล";
   const savedTitle = await getSetting("menu_page_title");
   const title = !savedTitle || savedTitle === "กับข้าวและสำรับอาหาร"
     ? "เมนูอาหารและราคา"
@@ -36,7 +36,7 @@ export default async function MenuPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-12 sm:px-6 lg:px-8 space-y-5 sm:space-y-8">
       {/* Header */}
-      {!showHeader && <h1 className="sr-only">เมนูอาหารและราคา ร้านลำลำลับแลบ้าน 100 ปี</h1>}
+      {!showHeader && <h1 className="sr-only">เมนูอาหารและราคา บ้าน 100 ปี ลำลำลับแล</h1>}
       {showHeader && (
         <div className="text-center space-y-3">
           <h1 className="text-3xl sm:text-4xl font-bold font-thai text-primary">

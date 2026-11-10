@@ -41,7 +41,7 @@ interface AmbienceGalleryEditorProps {
 
 const DEFAULT_GALLERY_VALUES = {
   gallery_badge: "บรรยากาศบ้าน 100 ปี",
-  gallery_title: "ภาพบรรยากาศร้านลำลำลับแลบ้าน 100 ปี",
+  gallery_title: "ภาพบรรยากาศบ้าน 100 ปี ลำลำลับแล",
   gallery_subtitle:
     "ใต้ถุนบ้านไม้ 100 ปีไร้ตะปู อบอุ่น ร่มรื่น และสัมผัสรสมือครอบครัวแท้ ๆ",
 };
@@ -328,7 +328,7 @@ export default function AmbienceGalleryEditor({
                 setIsDirty(true);
                 setSaveSuccess(false);
               }}
-              placeholder="เช่น ภาพบรรยากาศร้านลำลำลับแลบ้าน 100 ปี"
+              placeholder="เช่น ภาพบรรยากาศบ้าน 100 ปี ลำลำลับแล"
               className="w-full px-3.5 py-2 rounded-xl border border-primary/20 bg-white text-xs font-bold text-primary focus:outline-hidden focus:ring-2 focus:ring-accent"
               required
             />

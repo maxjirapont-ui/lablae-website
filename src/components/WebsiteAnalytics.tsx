@@ -50,7 +50,7 @@ export default function WebsiteAnalytics() {
     const pageFields = {
       page_location: page.href,
       page_referrer: referrer,
-      page_title: pathname === "/" ? "ลำลำลับแลบ้าน 100 ปี" : `ลำลำลับแล ${pathname}`,
+      page_title: pathname === "/" ? "บ้าน 100 ปี ลำลำลับแล" : `ลำลำลับแล ${pathname}`,
     };
     if (!analytics.lablaeAnalyticsInitialized) {
       analytics.gtag("js", new Date());

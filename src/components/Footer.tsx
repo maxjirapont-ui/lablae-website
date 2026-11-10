@@ -13,7 +13,7 @@ export default async function Footer() {
   const phone = await getSetting("phone") || "095-628-3125";
   const hours = await getSetting("hours") || "เปิดทุกวัน 10.00 น. - 20.00 น.";
   const address = await getSetting("address") || "ถนนสายของกินเมืองลับแล, ต.ศรีพนมมาศ, อ.ลับแล, จ.อุตรดิตถ์";
-  const restaurantName = (await getSetting("restaurant_name")) || "ร้านลำลำลับแลบ้าน 100 ปี";
+  const restaurantName = (await getSetting("restaurant_name")) || "บ้าน 100 ปี ลำลำลับแล";
   const restaurantDesc = (await getSetting("restaurant_desc")) || "อาหารที่บ้านเราคือการผสมผสานวัฒนธรรม สุโขทัยและล้านนา มรดกตกทอดจากสูตรของทวดกว่า 100 ปี ณ เมืองลับแล จังหวัดอุตรดิตถ์";
 
   return (
@@ -162,7 +162,7 @@ export default async function Footer() {
         </div>
 
         <div className="border-t border-cream/10 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-cream/50 font-thai">
-          <p>© {new Date().getFullYear()} ร้านลำลำลับแลบ้าน 100 ปี. สงวนลิขสิทธิ์.</p>
+          <p>© {new Date().getFullYear()} บ้าน 100 ปี ลำลำลับแล. สงวนลิขสิทธิ์.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link
               href="/admin/login"

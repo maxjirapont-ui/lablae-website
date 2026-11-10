@@ -122,7 +122,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
           {
             "@type": "BreadcrumbList",
             itemListElement: [
-              { "@type": "ListItem", position: 1, name: "ลำลำลับแล", item: SITE_URL },
+              { "@type": "ListItem", position: 1, name: "บ้าน 100 ปี ลำลำลับแล", item: SITE_URL },
               { "@type": "ListItem", position: 2, name: "เรื่องเล่าเมืองลับแล", item: `${SITE_URL}/blog` },
               { "@type": "ListItem", position: 3, name: article.title, item: `${SITE_URL}/blog/${encodeURIComponent(article.slug)}` },
             ],
@@ -145,7 +145,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
           </h1>
 
           <div className="text-xs text-[#f5ece1]/75 pt-1">
-            หนังสือ “ลับแลง — ตำราเล่าเรื่องแห่งเมืองที่อดีตยังกินได้” · ลำลำลับแล
+            หนังสือ “ลับแลง — ตำราเล่าเรื่องแห่งเมืองที่อดีตยังกินได้” · บ้าน 100 ปี ลำลำลับแล
           </div>
         </div>
 
@@ -162,7 +162,7 @@ export default async function BlogDetailPage({ params }: PageProps) {
 
       <aside className="rounded-2xl border border-accent/25 bg-[#241710] p-5 font-thai space-y-3">
         <h2 className="text-lg font-bold text-primary">แวะมากินข้าวที่บ้าน 100 ปี</h2>
-        <p className="text-sm leading-relaxed text-primary/80"><Link href="/" className="underline underline-offset-4">ลำลำลับแล ร้านอาหารลับแล</Link> อยู่ใต้ถุนบ้านไม้ของครอบครัว ในจังหวัดอุตรดิตถ์ เสิร์ฟอาหารล้านนาผสมสุโขทัย</p>
+        <p className="text-sm leading-relaxed text-primary/80"><Link href="/" className="underline underline-offset-4">บ้าน 100 ปี ลำลำลับแล ร้านอาหารลับแล</Link> อยู่ใต้ถุนบ้านไม้ของครอบครัว ในจังหวัดอุตรดิตถ์ เสิร์ฟอาหารล้านนาผสมสุโขทัย</p>
         <div className="flex flex-wrap gap-x-5 gap-y-3 text-sm text-accent">
           <Link href="/menu" className="underline underline-offset-4">ดูเมนูและราคาอาหาร</Link>
           <Link href="/directions" className="underline underline-offset-4">ดูแผนที่มาร้าน</Link>

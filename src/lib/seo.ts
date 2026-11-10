@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const SITE_URL = "https://www.lablae.net";
-export const SITE_NAME = "ร้านลำลำลับแลบ้าน 100 ปี";
+export const SITE_NAME = "บ้าน 100 ปี ลำลำลับแล";
 export const SHARE_IMAGE = "/images/menu/khantoke_big.jpg";
 
 export function pageMetadata(
@@ -9,7 +9,7 @@ export function pageMetadata(
   description: string,
   path: string,
   image = SHARE_IMAGE,
-  imageAlt = "ชุดขันโตก ร้านลำลำลับแลบ้าน 100 ปี",
+  imageAlt = "ชุดขันโตก บ้าน 100 ปี ลำลำลับแล",
 ): Metadata {
   const url = new URL(path, SITE_URL).href;
   const shareTitle = path === "/" ? title : `${title} | ${SITE_NAME}`;

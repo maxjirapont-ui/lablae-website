@@ -311,7 +311,7 @@ export default function AboutClientView({
             className="inline-flex items-center gap-2 px-6 py-3 bg-accent/15 hover:bg-accent text-accent hover:text-[#1a100a] rounded-xl font-thai text-xs sm:text-sm font-bold border border-accent/30 transition-all cursor-pointer"
           >
             <MapPin className="w-4 h-4" />
-            <span>เปิด Google Maps นำทางมายังร้านลำลำลับแล →</span>
+            <span>เปิด Google Maps นำทางมายังบ้าน 100 ปี ลำลำลับแล →</span>
           </a>
         </div>
       </div>
